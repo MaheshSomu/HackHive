@@ -1,0 +1,13 @@
+package com.hackhive.student.repository;
+
+import com.hackhive.auth.entity.User;
+import com.hackhive.student.entity.StudentProfile;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface StudentProfileRepository extends JpaRepository<StudentProfile, Long> {
+
+    Optional<StudentProfile> findByUser(User user);
+
+}
