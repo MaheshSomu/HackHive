@@ -1,0 +1,64 @@
+# ==========================
+# Backend (Spring Boot)
+# ==========================
+
+hackhive-backend/target/
+hackhive-backend/.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Frontend (React/Vite)
+# ==========================
+
+hackhive-frontend/node_modules/
+hackhive-frontend/dist/
+
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# Package Manager Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Coverage
+coverage/
+
+# ==========================
+# Java
+# ==========================
+
+*.class
+
+# ==========================
+# Maven
+# ==========================
+
+.mvn/timing.properties
+
+# ==========================
+# Temporary Files
+# ==========================
+
+*.swp
+*.swo
