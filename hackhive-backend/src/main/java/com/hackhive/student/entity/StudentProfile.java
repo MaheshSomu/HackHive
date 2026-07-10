@@ -40,6 +40,19 @@ public class StudentProfile extends BaseEntity {
     private String portfolioUrl;
 
     @Column(length = 255)
-    private String profileImage;
+    private String profileImageUrl;
 
+    @Column(length = 150)
+    private String university;
+
+    @Column(length = 100)
+    private String degree;
+
+    private Double cgpa;
+
+    @Column(length = 100)
+    private String location;
+
+    @Column(length = 255)
+    private String resumeUrl;
 }
