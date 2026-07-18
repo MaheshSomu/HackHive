@@ -36,4 +36,5 @@ public class StudentEducation extends BaseEntity {
 
     @Column(length = 500)
     private String description;
+    
 }
