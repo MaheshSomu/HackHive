@@ -37,77 +37,128 @@ public class AuthServiceImpl implements AuthService {
 
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already registered.");
+            throw new BadRequestException(
+                    "Email already registered."
+            );
         }
 
-        // Get STUDENT role
-        Role studentRole = roleRepository.findByName(RoleType.STUDENT)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Student role not found."));
+        // Prevent users from registering themselves as ADMIN
+        if (request.getRole() == RoleType.ADMIN) {
+            throw new BadRequestException(
+                    "Admin registration is not allowed."
+            );
+        }
 
-        // Create User
+        // Get the requested STUDENT or ORGANIZER role
+        Role role = roleRepository
+                .findByName(request.getRole())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Role not found."
+                        ));
+
+        // Create user
         User user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(
+                        passwordEncoder.encode(
+                                request.getPassword()
+                        )
+                )
                 .phoneNumber(request.getPhoneNumber())
                 .enabled(true)
                 .emailVerified(false)
-                .role(studentRole)
+                .role(role)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-        // Create Student Profile
-        StudentProfile studentProfile = StudentProfile.builder()
-                .user(savedUser)
-                .build();
+        // Automatically create StudentProfile
+        // only when the registered user is a STUDENT
+        if (request.getRole() == RoleType.STUDENT) {
 
-        studentProfileRepository.save(studentProfile);
+            StudentProfile studentProfile =
+                    StudentProfile.builder()
+                            .user(savedUser)
+                            .build();
+
+            studentProfileRepository.save(
+                    studentProfile
+            );
+        }
 
         return "Registration successful.";
     }
+
     @Override
     public AuthResponse login(LoginRequest request) {
 
         // Find user by email
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository
+                .findByEmail(request.getEmail())
                 .orElseThrow(() ->
-                        new UnauthorizedException("Invalid email or password."));
+                        new UnauthorizedException(
+                                "Invalid email or password."
+                        ));
 
         // Verify password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid email or password.");
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
+            throw new UnauthorizedException(
+                    "Invalid email or password."
+            );
         }
 
-        // Generate JWT Token
-        String token = jwtService.generateToken(user.getEmail());
+        // Generate JWT token
+        String token =
+                jwtService.generateToken(
+                        user.getEmail()
+                );
 
-        // Return response
+        // Return authentication response
         return AuthResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .role(user.getRole().getName().name())
+                .role(
+                        user.getRole()
+                                .getName()
+                                .name()
+                )
                 .build();
     }
+
     @Override
     public UserResponse getCurrentUser() {
 
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        User user = userRepository.findByEmail(authentication.getName())
+        User user = userRepository
+                .findByEmail(
+                        authentication.getName()
+                )
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found."));
+                        new ResourceNotFoundException(
+                                "User not found."
+                        ));
 
         return UserResponse.builder()
                 .userId(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .role(user.getRole().getName().name())
+                .role(
+                        user.getRole()
+                                .getName()
+                                .name()
+                )
                 .build();
     }
 }

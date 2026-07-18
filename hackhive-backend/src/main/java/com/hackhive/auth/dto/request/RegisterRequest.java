@@ -1,7 +1,9 @@
 package com.hackhive.auth.dto.request;
 
+import com.hackhive.common.enums.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,10 +22,13 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
+    @Size(min = 8, max = 100,
+            message = "Password must be between 8 and 100 characters")
     private String password;
 
     @Size(max = 15, message = "Phone number cannot exceed 15 characters")
     private String phoneNumber;
 
+    @NotNull(message = "Role is required")
+    private RoleType role;
 }
