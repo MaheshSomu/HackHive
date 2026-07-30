@@ -101,7 +101,12 @@ public class AuthServiceImpl implements AuthService {
                         new UnauthorizedException(
                                 "Invalid email or password."
                         ));
-
+        // Reject disabled accounts
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+        throw new UnauthorizedException(
+                "Your account has been disabled."
+        );
+        }
         // Verify password
         if (!passwordEncoder.matches(
                 request.getPassword(),
