@@ -26,14 +26,15 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final UserDetailsServiceImpl userDetailsService;
-
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
-        @Bean
-        public AuthenticationProvider authenticationProvider() {
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
 
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(userDetailsService);
@@ -41,18 +42,19 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
 
         return provider;
-        }
-
-        @Bean
-        public AuthenticationManager authenticationManager(
-                AuthenticationConfiguration configuration)
-                throws Exception {
-
-        return configuration.getAuthenticationManager();
-        }
+    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration)
+            throws Exception {
+
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http)
             throws Exception {
 
         http
@@ -60,23 +62,42 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
 
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(
+                                jwtAuthenticationEntryPoint
+                        )
+                        .accessDeniedHandler(
+                                jwtAccessDeniedHandler
+                        )
+                )
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Public APIs
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
-                        ).permitAll()
+                        )
+                        .permitAll()
 
-                        .anyRequest().authenticated()
+                        // Admin APIs
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        // All remaining APIs require authentication
+                        .anyRequest()
+                        .authenticated()
                 )
 
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(
+                        authenticationProvider()
+                )
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
@@ -87,5 +108,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
