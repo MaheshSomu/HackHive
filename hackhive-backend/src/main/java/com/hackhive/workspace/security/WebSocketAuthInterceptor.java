@@ -57,7 +57,7 @@ public class WebSocketAuthInterceptor
     }
 
     private void authenticateUser(
-            StompHeaderAccessor accessor) {
+                StompHeaderAccessor accessor) {
 
         String authorizationHeader =
                 accessor.getFirstNativeHeader(
@@ -68,9 +68,9 @@ public class WebSocketAuthInterceptor
                 || !authorizationHeader.startsWith(
                         "Bearer ")) {
 
-            throw new IllegalArgumentException(
-                    "Missing or invalid Authorization header."
-            );
+                throw new IllegalArgumentException(
+                        "Missing or invalid Authorization header."
+                );
         }
 
         String token =
@@ -78,13 +78,27 @@ public class WebSocketAuthInterceptor
 
         if (!jwtService.isTokenValid(token)) {
 
-            throw new IllegalArgumentException(
-                    "Invalid or expired JWT token."
-            );
+                throw new IllegalArgumentException(
+                        "Invalid or expired JWT token."
+                );
         }
 
         String email =
                 jwtService.extractEmail(token);
+
+        User user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "User not found."
+                                ));
+
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+                throw new IllegalArgumentException(
+                        "User account is disabled."
+                );
+        }
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
@@ -94,7 +108,7 @@ public class WebSocketAuthInterceptor
                 );
 
         accessor.setUser(authentication);
-    }
+        }
 
     private void authorizeSubscription(
             StompHeaderAccessor accessor) {
