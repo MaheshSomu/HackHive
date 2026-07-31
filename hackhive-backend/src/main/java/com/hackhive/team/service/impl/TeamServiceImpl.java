@@ -5,6 +5,7 @@ import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.event.entity.Event;
+import com.hackhive.event.repository.EventRegistrationRepository;
 import com.hackhive.event.repository.EventRepository;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
@@ -34,6 +35,7 @@ public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final EventRepository eventRepository;
+    private final EventRegistrationRepository eventRegistrationRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final UserRepository userRepository;
     private final TeamMapper teamMapper;
@@ -72,7 +74,18 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event not found."));
+        boolean registeredForEvent =
+                eventRegistrationRepository
+                        .existsByEventAndStudentProfile(
+                                event,
+                                studentProfile
+                        );
 
+        if (!registeredForEvent) {
+        throw new BadRequestException(
+                "You must register for the event before creating a team."
+        );
+        }
         if (request.getMaxMembers() < 1) {
             throw new BadRequestException(
                     "Maximum members must be at least 1.");
@@ -88,7 +101,18 @@ public class TeamServiceImpl implements TeamService {
                     "Team maximum members cannot exceed "
                             + "the event maximum team size.");
         }
+        boolean alreadyInEventTeam =
+                teamMemberRepository
+                        .existsByStudentProfileAndTeam_Event(
+                                studentProfile,
+                                event
+                        );
 
+        if (alreadyInEventTeam) {
+        throw new BadRequestException(
+                "You are already a member of a team for this event."
+        );
+        }
         Team team = Team.builder()
                 .name(request.getName())
                 .description(request.getDescription())

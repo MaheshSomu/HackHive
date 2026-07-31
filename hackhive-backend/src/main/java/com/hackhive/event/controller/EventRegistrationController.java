@@ -6,6 +6,7 @@ import com.hackhive.event.dto.response.RegisteredStudentResponse;
 import com.hackhive.event.service.EventRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class EventRegistrationController {
     // =========================
 
     @PostMapping("/events/{eventId}")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<EventRegistrationResponse>>
     registerForEvent(@PathVariable Long eventId) {
 
@@ -40,6 +42,7 @@ public class EventRegistrationController {
     }
 
     @GetMapping("/my-registrations")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<List<EventRegistrationResponse>>>
     getMyRegistrations() {
 
@@ -59,6 +62,7 @@ public class EventRegistrationController {
     }
 
     @DeleteMapping("/events/{eventId}")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<Void>>
     cancelRegistration(@PathVariable Long eventId) {
 
@@ -79,6 +83,7 @@ public class EventRegistrationController {
     // =========================
 
     @GetMapping("/events/{eventId}/students")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<List<RegisteredStudentResponse>>>
     getEventRegistrations(@PathVariable Long eventId) {
 

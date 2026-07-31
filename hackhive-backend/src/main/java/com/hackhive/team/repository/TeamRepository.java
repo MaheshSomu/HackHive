@@ -28,4 +28,5 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
             Long id,
             StudentProfile leader
     );
+    boolean existsByEvent(Event event);
 }

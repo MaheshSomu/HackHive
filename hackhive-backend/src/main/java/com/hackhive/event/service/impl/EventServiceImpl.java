@@ -2,16 +2,20 @@ package com.hackhive.event.service.impl;
 
 import com.hackhive.auth.entity.User;
 import com.hackhive.auth.repository.UserRepository;
+import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.event.dto.request.CreateEventRequest;
 import com.hackhive.event.dto.request.UpdateEventRequest;
 import com.hackhive.event.dto.response.EventResponse;
 import com.hackhive.event.entity.Event;
 import com.hackhive.event.mapper.EventMapper;
+import com.hackhive.event.repository.EventRegistrationRepository;
 import com.hackhive.event.repository.EventRepository;
 import com.hackhive.event.service.EventService;
 import com.hackhive.organizer.entity.OrganizerProfile;
 import com.hackhive.organizer.repository.OrganizerProfileRepository;
+import com.hackhive.team.repository.TeamRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +31,8 @@ public class EventServiceImpl implements EventService {
     private final OrganizerProfileRepository organizerProfileRepository;
     private final UserRepository userRepository;
     private final EventMapper eventMapper;
+    private final EventRegistrationRepository eventRegistrationRepository;
+    private final TeamRepository teamRepository;
 
     private OrganizerProfile getCurrentOrganizerProfile() {
 
@@ -52,7 +58,14 @@ public class EventServiceImpl implements EventService {
 
         OrganizerProfile organizerProfile =
                 getCurrentOrganizerProfile();
-
+        validateEventDetails(
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getRegistrationStartDate(),
+                request.getRegistrationEndDate(),
+                request.getMinTeamSize(),
+                request.getMaxTeamSize()
+        );
         Event event = Event.builder()
                 .organizerProfile(organizerProfile)
                 .title(request.getTitle())
@@ -104,7 +117,14 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event not found."));
-
+        validateEventDetails(
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getRegistrationStartDate(),
+                request.getRegistrationEndDate(),
+                request.getMinTeamSize(),
+                request.getMaxTeamSize()
+        );
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setLocation(request.getLocation());
@@ -138,21 +158,44 @@ public class EventServiceImpl implements EventService {
         return eventMapper.toResponse(event);
     }
 
-    @Override
-    public void deleteEvent(Long id) {
+        @Override
+        public void deleteEvent(Long id) {
 
         OrganizerProfile organizerProfile =
                 getCurrentOrganizerProfile();
 
         Event event = eventRepository
                 .findByIdAndOrganizerProfile(
-                        id, organizerProfile)
+                        id,
+                        organizerProfile
+                )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Event not found."));
+                                "Event not found."
+                        ));
+
+        boolean hasRegistrations =
+                eventRegistrationRepository
+                        .existsByEvent(event);
+
+        if (hasRegistrations) {
+                throw new BadRequestException(
+                        "Cannot delete an event that has registered participants."
+                );
+        }
+
+        boolean hasTeams =
+                teamRepository
+                        .existsByEvent(event);
+
+        if (hasTeams) {
+                throw new BadRequestException(
+                        "Cannot delete an event that has teams."
+                );
+        }
 
         eventRepository.delete(event);
-    }
+        }
 
     @Override
     public List<EventResponse> getAllEvents() {
@@ -198,4 +241,63 @@ public class EventServiceImpl implements EventService {
                 .map(eventMapper::toResponse)
                 .toList();
     }
+     private void validateEventDetails(
+                java.time.LocalDateTime startDate,
+                java.time.LocalDateTime endDate,
+                java.time.LocalDateTime registrationStartDate,
+                java.time.LocalDateTime registrationEndDate,
+                Integer minTeamSize,
+                Integer maxTeamSize) {
+
+        if (startDate == null || endDate == null) {
+                throw new BadRequestException(
+                        "Event start date and end date are required."
+                );
+        }
+
+        if (!endDate.isAfter(startDate)) {
+                throw new BadRequestException(
+                        "Event end date must be after the start date."
+                );
+        }
+
+        if (registrationStartDate != null
+                && registrationEndDate != null
+                && !registrationEndDate.isAfter(
+                        registrationStartDate)) {
+
+                throw new BadRequestException(
+                        "Registration end date must be after the registration start date."
+                );
+        }
+
+        if (registrationEndDate != null
+                && registrationEndDate.isAfter(startDate)) {
+
+                throw new BadRequestException(
+                        "Registration must close before the event starts."
+                );
+        }
+
+        if (minTeamSize != null && minTeamSize < 1) {
+                throw new BadRequestException(
+                        "Minimum team size must be at least 1."
+                );
+        }
+
+        if (maxTeamSize != null && maxTeamSize < 1) {
+                throw new BadRequestException(
+                        "Maximum team size must be at least 1."
+                );
+        }
+
+        if (minTeamSize != null
+                && maxTeamSize != null
+                && minTeamSize > maxTeamSize) {
+
+                throw new BadRequestException(
+                        "Minimum team size cannot exceed maximum team size."
+                );
+        }
+        }
 }

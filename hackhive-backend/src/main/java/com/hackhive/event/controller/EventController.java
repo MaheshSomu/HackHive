@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<EventResponse>> createEvent(
             @Valid @RequestBody CreateEventRequest request) {
 
@@ -36,6 +38,7 @@ public class EventController {
     }
 
     @GetMapping("/my-events")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<List<EventResponse>>> getMyEvents() {
 
         List<EventResponse> response =
@@ -51,6 +54,7 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<EventResponse>> updateEvent(
             @PathVariable Long id,
             @Valid @RequestBody UpdateEventRequest request) {
@@ -68,6 +72,7 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public ResponseEntity<ApiResponse<Void>> deleteEvent(
             @PathVariable Long id) {
 
@@ -143,4 +148,6 @@ public class EventController {
                         .build()
         );
     }
+
+    
 }

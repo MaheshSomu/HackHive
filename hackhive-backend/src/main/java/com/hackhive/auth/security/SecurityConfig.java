@@ -90,6 +90,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
 
+                        // Organizer profile APIs
+                        .requestMatchers("/api/organizer/**")
+                        .hasRole("ORGANIZER")
+
                         // All remaining APIs require authentication
                         .anyRequest()
                         .authenticated()

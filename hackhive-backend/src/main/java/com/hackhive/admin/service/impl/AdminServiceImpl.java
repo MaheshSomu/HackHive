@@ -205,14 +205,12 @@ public class AdminServiceImpl implements AdminService {
                         ));
 
         boolean hasRegistrations =
-                !eventRegistrationRepository
-                        .findByEvent(event)
-                        .isEmpty();
+                eventRegistrationRepository
+                        .existsByEvent(event);
 
         boolean hasTeams =
-                !teamRepository
-                        .findByEvent(event)
-                        .isEmpty();
+                teamRepository
+                        .existsByEvent(event);
 
         if (hasRegistrations || hasTeams) {
                 throw new BadRequestException(
