@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -81,6 +82,22 @@ public class EventRegistrationServiceImpl
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event not found."));
+        LocalDateTime now = LocalDateTime.now();
+
+        if (event.getRegistrationStartDate() != null
+                && now.isBefore(event.getRegistrationStartDate())) {
+
+        throw new BadRequestException(
+                "Event registration has not started yet."
+        );
+        }
+
+        if (now.isAfter(event.getRegistrationEndDate())) {
+
+        throw new BadRequestException(
+                "Event registration has already closed."
+        );
+        }
 
         boolean alreadyRegistered =
                 eventRegistrationRepository
