@@ -95,9 +95,17 @@ public class WebSocketAuthInterceptor
                                 ));
 
         if (!Boolean.TRUE.equals(user.getEnabled())) {
-                throw new IllegalArgumentException(
-                        "User account is disabled."
-                );
+        throw new IllegalArgumentException(
+                "User account is disabled."
+        );
+        }
+
+        if (!"STUDENT".equals(
+                user.getRole().getName().name())) {
+
+        throw new IllegalArgumentException(
+                "Only students can access team chat."
+        );
         }
 
         UsernamePasswordAuthenticationToken authentication =

@@ -1,5 +1,6 @@
 package com.hackhive.team.repository;
 
+import com.hackhive.event.entity.Event;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.team.entity.Team;
 import com.hackhive.team.entity.TeamMember;
@@ -25,6 +26,10 @@ public interface TeamMemberRepository
     Optional<TeamMember> findByTeamAndStudentProfile(
             Team team,
             StudentProfile studentProfile
+    );
+    boolean existsByStudentProfileAndTeam_Event(
+        StudentProfile studentProfile,
+        Event event
     );
 
     long countByTeam(Team team);

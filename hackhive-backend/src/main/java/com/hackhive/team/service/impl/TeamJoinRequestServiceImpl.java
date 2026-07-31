@@ -4,6 +4,7 @@ import com.hackhive.auth.entity.User;
 import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.ResourceNotFoundException;
+import com.hackhive.event.repository.EventRegistrationRepository;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
 import com.hackhive.team.dto.response.TeamJoinRequestResponse;
@@ -34,6 +35,7 @@ public class TeamJoinRequestServiceImpl
     private final StudentProfileRepository studentProfileRepository;
     private final UserRepository userRepository;
     private final TeamJoinRequestMapper teamJoinRequestMapper;
+    private final EventRegistrationRepository eventRegistrationRepository;
 
     private StudentProfile getCurrentStudentProfile() {
 
@@ -68,7 +70,18 @@ public class TeamJoinRequestServiceImpl
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Team not found."));
+        boolean registeredForEvent =
+                eventRegistrationRepository
+                        .existsByEventAndStudentProfile(
+                                team.getEvent(),
+                                studentProfile
+                        );
 
+        if (!registeredForEvent) {
+        throw new BadRequestException(
+                "You must register for the event before joining a team."
+        );
+        }
         if (!team.getOpen()) {
             throw new BadRequestException(
                     "This team is not accepting join requests.");
@@ -250,7 +263,18 @@ public class TeamJoinRequestServiceImpl
 
         StudentProfile student =
                 joinRequest.getStudentProfile();
+        boolean alreadyInEventTeam =
+                teamMemberRepository
+                        .existsByStudentProfileAndTeam_Event(
+                                student,
+                                team.getEvent()
+                        );
 
+        if (alreadyInEventTeam) {
+        throw new BadRequestException(
+                "Student is already a member of another team for this event."
+        );
+        }
         if (teamMemberRepository
                 .existsByTeamAndStudentProfile(
                         team,

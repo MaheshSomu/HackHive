@@ -9,6 +9,7 @@ import com.hackhive.team.service.TeamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class TeamController {
     private final TeamService teamService;
 
     @PostMapping
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<TeamResponse>> createTeam(
             @Valid @RequestBody CreateTeamRequest request) {
 
@@ -37,6 +39,7 @@ public class TeamController {
     }
 
     @PutMapping("/{teamId}")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<TeamResponse>> updateTeam(
             @PathVariable Long teamId,
             @Valid @RequestBody UpdateTeamRequest request) {
@@ -54,6 +57,7 @@ public class TeamController {
     }
 
     @DeleteMapping("/{teamId}")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<Void>> deleteTeam(
             @PathVariable Long teamId) {
 
@@ -99,6 +103,7 @@ public class TeamController {
     }
 
     @GetMapping("/my-teams")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<List<TeamResponse>>> getMyTeams() {
 
         List<TeamResponse> response =

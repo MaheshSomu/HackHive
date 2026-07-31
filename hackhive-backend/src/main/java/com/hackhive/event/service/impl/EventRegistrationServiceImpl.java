@@ -16,6 +16,8 @@ import com.hackhive.organizer.entity.OrganizerProfile;
 import com.hackhive.organizer.repository.OrganizerProfileRepository;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
+import com.hackhive.team.repository.TeamMemberRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +37,7 @@ public class EventRegistrationServiceImpl
     private final OrganizerProfileRepository organizerProfileRepository;
     private final UserRepository userRepository;
     private final EventRegistrationMapper eventRegistrationMapper;
+    private final TeamMemberRepository teamMemberRepository;
 
     private User getCurrentUser() {
 
@@ -148,7 +151,18 @@ public class EventRegistrationServiceImpl
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event not found."));
+        boolean belongsToEventTeam =
+                teamMemberRepository
+                        .existsByStudentProfileAndTeam_Event(
+                                studentProfile,
+                                event
+                        );
 
+        if (belongsToEventTeam) {
+        throw new BadRequestException(
+                "You cannot cancel event registration while you are a member of a team for this event."
+        );
+        }
         EventRegistration registration =
                 eventRegistrationRepository
                         .findByEventAndStudentProfile(

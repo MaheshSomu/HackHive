@@ -30,4 +30,5 @@ public interface EventRegistrationRepository
             Event event,
             StudentProfile studentProfile
     );
+    boolean existsByEvent(Event event);
 }

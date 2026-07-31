@@ -5,6 +5,7 @@ import com.hackhive.team.dto.response.TeamJoinRequestResponse;
 import com.hackhive.team.service.TeamJoinRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/team-join-requests")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STUDENT')")
 public class TeamJoinRequestController {
 
     private final TeamJoinRequestService teamJoinRequestService;

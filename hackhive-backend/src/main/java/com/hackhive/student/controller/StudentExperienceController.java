@@ -8,6 +8,7 @@ import com.hackhive.student.service.StudentExperienceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/student/experiences")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STUDENT')")
 public class StudentExperienceController {
 
     private final StudentExperienceService studentExperienceService;
