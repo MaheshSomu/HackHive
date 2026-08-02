@@ -135,11 +135,9 @@ export default function KanbanTaskModal({
                                     {...register("status")}
                                     className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                 >
-                                    <option value="BACKLOG">Backlog</option>
                                     <option value="TODO">To Do</option>
                                     <option value="IN_PROGRESS">In Progress</option>
-                                    <option value="REVIEW">Review</option>
-                                    <option value="COMPLETED">Completed</option>
+                                    <option value="DONE">Done</option>
                                 </select>
                             </div>
 
