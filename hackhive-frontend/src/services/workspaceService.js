@@ -22,4 +22,8 @@ export const workspaceService = {
     getTeamResourcesByType: (teamId, type) => request(api.get(`/team-resources/team/${teamId}/type?resourceType=${encodeURIComponent(type)}`)),
     updateResource: (resourceId, data) => request(api.put(`/team-resources/${resourceId}`, data)),
     deleteResource: (resourceId) => request(api.delete(`/team-resources/${resourceId}`)),
+
+    // Team Chat
+    sendChatMessage: (data) => request(api.post("/chat/messages", data)),
+    getTeamChatHistory: (teamId) => request(api.get(`/chat/teams/${teamId}/messages`)),
 };

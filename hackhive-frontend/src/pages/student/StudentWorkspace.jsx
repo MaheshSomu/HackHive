@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     ArrowRight,
     Building2,
@@ -7,12 +8,14 @@ import {
     CheckCircle2,
     Clock,
     Code,
+    Edit3,
     ExternalLink,
     FileText,
     FolderGit2,
     FolderKanban,
     Globe,
     Layers,
+    MessageSquare,
     MoveRight,
     Plus,
     Search,
@@ -26,19 +29,19 @@ import {
 import useAuth from "../../hooks/useAuth";
 import { teamService } from "../../services/teamService";
 import { workspaceService } from "../../services/workspaceService";
+import TeamChat from "../../components/workspace/TeamChat";
 import KanbanTaskModal from "../../components/workspace/KanbanTaskModal";
 import ResourceModal from "../../components/workspace/ResourceModal";
+import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import DashboardSection from "../../components/student-dashboard/DashboardSection";
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
 
 const KANBAN_COLUMNS = [
-    { id: "BACKLOG", label: "Backlog", tone: "slate" },
     { id: "TODO", label: "To Do", tone: "indigo" },
     { id: "IN_PROGRESS", label: "In Progress", tone: "amber" },
-    { id: "REVIEW", label: "In Review", tone: "purple" },
-    { id: "COMPLETED", label: "Completed", tone: "emerald" },
+    { id: "DONE", label: "Done", tone: "emerald" },
 ];
 
 function formatDate(dateStr) {
@@ -63,17 +66,18 @@ export default function StudentWorkspace() {
     const [workspaceLoading, setWorkspaceLoading] = useState(false);
     const [actionLoadingId, setActionLoadingId] = useState(null);
 
-    // Active View Sub-Tab
-    const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'kanban' | 'resources' | 'notes' | 'members'
+    // Active View Sub-Tab: 'overview' | 'chat' | 'kanban' | 'resources' | 'members' | 'notes'
+    const [activeTab, setActiveTab] = useState("overview");
 
-    // Note Input State
-    const [noteInput, setNoteInput] = useState("");
-    const [noteSearch, setNoteSearch] = useState("");
+    // Note State & Editing
+    const [noteTitle, setNoteTitle] = useState("");
+    const [noteContent, setNoteContent] = useState("");
+    const [editingNoteId, setEditingNoteId] = useState(null);
 
-    // Modals
+    // Task Modals & Confirm Deletion
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [editTask, setEditTask] = useState(null);
-
+    const [deletingTaskId, setDeletingTaskId] = useState(null);
     const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
 
     // 1. Initial Load My Teams
@@ -132,13 +136,16 @@ export default function StudentWorkspace() {
     // Active Selected Team
     const currentTeam = myTeams.find((t) => String(t.id) === String(selectedTeamId));
 
-    // Metrics
+    // Detailed Metrics
     const metrics = useMemo(() => {
-        const total = tasks.length;
-        const completed = tasks.filter((t) => t.status === "COMPLETED").length;
-        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-        return { total, completed, remaining: total - completed, percentage };
-    }, [tasks]);
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter((t) => t.status === "DONE" || t.status === "COMPLETED").length;
+        const pendingTasks = totalTasks - completedTasks;
+        const totalMembers = members.length;
+        const totalResources = resources.length;
+        const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        return { totalTasks, completedTasks, pendingTasks, totalMembers, totalResources, percentage };
+    }, [tasks, members, resources]);
 
     // Kanban Move Task
     const handleMoveTaskStatus = async (task, nextStatus) => {
@@ -183,6 +190,7 @@ export default function StudentWorkspace() {
                 toast.success("Kanban task created!");
             }
             setIsTaskModalOpen(false);
+            setEditTask(null);
         } catch {
             toast.error("Failed to save task.");
         } finally {
@@ -190,16 +198,18 @@ export default function StudentWorkspace() {
         }
     };
 
-    // Task Delete
-    const handleDeleteTask = async (taskId) => {
+    // Task Delete Confirmation
+    const handleConfirmDeleteTask = async () => {
+        if (!deletingTaskId) return;
         try {
-            setActionLoadingId(taskId);
-            await workspaceService.deleteTask(taskId);
-            setTasks((prev) => prev.filter((t) => t.id !== taskId));
-            toast.success("Task deleted.");
+            setActionLoadingId(deletingTaskId);
+            await workspaceService.deleteTask(deletingTaskId);
+            setTasks((prev) => prev.filter((t) => t.id !== deletingTaskId));
+            toast.success("Task deleted successfully.");
         } catch {
             toast.error("Failed to delete task.");
         } finally {
+            setDeletingTaskId(null);
             setActionLoadingId(null);
         }
     };
@@ -236,23 +246,55 @@ export default function StudentWorkspace() {
         }
     };
 
-    // Add Note Handler
-    const handleAddNote = (e) => {
+    // Note Handlers
+    const handleSaveNote = (e) => {
         e.preventDefault();
-        if (!noteInput.trim()) return;
-        const newNote = {
-            id: Date.now(),
-            text: noteInput.trim(),
-            date: new Date().toLocaleDateString(),
-            author: authUser?.fullName || "Teammate",
-        };
-        setNotes((prev) => [newNote, ...prev]);
-        setNoteInput("");
-        toast.success("Note added to workspace!");
+        if (!noteContent.trim()) return;
+
+        if (editingNoteId) {
+            setNotes((prev) =>
+                prev.map((n) =>
+                    n.id === editingNoteId
+                        ? {
+                              ...n,
+                              title: noteTitle.trim() || "Workspace Note",
+                              text: noteContent.trim(),
+                              updatedAt: new Date().toLocaleDateString(),
+                          }
+                        : n
+                )
+            );
+            toast.success("Note updated!");
+            setEditingNoteId(null);
+        } else {
+            const newNote = {
+                id: Date.now(),
+                title: noteTitle.trim() || "Workspace Note",
+                text: noteContent.trim(),
+                date: new Date().toLocaleDateString(),
+                author: authUser?.fullName || "Teammate",
+            };
+            setNotes((prev) => [newNote, ...prev]);
+            toast.success("Note created!");
+        }
+
+        setNoteTitle("");
+        setNoteContent("");
+    };
+
+    const handleEditNoteClick = (note) => {
+        setEditingNoteId(note.id);
+        setNoteTitle(note.title || "");
+        setNoteContent(note.text || "");
     };
 
     const handleDeleteNote = (noteId) => {
         setNotes((prev) => prev.filter((n) => n.id !== noteId));
+        if (editingNoteId === noteId) {
+            setEditingNoteId(null);
+            setNoteTitle("");
+            setNoteContent("");
+        }
         toast.success("Note removed.");
     };
 
@@ -261,15 +303,23 @@ export default function StudentWorkspace() {
     }
 
     return (
-        <div className="space-y-8 pb-16">
-            {/* Header Hero */}
+        <div className="space-y-8 pb-16 w-full">
+            {/* Top Header */}
             <Card className="overflow-hidden border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <CardContent className="p-6 sm:p-8">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="space-y-1">
-                            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                                Team Collaboration Workspace
-                            </span>
+                        <div className="space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                                    Team Workspace
+                                </span>
+                                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                                    Status: Active
+                                </span>
+                                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                    Online
+                                </span>
+                            </div>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
                                 {currentTeam ? currentTeam.name : "Team Workspace"}
                             </h1>
@@ -279,7 +329,7 @@ export default function StudentWorkspace() {
                         </div>
 
                         {/* Workspace Selector */}
-                        {myTeams.length > 0 ? (
+                        {myTeams.length > 0 && (
                             <div className="flex flex-col gap-1">
                                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                     Active Team Workspace
@@ -296,7 +346,7 @@ export default function StudentWorkspace() {
                                     ))}
                                 </select>
                             </div>
-                        ) : null}
+                        )}
                     </div>
 
                     {/* Navigation Tabs */}
@@ -316,6 +366,18 @@ export default function StudentWorkspace() {
 
                             <button
                                 type="button"
+                                onClick={() => setActiveTab("chat")}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                                    activeTab === "chat"
+                                        ? "bg-slate-900 text-white shadow-2xs dark:bg-indigo-600"
+                                        : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
+                                }`}
+                            >
+                                Chat
+                            </button>
+
+                            <button
+                                type="button"
                                 onClick={() => setActiveTab("kanban")}
                                 className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
                                     activeTab === "kanban"
@@ -323,7 +385,7 @@ export default function StudentWorkspace() {
                                         : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
                                 }`}
                             >
-                                Kanban Board ({tasks.length})
+                                Kanban ({tasks.length})
                             </button>
 
                             <button
@@ -335,19 +397,7 @@ export default function StudentWorkspace() {
                                         : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
                                 }`}
                             >
-                                Resources & Links ({resources.length})
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setActiveTab("notes")}
-                                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
-                                    activeTab === "notes"
-                                        ? "bg-slate-900 text-white shadow-2xs dark:bg-indigo-600"
-                                        : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
-                                }`}
-                            >
-                                Team Notes ({notes.length})
+                                Resources ({resources.length})
                             </button>
 
                             <button
@@ -359,7 +409,19 @@ export default function StudentWorkspace() {
                                         : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
                                 }`}
                             >
-                                Teammates ({members.length})
+                                Members ({members.length})
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab("notes")}
+                                className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                                    activeTab === "notes"
+                                        ? "bg-slate-900 text-white shadow-2xs dark:bg-indigo-600"
+                                        : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
+                                }`}
+                            >
+                                Notes ({notes.length})
                             </button>
                         </div>
                     )}
@@ -373,102 +435,107 @@ export default function StudentWorkspace() {
                         <EmptyState
                             icon={<FolderKanban className="size-8 text-indigo-600" />}
                             title="No active team workspace found"
-                            description="To access a team workspace, you need to create a team or join an existing team for a hackathon."
+                            description="To access a team workspace, create a team or join an existing team for a hackathon."
                         />
                     </CardContent>
                 </Card>
             ) : workspaceLoading ? (
                 <DashboardPageSkeleton />
             ) : (
-                /* Active Workspace View */
                 <>
                     {/* TAB 1: OVERVIEW */}
                     {activeTab === "overview" && (
-                        <div className="space-y-6">
-                            {/* Stat cards */}
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="space-y-8">
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                                <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Members</span>
+                                    <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{metrics.totalMembers}</p>
+                                    <p className="mt-1 text-[11px] text-slate-500">Active teammates</p>
+                                </Card>
+
                                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Tasks</span>
-                                    <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{metrics.total}</p>
-                                    <p className="mt-1 text-[11px] text-slate-500">Kanban tasks created</p>
+                                    <p className="mt-2 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{metrics.totalTasks}</p>
+                                    <p className="mt-1 text-[11px] text-slate-500">Kanban tasks</p>
                                 </Card>
 
                                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Completed Tasks</span>
-                                    <p className="mt-2 text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{metrics.completed}</p>
-                                    <p className="mt-1 text-[11px] text-slate-500">Resolved tasks</p>
+                                    <p className="mt-2 text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{metrics.completedTasks}</p>
+                                    <p className="mt-1 text-[11px] text-slate-500">Done items</p>
                                 </Card>
 
                                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Workspace Progress</span>
-                                    <p className="mt-2 text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">{metrics.percentage}%</p>
-                                    <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                        <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${metrics.percentage}%` }} />
-                                    </div>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pending Tasks</span>
+                                    <p className="mt-2 text-3xl font-extrabold text-amber-600 dark:text-amber-400">{metrics.pendingTasks}</p>
+                                    <p className="mt-1 text-[11px] text-slate-500">In progress / To do</p>
                                 </Card>
 
                                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Team Resources</span>
-                                    <p className="mt-2 text-3xl font-extrabold text-purple-600 dark:text-purple-400">{resources.length}</p>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Resources</span>
+                                    <p className="mt-2 text-3xl font-extrabold text-purple-600 dark:text-purple-400">{metrics.totalResources}</p>
                                     <p className="mt-1 text-[11px] text-slate-500">Repos & link assets</p>
                                 </Card>
                             </div>
 
-                            {/* Quick Actions & Members Summary */}
                             <DashboardSection
-                                id="overview-actions"
-                                eyebrow="Workspace Actions"
-                                title="Collaborative Shortcuts"
-                                description="Quick actions for your team workspace."
+                                id="quick-actions"
+                                eyebrow="Navigation Shortcuts"
+                                title="Quick Actions"
+                                description="Navigate directly to workspace collaboration tools."
                             >
                                 <div className="grid gap-4 sm:grid-cols-3">
                                     <Card
-                                        onClick={() => {
-                                            setEditTask(null);
-                                            setIsTaskModalOpen(true);
-                                        }}
-                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900"
+                                        onClick={() => setActiveTab("chat")}
+                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 space-y-2"
                                     >
-                                        <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950">
-                                            <Plus className="size-4" />
+                                        <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950">
+                                            <MessageSquare className="size-5" />
                                         </div>
-                                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Create Kanban Task</h4>
-                                        <p className="mt-0.5 text-[11px] text-slate-500">Add a task and assign to a teammate.</p>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Open Team Chat</h4>
+                                        <p className="text-xs text-slate-500">Access real-time channel discussions with teammates.</p>
                                     </Card>
 
                                     <Card
-                                        onClick={() => setIsResourceModalOpen(true)}
-                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900"
+                                        onClick={() => setActiveTab("kanban")}
+                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 space-y-2"
                                     >
-                                        <div className="flex size-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950">
-                                            <FolderGit2 className="size-4" />
+                                        <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950">
+                                            <FolderKanban className="size-5" />
                                         </div>
-                                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Add Resource Link</h4>
-                                        <p className="mt-0.5 text-[11px] text-slate-500">Add GitHub repo or Figma design URL.</p>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Open Kanban Board</h4>
+                                        <p className="text-xs text-slate-500">Track tasks across To Do, In Progress, and Done states.</p>
                                     </Card>
 
                                     <Card
-                                        onClick={() => setActiveTab("notes")}
-                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900"
+                                        onClick={() => setActiveTab("resources")}
+                                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 space-y-2"
                                     >
-                                        <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950">
-                                            <FileText className="size-4" />
+                                        <div className="flex size-10 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950">
+                                            <FolderGit2 className="size-5" />
                                         </div>
-                                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Team Notes</h4>
-                                        <p className="mt-0.5 text-[11px] text-slate-500">Post workspace notes and code snippets.</p>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Open Resources</h4>
+                                        <p className="text-xs text-slate-500">Access shared GitHub repositories, Figma wireframes, and drive links.</p>
                                     </Card>
                                 </div>
                             </DashboardSection>
                         </div>
                     )}
 
-                    {/* TAB 2: KANBAN BOARD */}
+                    {/* TAB 2: CHAT */}
+                    {activeTab === "chat" && (
+                        <div className="w-full">
+                            <TeamChat team={currentTeam} members={members} />
+                        </div>
+                    )}
+
+                    {/* TAB 3: KANBAN BOARD */}
                     {activeTab === "kanban" && (
-                        <div className="space-y-6">
+                        <div className="space-y-6 w-full">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Kanban Board</h3>
-                                    <p className="text-xs text-slate-500">Manage tasks and progress across your team.</p>
+                                    <p className="text-xs text-slate-500">Manage tasks across To Do, In Progress, and Done columns.</p>
                                 </div>
                                 <Button
                                     type="button"
@@ -476,108 +543,161 @@ export default function StudentWorkspace() {
                                         setEditTask(null);
                                         setIsTaskModalOpen(true);
                                     }}
-                                    className="rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500"
+                                    className="rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500 shadow-2xs"
                                 >
                                     <Plus className="mr-1.5 size-4" /> New Task
                                 </Button>
                             </div>
 
-                            {/* Kanban Columns Grid */}
-                            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+                            {/* 3 Equal Width Columns - Full Workspace Stretch */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                                 {KANBAN_COLUMNS.map((col) => {
-                                    const colTasks = tasks.filter((t) => (t.status || "TODO") === col.id);
+                                    const colTasks = tasks.filter(
+                                        (t) =>
+                                            (t.status || "TODO") === col.id ||
+                                            (col.id === "DONE" && t.status === "COMPLETED")
+                                    );
 
                                     return (
                                         <div
                                             key={col.id}
-                                            className="flex flex-col rounded-2xl border border-slate-200/80 bg-slate-100/70 p-3 dark:border-slate-800 dark:bg-slate-900/40 min-h-[400px]"
+                                            className="flex flex-col rounded-2xl border border-slate-200/80 bg-slate-100/70 p-4 dark:border-slate-800 dark:bg-slate-900/40 min-h-[500px] w-full"
                                         >
-                                            {/* Column Header */}
-                                            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
-                                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                                                    {col.label}
-                                                </span>
-                                                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 shadow-2xs dark:bg-slate-800 dark:text-slate-300">
+                                            {/* Sticky Header */}
+                                            <div className="sticky top-0 z-10 flex items-center justify-between pb-3.5 mb-3 border-b border-slate-200/80 bg-slate-100/95 dark:bg-slate-900/90 backdrop-blur-xs rounded-t-xl px-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className={`size-2.5 rounded-full ${
+                                                            col.id === "TODO"
+                                                                ? "bg-indigo-500"
+                                                                : col.id === "IN_PROGRESS"
+                                                                ? "bg-amber-500"
+                                                                : "bg-emerald-500"
+                                                        }`}
+                                                    />
+                                                    <span className="text-xs font-extrabold tracking-tight text-slate-800 dark:text-slate-200 uppercase">
+                                                        {col.label}
+                                                    </span>
+                                                </div>
+
+                                                <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-slate-700 shadow-2xs dark:bg-slate-800 dark:text-slate-300">
                                                     {colTasks.length}
                                                 </span>
                                             </div>
 
-                                            {/* Task Cards */}
-                                            <div className="flex-1 space-y-3">
-                                                {colTasks.map((task) => (
-                                                    <Card
-                                                        key={task.id}
-                                                        className="border-slate-200/80 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-2"
-                                                    >
-                                                        <div className="flex items-center justify-between gap-1">
-                                                            <span
-                                                                className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                                                                    task.priority === "URGENT"
-                                                                        ? "bg-rose-100 text-rose-800"
-                                                                        : task.priority === "HIGH"
-                                                                        ? "bg-amber-100 text-amber-800"
-                                                                        : "bg-slate-100 text-slate-700"
-                                                                }`}
+                                            {/* Tasks List */}
+                                            <div className="flex-1 space-y-3.5 overflow-y-auto max-h-[550px] pr-1">
+                                                {colTasks.length > 0 ? (
+                                                    colTasks.map((task) => {
+                                                        const assigneeInitials = (task.assignedToName || "U")[0].toUpperCase();
+
+                                                        return (
+                                                            <motion.div
+                                                                key={task.id}
+                                                                initial={{ opacity: 0, y: 4 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ duration: 0.15 }}
                                                             >
-                                                                {task.priority || "MEDIUM"}
-                                                            </span>
+                                                                <Card className="border-slate-200/80 bg-white p-4 shadow-2xs hover:border-indigo-400 hover:shadow-md transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 space-y-3">
+                                                                    {/* Header Badges & Actions */}
+                                                                    <div className="flex items-center justify-between gap-1">
+                                                                        <span
+                                                                            className={`rounded-md px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider ${
+                                                                                task.priority === "URGENT"
+                                                                                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-400"
+                                                                                    : task.priority === "HIGH"
+                                                                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400"
+                                                                                    : task.priority === "LOW"
+                                                                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+                                                                                    : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                                                            }`}
+                                                                        >
+                                                                            {task.priority || "MEDIUM"}
+                                                                        </span>
 
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDeleteTask(task.id)}
-                                                                className="text-slate-400 hover:text-rose-600 p-0.5"
-                                                                title="Delete task"
-                                                            >
-                                                                <Trash2 className="size-3" />
-                                                            </button>
-                                                        </div>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setEditTask(task);
+                                                                                    setIsTaskModalOpen(true);
+                                                                                }}
+                                                                                className="p-1 text-slate-400 hover:text-indigo-600 transition"
+                                                                                title="Edit task"
+                                                                            >
+                                                                                <Edit3 className="size-3.5" />
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setDeletingTaskId(task.id)}
+                                                                                className="p-1 text-slate-400 hover:text-rose-600 transition"
+                                                                                title="Delete task"
+                                                                            >
+                                                                                <Trash2 className="size-3.5" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
 
-                                                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                                                            {task.title}
-                                                        </h4>
+                                                                    {/* Title & Short Description */}
+                                                                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                                                        {task.title}
+                                                                    </h4>
 
-                                                        {task.description && (
-                                                            <p className="line-clamp-2 text-[11px] text-slate-500">
-                                                                {task.description}
-                                                            </p>
-                                                        )}
+                                                                    {task.description && (
+                                                                        <p className="line-clamp-2 text-[11px] text-slate-500 leading-4">
+                                                                            {task.description}
+                                                                        </p>
+                                                                    )}
 
-                                                        <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 space-y-1 dark:border-slate-800">
-                                                            {task.assignedToName && (
-                                                                <div>Assignee: <span className="font-semibold text-slate-700 dark:text-slate-300">{task.assignedToName}</span></div>
-                                                            )}
-                                                            {task.dueDate && <div>Due: {formatDate(task.dueDate)}</div>}
-                                                        </div>
+                                                                    {/* Assignee Avatar & Due Date */}
+                                                                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400 dark:border-slate-800">
+                                                                        <div className="flex items-center gap-1.5 min-w-0">
+                                                                            <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-900 font-bold text-[9px] text-white dark:bg-indigo-600">
+                                                                                {assigneeInitials}
+                                                                            </div>
+                                                                            <span className="truncate max-w-[100px] font-semibold text-slate-700 dark:text-slate-300">
+                                                                                {task.assignedToName || "Unassigned"}
+                                                                            </span>
+                                                                        </div>
+                                                                        {task.dueDate && <div>Due: {formatDate(task.dueDate)}</div>}
+                                                                    </div>
 
-                                                        {/* Status Move Controls */}
-                                                        <div className="flex items-center justify-between pt-1 text-[10px]">
-                                                            {col.id !== "BACKLOG" && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const idx = KANBAN_COLUMNS.findIndex((c) => c.id === col.id);
-                                                                        if (idx > 0) handleMoveTaskStatus(task, KANBAN_COLUMNS[idx - 1].id);
-                                                                    }}
-                                                                    className="text-slate-400 hover:text-slate-700 font-bold"
-                                                                >
-                                                                    ← Move Back
-                                                                </button>
-                                                            )}
-                                                            {col.id !== "COMPLETED" && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const idx = KANBAN_COLUMNS.findIndex((c) => c.id === col.id);
-                                                                        if (idx < KANBAN_COLUMNS.length - 1) handleMoveTaskStatus(task, KANBAN_COLUMNS[idx + 1].id);
-                                                                    }}
-                                                                    className="ml-auto text-indigo-600 font-bold hover:text-indigo-500"
-                                                                >
-                                                                    Move Next →
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </Card>
-                                                ))}
+                                                                    {/* Move Task Controls */}
+                                                                    <div className="flex items-center justify-between pt-1 text-[10px]">
+                                                                        {col.id !== "TODO" && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    const idx = KANBAN_COLUMNS.findIndex((c) => c.id === col.id);
+                                                                                    if (idx > 0) handleMoveTaskStatus(task, KANBAN_COLUMNS[idx - 1].id);
+                                                                                }}
+                                                                                className="text-slate-400 hover:text-slate-700 font-bold transition"
+                                                                            >
+                                                                                ← Move Back
+                                                                            </button>
+                                                                        )}
+                                                                        {col.id !== "DONE" && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    const idx = KANBAN_COLUMNS.findIndex((c) => c.id === col.id);
+                                                                                    if (idx < KANBAN_COLUMNS.length - 1) handleMoveTaskStatus(task, KANBAN_COLUMNS[idx + 1].id);
+                                                                                }}
+                                                                                className="ml-auto text-indigo-600 font-bold hover:text-indigo-500 transition"
+                                                                            >
+                                                                                Move Next →
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </Card>
+                                                            </motion.div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <div className="p-6 text-center space-y-1 my-auto">
+                                                        <p className="text-[11px] font-semibold text-slate-400">No tasks in {col.label}</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -586,7 +706,7 @@ export default function StudentWorkspace() {
                         </div>
                     )}
 
-                    {/* TAB 3: RESOURCES & LINKS */}
+                    {/* TAB 4: RESOURCES */}
                     {activeTab === "resources" && (
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -664,73 +784,7 @@ export default function StudentWorkspace() {
                         </div>
                     )}
 
-                    {/* TAB 4: TEAM NOTES */}
-                    {activeTab === "notes" && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Team Notes & Snippets</h3>
-                                    <p className="text-xs text-slate-500">Shared workspace notes for architecture and setup instructions.</p>
-                                </div>
-                            </div>
-
-                            {/* Add Note Form */}
-                            <Card className="border-slate-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                                <form onSubmit={handleAddNote} className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        value={noteInput}
-                                        onChange={(e) => setNoteInput(e.target.value)}
-                                        placeholder="Post a quick note or update to the team workspace..."
-                                        className="h-10 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-900 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                    />
-                                    <Button type="submit" size="sm" className="bg-indigo-600 text-white font-bold">
-                                        Post Note
-                                    </Button>
-                                </form>
-                            </Card>
-
-                            {/* Notes List */}
-                            {notes.length > 0 ? (
-                                <div className="space-y-3">
-                                    {notes.map((n) => (
-                                        <Card
-                                            key={n.id}
-                                            className="border-slate-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex items-start justify-between"
-                                        >
-                                            <div className="space-y-1">
-                                                <p className="text-xs text-slate-800 dark:text-slate-200">{n.text}</p>
-                                                <p className="text-[10px] text-slate-400">
-                                                    Posted by <span className="font-semibold text-slate-600 dark:text-slate-300">{n.author}</span> on {n.date}
-                                                </p>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteNote(n.id)}
-                                                className="text-slate-400 hover:text-rose-600 p-1"
-                                                title="Delete note"
-                                            >
-                                                <Trash2 className="size-3.5" />
-                                            </button>
-                                        </Card>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                                    <CardContent className="p-8">
-                                        <EmptyState
-                                            icon={<FileText className="size-6" />}
-                                            title="No notes posted yet"
-                                            description="Use the input above to post your first workspace note."
-                                        />
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
-                    )}
-
-                    {/* TAB 5: TEAMMATES */}
+                    {/* TAB 5: MEMBERS */}
                     {activeTab === "members" && (
                         <div className="space-y-6">
                             <div>
@@ -772,10 +826,121 @@ export default function StudentWorkspace() {
                         </div>
                     )}
 
+                    {/* TAB 6: DEDICATED TEAM NOTES */}
+                    {activeTab === "notes" && (
+                        <div className="space-y-6 w-full">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Team Workspace Notes</h3>
+                                    <p className="text-xs text-slate-500">Full-width dedicated space for architecture, API schemas, and team guidelines.</p>
+                                </div>
+                            </div>
+
+                            {/* Create / Edit Note Form */}
+                            <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                    {editingNoteId ? "Edit Workspace Note" : "Create New Workspace Note"}
+                                </h4>
+                                <form onSubmit={handleSaveNote} className="space-y-3">
+                                    <input
+                                        type="text"
+                                        value={noteTitle}
+                                        onChange={(e) => setNoteTitle(e.target.value)}
+                                        placeholder="Note title (e.g. System Architecture & API Endpoints)..."
+                                        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                    />
+                                    <textarea
+                                        rows={4}
+                                        value={noteContent}
+                                        onChange={(e) => setNoteContent(e.target.value)}
+                                        placeholder="Write details, markdown code snippets, or team guidelines..."
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <Button type="submit" size="sm" className="bg-indigo-600 text-white font-bold">
+                                            {editingNoteId ? "Save Changes" : "Create Note"}
+                                        </Button>
+                                        {editingNoteId && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setEditingNoteId(null);
+                                                    setNoteTitle("");
+                                                    setNoteContent("");
+                                                }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        )}
+                                    </div>
+                                </form>
+                            </Card>
+
+                            {/* Notes List */}
+                            {notes.length > 0 ? (
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    {notes.map((n) => (
+                                        <Card
+                                            key={n.id}
+                                            className="flex flex-col justify-between border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3"
+                                        >
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{n.title}</h4>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEditNoteClick(n)}
+                                                            className="p-1 text-slate-400 hover:text-indigo-600"
+                                                            title="Edit note"
+                                                        >
+                                                            <Edit3 className="size-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteNote(n.id)}
+                                                            className="p-1 text-slate-400 hover:text-rose-600"
+                                                            title="Delete note"
+                                                        >
+                                                            <Trash2 className="size-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="whitespace-pre-wrap text-xs text-slate-600 leading-relaxed dark:text-slate-300">
+                                                    {n.text}
+                                                </p>
+                                            </div>
+
+                                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                                                <span>Author: {n.author}</span>
+                                                <span>{n.updatedAt ? `Updated ${n.updatedAt}` : n.date}</span>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                                    <CardContent className="p-8">
+                                        <EmptyState
+                                            icon={<FileText className="size-6 text-indigo-600" />}
+                                            title="No team notes created yet"
+                                            description="Use the form above to record team notes, API documentation, or architecture decisions."
+                                        />
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    )}
+
                     {/* Modals */}
                     <KanbanTaskModal
                         isOpen={isTaskModalOpen}
-                        onClose={() => setIsTaskModalOpen(false)}
+                        onClose={() => {
+                            setIsTaskModalOpen(false);
+                            setEditTask(null);
+                        }}
                         initialData={editTask}
                         members={members}
                         onSubmit={handleTaskSubmit}
@@ -787,6 +952,17 @@ export default function StudentWorkspace() {
                         onClose={() => setIsResourceModalOpen(false)}
                         onSubmit={handleResourceSubmit}
                         isLoading={actionLoadingId === "resource"}
+                    />
+
+                    <ConfirmModal
+                        isOpen={Boolean(deletingTaskId)}
+                        onClose={() => setDeletingTaskId(null)}
+                        onConfirm={handleConfirmDeleteTask}
+                        title="Delete Kanban Task"
+                        description="Are you sure you want to delete this task? This action cannot be undone."
+                        confirmText="Delete Task"
+                        isDanger
+                        isLoading={actionLoadingId === deletingTaskId}
                     />
                 </>
             )}
