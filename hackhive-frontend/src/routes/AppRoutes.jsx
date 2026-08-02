@@ -1,7 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import AuthRoute from "./AuthRoute";
+import ProtectedRoute from "./ProtectedRoute";
+
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
 
 import StudentDashboard from "../pages/student/StudentDashboard";
 import OrganizerDashboard from "../pages/organizer/OrganizerDashboard";
@@ -13,30 +17,25 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route element={<AuthRoute />}>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                </Route>
 
-                <Route path="/" element={<Login />} />
+                <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
+                    <Route path="/student/dashboard" element={<StudentDashboard />} />
+                </Route>
 
-                <Route path="/register" element={<Register />} />
+                <Route element={<ProtectedRoute allowedRoles={["ORGANIZER"]} />}>
+                    <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+                </Route>
 
-                <Route
-                    path="/student/dashboard"
-                    element={<StudentDashboard />}
-                />
+                <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                </Route>
 
-                <Route
-                    path="/organizer/dashboard"
-                    element={<OrganizerDashboard />}
-                />
-
-                <Route
-                    path="/admin/dashboard"
-                    element={<AdminDashboard />}
-                />
-
-                <Route
-                    path="*"
-                    element={<NotFound />}
-                />
+                <Route path="*" element={<NotFound />} />
 
             </Routes>
         </BrowserRouter>

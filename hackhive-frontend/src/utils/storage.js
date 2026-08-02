@@ -1,25 +1,65 @@
-export const saveToken = (token) => {
-    localStorage.setItem("token", token);
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
+
+const readStoredValue = (key) => {
+    const localValue = localStorage.getItem(key);
+
+    if (localValue !== null) {
+        return localValue;
+    }
+
+    return sessionStorage.getItem(key);
 };
 
-export const getToken = () => {
-    return localStorage.getItem("token");
+const writeStoredValue = (key, value, remember) => {
+    const preferredStorage = remember ? localStorage : sessionStorage;
+    const fallbackStorage = remember ? sessionStorage : localStorage;
+
+    preferredStorage.setItem(key, value);
+    fallbackStorage.removeItem(key);
 };
 
-export const removeToken = () => {
-    localStorage.removeItem("token");
-};
+export const storage = {
+    setToken(token, remember = true) {
+        writeStoredValue(TOKEN_KEY, token, remember);
+    },
 
-export const saveUser = (user) => {
-    localStorage.setItem("user", JSON.stringify(user));
-};
+    getToken() {
+        return readStoredValue(TOKEN_KEY);
+    },
 
-export const getUser = () => {
-    const user = localStorage.getItem("user");
+    removeToken() {
+        localStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+    },
 
-    return user ? JSON.parse(user) : null;
-};
+    setUser(user, remember = true) {
+        writeStoredValue(USER_KEY, JSON.stringify(user), remember);
+    },
 
-export const removeUser = () => {
-    localStorage.removeItem("user");
+    getUser() {
+        const user = readStoredValue(USER_KEY);
+
+        if (!user) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(user);
+        } catch {
+            return null;
+        }
+    },
+
+    setAuth({ token, user }, remember = true) {
+        this.setToken(token, remember);
+        this.setUser(user, remember);
+    },
+
+    clear() {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
+    }
 };

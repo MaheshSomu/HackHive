@@ -5,18 +5,14 @@ import App from "./App";
 
 import "./index.css";
 
-import AuthProvider from "./context/AuthContext";
+import AuthProvider from "./context/authContext";
+import { Toaster } from "./components/ui/sonner";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-
-    <React.StrictMode>
-
-        <AuthProvider>
-
-            <App />
-
-        </AuthProvider>
-
-    </React.StrictMode>
-
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
+      <Toaster />
+    </AuthProvider>
+  </React.StrictMode>
 );

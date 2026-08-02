@@ -1,86 +1,69 @@
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 
+const highlights = [
+  "Discover focused hackathons without noise.",
+  "Build teams and ship with clarity.",
+  "Keep your workspace clean and fast.",
+];
+
 function AuthLayout({ children }) {
-    return (
-        <div className="min-h-screen bg-slate-100">
+  return (
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#f8fafc_0%,#ffffff_42%,#eef2ff_100%)]">
+      <div className="grid min-h-screen lg:grid-cols-2">
+        <div className="relative hidden overflow-hidden border-r border-slate-200/70 bg-slate-950 lg:flex">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.96))]" />
+          <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.9) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.9) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
-            <div className="grid min-h-screen lg:grid-cols-2">
+          <div className="relative z-10 flex h-full flex-col justify-between p-14 xl:p-16">
+            <Logo />
 
-                {/* LEFT PANEL */}
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55 }}
+              className="max-w-xl"
+            >
+              <p className="text-sm font-medium uppercase tracking-[0.28em] text-slate-400">
+                HackHive workspace
+              </p>
 
-                <div className="relative hidden overflow-hidden lg:flex">
+              <h1 className="mt-5 text-5xl font-semibold tracking-tight text-white xl:text-6xl">
+                Built for teams that move with intent.
+              </h1>
 
-                    {/* Background */}
+              <p className="mt-6 max-w-lg text-base leading-8 text-slate-300">
+                A calm, focused space for discovering hackathons, forming teams,
+                and turning ideas into shipped work.
+              </p>
 
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-slate-900 to-black" />
+              <div className="mt-10 space-y-4">
+                {highlights.map((item) => (
+                  <div key={item} className="flex items-center gap-3 text-sm text-slate-300">
+                    <span className="size-2 rounded-full bg-indigo-400" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
 
-                    {/* Blur Circles */}
-
-                    <div className="absolute -top-32 -left-20 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
-
-                    <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
-
-                    {/* Content */}
-
-                    <div className="relative z-10 flex h-full flex-col justify-between p-16">
-
-                        <Logo />
-
-                        <motion.div
-                            initial={{ opacity: 0, x: -40 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.7 }}
-                        >
-                            <h1 className="text-6xl font-black leading-tight text-white">
-
-                                Build.
-
-                                <br />
-
-                                Collaborate.
-
-                                <br />
-
-                                Win.
-
-                            </h1>
-
-                            <p className="mt-8 max-w-lg text-lg leading-8 text-slate-300">
-
-                                One platform to manage hackathons,
-                                build teams, collaborate on projects,
-                                and showcase innovation.
-
-                            </p>
-                        </motion.div>
-
-                        <p className="text-slate-400">
-
-                            © 2026 HackHive
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* RIGHT PANEL */}
-
-                <div className="flex items-center justify-center p-8">
-
-                    <div className="w-full max-w-md">
-
-                        {children}
-
-                    </div>
-
-                </div>
-
-            </div>
-
+            <p className="text-sm text-slate-500">© 2026 HackHive</p>
+          </div>
         </div>
-    );
+
+        <div className="flex items-center justify-center px-6 py-10">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="w-full max-w-[460px]"
+          >
+            {children}
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default AuthLayout;
