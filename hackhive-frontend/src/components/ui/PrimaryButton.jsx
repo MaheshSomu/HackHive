@@ -1,45 +1,29 @@
+import { Button } from "./Button";
+
 function PrimaryButton({
-
     children,
-
-    type="button",
-
+    type = "button",
     onClick,
-
-    className=""
-
-}){
-
-    return(
-
-        <button
-
+    className = "",
+    disabled = false,
+    isLoading = false,
+    ...props
+}) {
+    return (
+        <Button
             type={type}
-
+            variant="primary"
+            size="lg"
             onClick={onClick}
-
-            className={`
-                w-full
-                rounded-xl
-                bg-indigo-600
-                py-3
-                text-white
-                font-semibold
-                transition
-                duration-300
-                hover:bg-indigo-700
-                active:scale-95
-                shadow-md
-                ${className}
-            `}
+            disabled={disabled}
+            isLoading={isLoading}
+            className={`w-full ${className}`}
+            {...props}
         >
-
             {children}
-
-        </button>
-
-    )
-
+        </Button>
+    );
 }
 
 export default PrimaryButton;
+export { PrimaryButton };
