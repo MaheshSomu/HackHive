@@ -10,30 +10,25 @@ import {
 const Toaster = (props) => {
   return (
     <Sonner
-      theme="light"
+      theme="system"
       position="top-right"
       richColors={false}
       closeButton
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
-      }}
-      style={{
-        "--normal-bg": "var(--popover)",
-        "--normal-text": "var(--popover-foreground)",
-        "--normal-border": "var(--border)",
-        "--border-radius": "var(--radius)",
+        success: <CircleCheckIcon className="size-4 text-emerald-600 dark:text-emerald-400" />,
+        info: <InfoIcon className="size-4 text-indigo-600 dark:text-indigo-400" />,
+        warning: <TriangleAlertIcon className="size-4 text-amber-600 dark:text-amber-400" />,
+        error: <OctagonXIcon className="size-4 text-rose-600 dark:text-rose-400" />,
+        loading: <Loader2Icon className="size-4 animate-spin text-indigo-600 dark:text-indigo-400" />,
       }}
       toastOptions={{
         classNames: {
           toast:
-           "rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-[0_12px_40px_rgba(15,23,42,0.08)]",
-          title: "text-sm font-semibold",
-          description: "text-sm text-slate-600",
+           "rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 p-4 font-sans",
+          title: "text-xs sm:text-sm font-bold tracking-tight",
+          description: "text-xs text-slate-500 dark:text-slate-400 leading-snug",
+          closeButton: "bg-transparent border-none text-slate-400 hover:text-slate-700 dark:hover:text-slate-200",
         },
       }}
       {...props} />
@@ -41,3 +36,4 @@ const Toaster = (props) => {
 };
 
 export { Toaster };
+
