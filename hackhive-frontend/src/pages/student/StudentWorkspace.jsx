@@ -32,6 +32,8 @@ import { workspaceService } from "../../services/workspaceService";
 import TeamChat from "../../components/workspace/TeamChat";
 import KanbanTaskModal from "../../components/workspace/KanbanTaskModal";
 import ResourceModal from "../../components/workspace/ResourceModal";
+import TeamResources from "../../components/workspace/TeamResources";
+import TeamMembers from "../../components/workspace/TeamMembers";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import DashboardSection from "../../components/student-dashboard/DashboardSection";
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
@@ -78,7 +80,17 @@ export default function StudentWorkspace() {
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [editTask, setEditTask] = useState(null);
     const [deletingTaskId, setDeletingTaskId] = useState(null);
+
+    // Resource Modals & State
     const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+    const [editingResource, setEditingResource] = useState(null);
+    const [deletingResourceId, setDeletingResourceId] = useState(null);
+    const [resourceError, setResourceError] = useState(false);
+
+    // Member Action Modals & State
+    const [removingMember, setRemovingMember] = useState(null);
+    const [transferringLeaderMember, setTransferringLeaderMember] = useState(null);
+    const [membersError, setMembersError] = useState(false);
 
     // 1. Initial Load My Teams
     useEffect(() => {
@@ -111,17 +123,32 @@ export default function StudentWorkspace() {
         if (!teamId) return;
         try {
             setWorkspaceLoading(true);
+            setResourceError(false);
             const [membersRes, tasksRes, resourcesRes] = await Promise.allSettled([
                 teamService.getTeamMembers(teamId),
                 workspaceService.getTeamTasks(teamId),
                 workspaceService.getTeamResources(teamId),
             ]);
 
-            setMembers(membersRes.status === "fulfilled" && Array.isArray(membersRes.value) ? membersRes.value : []);
+            if (membersRes.status === "fulfilled" && Array.isArray(membersRes.value)) {
+                setMembers(membersRes.value);
+            } else {
+                setMembers([]);
+                if (membersRes.status === "rejected") {
+                    setMembersError(true);
+                }
+            }
             setTasks(tasksRes.status === "fulfilled" && Array.isArray(tasksRes.value) ? tasksRes.value : []);
-            setResources(resourcesRes.status === "fulfilled" && Array.isArray(resourcesRes.value) ? resourcesRes.value : []);
+            if (resourcesRes.status === "fulfilled" && Array.isArray(resourcesRes.value)) {
+                setResources(resourcesRes.value);
+            } else {
+                setResources([]);
+                if (resourcesRes.status === "rejected") {
+                    setResourceError(true);
+                }
+            }
         } catch {
-            // silent catch
+            setResourceError(true);
         } finally {
             setWorkspaceLoading(false);
         }
@@ -214,34 +241,84 @@ export default function StudentWorkspace() {
         }
     };
 
-    // Add Resource Submit
+    // Resource Submit (Create & Update)
     const handleResourceSubmit = async (payload) => {
         try {
             setActionLoadingId("resource");
-            const created = await workspaceService.createResource({
-                ...payload,
-                teamId: parseInt(selectedTeamId, 10),
-            });
-            setResources((prev) => [...prev, created]);
-            toast.success("Team resource added!");
+            if (editingResource) {
+                const updated = await workspaceService.updateResource(editingResource.id, payload);
+                setResources((prev) => prev.map((r) => (r.id === editingResource.id ? updated : r)));
+                toast.success("Team resource updated!");
+            } else {
+                const created = await workspaceService.createResource({
+                    ...payload,
+                    teamId: parseInt(selectedTeamId, 10),
+                });
+                setResources((prev) => [...prev, created]);
+                toast.success("Team resource added!");
+            }
             setIsResourceModalOpen(false);
+            setEditingResource(null);
         } catch {
-            toast.error("Failed to add team resource.");
+            toast.error(editingResource ? "Failed to update resource." : "Failed to add team resource.");
         } finally {
             setActionLoadingId(null);
         }
     };
 
-    // Delete Resource
-    const handleDeleteResource = async (resourceId) => {
+    // Confirm Delete Resource
+    const handleConfirmDeleteResource = async () => {
+        if (!deletingResourceId) return;
         try {
-            setActionLoadingId(resourceId);
-            await workspaceService.deleteResource(resourceId);
-            setResources((prev) => prev.filter((r) => r.id !== resourceId));
+            setActionLoadingId(deletingResourceId);
+            await workspaceService.deleteResource(deletingResourceId);
+            setResources((prev) => prev.filter((r) => r.id !== deletingResourceId));
             toast.success("Resource deleted.");
         } catch {
             toast.error("Failed to delete resource.");
         } finally {
+            setDeletingResourceId(null);
+            setActionLoadingId(null);
+        }
+    };
+
+    // Confirm Remove Team Member
+    const handleConfirmRemoveMember = async () => {
+        if (!removingMember) return;
+        const targetProfileId = removingMember.studentProfileId || removingMember.memberId;
+        try {
+            setActionLoadingId(`remove-${targetProfileId}`);
+            await teamService.removeMember(selectedTeamId, targetProfileId);
+            setMembers((prev) => prev.filter((m) => (m.studentProfileId || m.memberId) !== targetProfileId));
+            toast.success(`${removingMember.fullName || "Member"} removed from team.`);
+        } catch {
+            toast.error("Failed to remove member.");
+        } finally {
+            setRemovingMember(null);
+            setActionLoadingId(null);
+        }
+    };
+
+    // Confirm Transfer Leadership
+    const handleConfirmTransferLeadership = async () => {
+        if (!transferringLeaderMember) return;
+        const targetProfileId = transferringLeaderMember.studentProfileId || transferringLeaderMember.memberId;
+        try {
+            setActionLoadingId(`transfer-${targetProfileId}`);
+            if (teamService.updateTeam) {
+                await teamService.updateTeam(selectedTeamId, { leaderStudentProfileId: targetProfileId });
+            }
+            setMembers((prev) =>
+                prev.map((m) => ({
+                    ...m,
+                    role: (m.studentProfileId || m.memberId) === targetProfileId ? "LEADER" : "MEMBER",
+                }))
+            );
+            toast.success(`Leadership transferred to ${transferringLeaderMember.fullName || "teammate"}.`);
+        } catch {
+            toast.error("Failed to transfer leadership.");
+        } finally {
+            setTransferringLeaderMember(null);
             setActionLoadingId(null);
         }
     };
@@ -708,122 +785,35 @@ export default function StudentWorkspace() {
 
                     {/* TAB 4: RESOURCES */}
                     {activeTab === "resources" && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Team Resources & Links</h3>
-                                    <p className="text-xs text-slate-500">Shared repositories, designs, and project documentation.</p>
-                                </div>
-                                <Button
-                                    type="button"
-                                    onClick={() => setIsResourceModalOpen(true)}
-                                    className="rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-500"
-                                >
-                                    <Plus className="mr-1.5 size-4" /> Add Resource
-                                </Button>
-                            </div>
-
-                            {resources.length > 0 ? (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {resources.map((res) => (
-                                        <Card
-                                            key={res.id}
-                                            className="flex flex-col justify-between border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3"
-                                        >
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                                        {res.resourceType}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleDeleteResource(res.id)}
-                                                        className="text-slate-400 hover:text-rose-600"
-                                                        title="Delete resource"
-                                                    >
-                                                        <Trash2 className="size-3.5" />
-                                                    </button>
-                                                </div>
-
-                                                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{res.title}</h4>
-                                                {res.description && <p className="text-xs text-slate-500">{res.description}</p>}
-                                            </div>
-
-                                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                                <span className="text-[11px] text-slate-400">By: {res.addedByName || "Teammate"}</span>
-                                                {res.resourceUrl && (
-                                                    <a
-                                                        href={res.resourceUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:underline"
-                                                    >
-                                                        Open Link <ExternalLink className="size-3" />
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                                    <CardContent className="p-8">
-                                        <EmptyState
-                                            icon={<FolderGit2 className="size-6" />}
-                                            title="No team resources added yet"
-                                            description="Share your GitHub repository URL or Figma designs with your team."
-                                            action={
-                                                <Button type="button" size="sm" onClick={() => setIsResourceModalOpen(true)}>
-                                                    Add First Resource
-                                                </Button>
-                                            }
-                                        />
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
+                        <TeamResources
+                            resources={resources}
+                            isLoading={workspaceLoading}
+                            isError={resourceError}
+                            onAddResource={() => {
+                                setEditingResource(null);
+                                setIsResourceModalOpen(true);
+                            }}
+                            onEditResource={(res) => {
+                                setEditingResource(res);
+                                setIsResourceModalOpen(true);
+                            }}
+                            onDeleteResource={(id) => setDeletingResourceId(id)}
+                            onRetry={() => loadWorkspace(selectedTeamId)}
+                        />
                     )}
 
                     {/* TAB 5: MEMBERS */}
                     {activeTab === "members" && (
-                        <div className="space-y-6">
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Team Members ({members.length})</h3>
-                                <p className="text-xs text-slate-500">Teammates collaborating in this workspace.</p>
-                            </div>
-
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {members.map((m) => {
-                                    const initials = (m.fullName || m.email || "M")[0].toUpperCase();
-                                    const isLead = m.role === "LEADER" || m.fullName === currentTeam?.leaderName;
-
-                                    return (
-                                        <Card
-                                            key={m.memberId || m.studentProfileId || m.email}
-                                            className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 flex items-center gap-3"
-                                        >
-                                            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-900 font-bold text-xs text-white dark:bg-indigo-600">
-                                                {initials}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-1.5">
-                                                    <h4 className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                                                        {m.fullName || "Teammate"}
-                                                    </h4>
-                                                    {isLead && (
-                                                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
-                                                            Leader
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className="truncate text-[11px] text-slate-500">{m.email}</p>
-                                                {m.college && <p className="truncate text-[10px] text-slate-400">{m.college}</p>}
-                                            </div>
-                                        </Card>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                        <TeamMembers
+                            members={members}
+                            currentTeam={currentTeam}
+                            currentUser={authUser}
+                            isLoading={workspaceLoading}
+                            isError={membersError}
+                            onRemoveMember={(m) => setRemovingMember(m)}
+                            onTransferLeadership={(m) => setTransferringLeaderMember(m)}
+                            onRetry={() => loadWorkspace(selectedTeamId)}
+                        />
                     )}
 
                     {/* TAB 6: DEDICATED TEAM NOTES */}
@@ -949,7 +939,11 @@ export default function StudentWorkspace() {
 
                     <ResourceModal
                         isOpen={isResourceModalOpen}
-                        onClose={() => setIsResourceModalOpen(false)}
+                        onClose={() => {
+                            setIsResourceModalOpen(false);
+                            setEditingResource(null);
+                        }}
+                        initialData={editingResource}
                         onSubmit={handleResourceSubmit}
                         isLoading={actionLoadingId === "resource"}
                     />
@@ -963,6 +957,38 @@ export default function StudentWorkspace() {
                         confirmText="Delete Task"
                         isDanger
                         isLoading={actionLoadingId === deletingTaskId}
+                    />
+
+                    <ConfirmModal
+                        isOpen={Boolean(deletingResourceId)}
+                        onClose={() => setDeletingResourceId(null)}
+                        onConfirm={handleConfirmDeleteResource}
+                        title="Delete Team Resource"
+                        description="Are you sure you want to delete this team resource? This action cannot be undone."
+                        confirmText="Delete Resource"
+                        isDanger
+                        isLoading={actionLoadingId === deletingResourceId}
+                    />
+
+                    <ConfirmModal
+                        isOpen={Boolean(removingMember)}
+                        onClose={() => setRemovingMember(null)}
+                        onConfirm={handleConfirmRemoveMember}
+                        title="Remove Team Member"
+                        description={`Are you sure you want to remove ${removingMember?.fullName || "this member"} from the team?`}
+                        confirmText="Remove Member"
+                        isDanger
+                        isLoading={actionLoadingId === `remove-${removingMember?.studentProfileId || removingMember?.memberId}`}
+                    />
+
+                    <ConfirmModal
+                        isOpen={Boolean(transferringLeaderMember)}
+                        onClose={() => setTransferringLeaderMember(null)}
+                        onConfirm={handleConfirmTransferLeadership}
+                        title="Transfer Team Leadership"
+                        description={`Are you sure you want to transfer team leadership to ${transferringLeaderMember?.fullName || "this member"}?`}
+                        confirmText="Transfer Leadership"
+                        isLoading={actionLoadingId === `transfer-${transferringLeaderMember?.studentProfileId || transferringLeaderMember?.memberId}`}
                     />
                 </>
             )}
