@@ -7,6 +7,7 @@ import {
     Hexagon,
     LayoutDashboard,
     LogOut,
+    Settings,
     UserCheck,
     X,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const organizerNavItems = [
     { name: "Manage Events", href: "/organizer/events", icon: CalendarDays },
     { name: "Registrations", href: "/organizer/registrations", icon: UserCheck },
     { name: "Analytics", href: "/organizer/analytics", icon: BarChart3 },
+    { name: "Settings", href: "/organizer/settings", icon: Settings },
 ];
 
 export default function OrganizerSidebar({

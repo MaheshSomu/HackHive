@@ -23,6 +23,7 @@ const OrganizerDashboard = lazy(() => import("../pages/organizer/OrganizerDashbo
 const OrganizerEvents = lazy(() => import("../pages/organizer/OrganizerEvents"));
 const OrganizerRegistrations = lazy(() => import("../pages/organizer/OrganizerRegistrations"));
 const OrganizerAnalytics = lazy(() => import("../pages/organizer/OrganizerAnalytics"));
+const OrganizerSettings = lazy(() => import("../pages/organizer/OrganizerSettings"));
 
 const AdminLayout = lazy(() => import("../components/layout/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
@@ -78,6 +79,7 @@ function AppRoutes() {
                             <Route path="/organizer/events" element={<OrganizerEvents />} />
                             <Route path="/organizer/registrations" element={<OrganizerRegistrations />} />
                             <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />
+                            <Route path="/organizer/settings" element={<OrganizerSettings />} />
                         </Route>
                     </Route>
 
