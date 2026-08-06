@@ -70,4 +70,32 @@ public class JwtService {
             return false;
         }
     }
+
+    public String generateOAuthRegistrationToken(
+        String email,
+        String fullName) {
+
+        Date now = new Date();
+
+        Date expiryDate =
+                new Date(now.getTime() + 5 * 60 * 1000);
+
+        return Jwts.builder()
+            .subject(email)
+            .claim("fullName", fullName)
+            .claim("type", "OAUTH_REGISTRATION")
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(secretKey)
+            .compact();
+    }
+
+    public Claims extractAllClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
 }

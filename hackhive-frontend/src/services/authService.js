@@ -35,5 +35,11 @@ export const verifyEmailToken = async (token) => {
     return response.data;
 };
 
+export const completeOAuthRegistration = async (payload) => {
+    const response = await api.post("/auth/oauth/complete-registration", payload);
+    return response.data;
+};
+
+
 
 

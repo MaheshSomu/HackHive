@@ -1,7 +1,9 @@
 package com.hackhive.auth.service.impl;
 
+import com.hackhive.auth.dto.OAuthRegistrationData;
 import com.hackhive.auth.dto.request.ForgotPasswordRequest;
 import com.hackhive.auth.dto.request.LoginRequest;
+import com.hackhive.auth.dto.request.OAuthCompleteRegistrationRequest;
 import com.hackhive.auth.dto.request.RegisterRequest;
 import com.hackhive.auth.dto.request.ResendVerificationRequest;
 import com.hackhive.auth.dto.request.ResetPasswordRequest;
@@ -14,6 +16,7 @@ import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.auth.security.JwtService;
 import com.hackhive.auth.service.AuthService;
 import com.hackhive.auth.service.EmailService;
+import com.hackhive.auth.service.OAuthRegistrationService;
 import com.hackhive.common.enums.RoleType;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.EmailNotVerifiedException;
@@ -25,6 +28,7 @@ import com.hackhive.student.repository.StudentProfileRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
-
+    private final OAuthRegistrationService oauthRegistrationService;
     @Override
     public String register(RegisterRequest request) {
 
@@ -278,5 +282,58 @@ public class AuthServiceImpl implements AuthService {
         user.setPasswordResetTokenExpiry(null);
 
         userRepository.save(user);
+    }
+
+    @Override
+    public AuthResponse completeOAuthRegistration(
+        OAuthCompleteRegistrationRequest request) {
+
+        OAuthRegistrationData registration =
+                oauthRegistrationService.getRegistration(
+                        request.getRegistrationId());
+
+        if (registration == null) {
+                throw new BadRequestException(
+                        "Registration session expired.");
+        }
+
+        if (userRepository.findByEmail(
+                registration.getEmail()).isPresent()) {
+
+                throw new BadRequestException(
+                        "User already exists.");
+        }
+
+        Role role = roleRepository.findByName(request.getRole())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Role not found."));
+
+        User user = User.builder()
+                .fullName(registration.getFullName())
+                .email(registration.getEmail())
+                .password(passwordEncoder.encode(
+                        UUID.randomUUID().toString()))
+                .enabled(true)
+                .emailVerified(true)
+                .role(role)
+                .build();
+
+        userRepository.save(user);
+
+        oauthRegistrationService.removeRegistration(
+                request.getRegistrationId());
+
+        String token =
+                jwtService.generateToken(user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().getName().name())
+                .build();
     }
 }

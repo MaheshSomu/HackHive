@@ -2,6 +2,7 @@ package com.hackhive.auth.controller;
 
 import com.hackhive.auth.dto.request.ForgotPasswordRequest;
 import com.hackhive.auth.dto.request.LoginRequest;
+import com.hackhive.auth.dto.request.OAuthCompleteRegistrationRequest;
 import com.hackhive.auth.dto.request.RegisterRequest;
 import com.hackhive.auth.dto.request.ResendVerificationRequest;
 import com.hackhive.auth.dto.request.ResetPasswordRequest;
@@ -133,5 +134,22 @@ public class AuthController {
         authService.resetPassword(request);
 
         return ResponseEntity.ok("Password reset successfully.");
+    }
+
+    @PostMapping("/oauth/complete-registration")
+    public ResponseEntity<ApiResponse<AuthResponse>> completeRegistration(
+            @Valid @RequestBody OAuthCompleteRegistrationRequest request) {
+
+        AuthResponse authResponse =
+                authService.completeOAuthRegistration(request);
+
+        ApiResponse<AuthResponse> response =
+                ApiResponse.<AuthResponse>builder()
+                    .success(true)
+                    .message("Google registration completed successfully.")
+                    .data(authResponse)
+                    .build();
+
+        return ResponseEntity.ok(response);
     }
 }

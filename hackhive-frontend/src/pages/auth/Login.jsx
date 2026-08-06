@@ -94,8 +94,11 @@ function Login() {
     });
 
     const handleGoogleSocialLogin = () => {
-        toast.info("Google Sign-In will be available soon.");
+        const backendBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api").replace(/\/api\/?$/, "");
+        window.location.href =
+        "http://localhost:8080/oauth2/authorization/google";
     };
+
 
     const handleGithubSocialLogin = () => {
         toast.info("GitHub Sign-In will be available soon.");
@@ -222,4 +225,4 @@ function Login() {
 }
 
 export default Login;
-
+

@@ -102,12 +102,14 @@ function AuthProvider({ children }) {
         login,
         register,
         logout,
+        persistAuth,
         refreshSession: async () => {
             const response = await getCurrentUser();
             setUser(response.data);
             return response.data;
         }
-    }), [user, token, loading, initializing, login, register, logout]);
+    }), [user, token, loading, initializing, login, register, logout, persistAuth]);
+
 
     return (
         <AuthContext.Provider value={value}>

@@ -14,6 +14,9 @@ const PasswordResetSuccess = lazy(() => import("../pages/auth/PasswordResetSucce
 const EmailVerified = lazy(() => import("../pages/auth/EmailVerifiedPage"));
 const EmailVerificationFailed = lazy(() => import("../pages/auth/EmailVerificationFailedPage"));
 const VerifyEmailHandler = lazy(() => import("../pages/auth/VerifyEmailHandlerPage"));
+const OAuthCompleteRegistration = lazy(() => import("../pages/auth/OAuthCompleteRegistrationPage"));
+const OAuthSuccess = lazy(() => import("../pages/auth/OAuthSuccessPage"));
+
 
 
 
@@ -71,7 +74,10 @@ function AppRoutes() {
                         <Route path="/email-verified" element={<EmailVerified />} />
                         <Route path="/email-verification-failed" element={<EmailVerificationFailed />} />
                         <Route path="/verify-email" element={<VerifyEmailHandler />} />
+                        <Route path="/oauth-complete-registration" element={<OAuthCompleteRegistration />} />
+                        <Route path="/oauth-success" element={<OAuthSuccess />} />
                     </Route>
+
 
 
 
