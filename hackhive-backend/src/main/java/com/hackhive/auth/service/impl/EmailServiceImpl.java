@@ -20,6 +20,9 @@ public class EmailServiceImpl implements EmailService {
     @Value("${backend.url}")
     private String backendUrl;
 
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     @Override
     public void sendVerificationEmail(User user) {
 
@@ -59,9 +62,39 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendPasswordResetEmail(User user) {
+public void sendPasswordResetEmail(User user) {
 
-        // Will implement later
+    String resetLink =
+            frontendUrl + "/reset-password?token="
+                    + user.getPasswordResetToken();
 
-    }
+    SimpleMailMessage message = new SimpleMailMessage();
+
+    message.setFrom(fromEmail);
+    message.setTo(user.getEmail());
+    message.setSubject("Reset Your HackHive Password");
+
+    message.setText("""
+            Hello %s,
+
+            We received a request to reset your HackHive password.
+
+            Click the link below to reset your password:
+
+            %s
+
+            This link will expire in 30 minutes.
+
+            If you didn't request this password reset,
+            you can safely ignore this email.
+
+            Regards,
+            HackHive Team
+            """.formatted(
+            user.getFullName(),
+            resetLink
+    ));
+
+    mailSender.send(message);
+}
 }

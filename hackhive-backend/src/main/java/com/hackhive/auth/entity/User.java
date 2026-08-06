@@ -44,4 +44,9 @@ public class User extends BaseEntity {
 
     private LocalDateTime emailVerificationTokenExpiry;
 
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 }

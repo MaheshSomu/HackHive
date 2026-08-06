@@ -1,7 +1,10 @@
 package com.hackhive.auth.service.impl;
 
+import com.hackhive.auth.dto.request.ForgotPasswordRequest;
 import com.hackhive.auth.dto.request.LoginRequest;
 import com.hackhive.auth.dto.request.RegisterRequest;
+import com.hackhive.auth.dto.request.ResendVerificationRequest;
+import com.hackhive.auth.dto.request.ResetPasswordRequest;
 import com.hackhive.auth.dto.response.AuthResponse;
 import com.hackhive.auth.dto.response.UserResponse;
 import com.hackhive.auth.entity.Role;
@@ -202,6 +205,77 @@ public class AuthServiceImpl implements AuthService {
         user.setEmailVerified(true);
         user.setEmailVerificationToken(null);
         user.setEmailVerificationTokenExpiry(null);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public void resendVerificationEmail(
+            ResendVerificationRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found."));
+
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
+                throw new RuntimeException(
+                        "Email is already verified.");
+        }
+
+        user.setEmailVerificationToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setEmailVerificationTokenExpiry(
+                TokenGenerator.getVerificationTokenExpiry());
+
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found."));
+
+        user.setPasswordResetToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setPasswordResetTokenExpiry(
+                LocalDateTime.now().plusMinutes(30));
+
+        userRepository.save(user);
+
+        emailService.sendPasswordResetEmail(user);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+
+        User user = userRepository
+                .findByPasswordResetToken(request.getToken())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid password reset token."));
+
+        if (user.getPasswordResetTokenExpiry()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException("Password reset token has expired.");
+        }
+
+        if (!request.getNewPassword()
+                .equals(request.getConfirmPassword())) {
+
+            throw new RuntimeException("Passwords do not match.");
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
 
         userRepository.save(user);
     }
