@@ -4,7 +4,9 @@ import com.hackhive.auth.dto.request.LoginRequest;
 import com.hackhive.auth.dto.request.RegisterRequest;
 import com.hackhive.auth.dto.response.AuthResponse;
 import com.hackhive.auth.dto.response.UserResponse;
+import com.hackhive.auth.entity.User;
 import com.hackhive.auth.service.AuthService;
+import com.hackhive.auth.service.EmailService;
 import com.hackhive.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-
+    private final EmailService emailService;
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(
             @Valid @RequestBody RegisterRequest request) {
@@ -60,5 +62,31 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/test-email")
+    public ResponseEntity<String> testEmail() {
+
+        User user = new User();
+
+        user.setFullName("Mahesh");
+
+        user.setEmail("somumahesh8886.ai@gmail.com");
+
+        user.setEmailVerificationToken("123456789");
+
+        emailService.sendVerificationEmail(user);
+
+        return ResponseEntity.ok("Verification email sent successfully.");
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(
+            @RequestParam String token) {
+
+        authService.verifyEmail(token);
+
+        return ResponseEntity.ok(
+            "Email verified successfully.");
     }
 }

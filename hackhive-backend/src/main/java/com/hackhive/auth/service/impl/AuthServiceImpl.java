@@ -10,13 +10,19 @@ import com.hackhive.auth.repository.RoleRepository;
 import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.auth.security.JwtService;
 import com.hackhive.auth.service.AuthService;
+import com.hackhive.auth.service.EmailService;
 import com.hackhive.common.enums.RoleType;
 import com.hackhive.common.exception.BadRequestException;
+import com.hackhive.common.exception.EmailNotVerifiedException;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.common.exception.UnauthorizedException;
+import com.hackhive.common.util.TokenGenerator;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final StudentProfileRepository studentProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
     @Override
     public String register(RegisterRequest request) {
@@ -71,8 +78,17 @@ public class AuthServiceImpl implements AuthService {
                 .emailVerified(false)
                 .role(role)
                 .build();
+        
+        user.setEmailVerified(false);
 
+        user.setEmailVerificationToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setEmailVerificationTokenExpiry(
+                TokenGenerator.getVerificationTokenExpiry());
+        
         User savedUser = userRepository.save(user);
+        emailService.sendVerificationEmail(savedUser);
 
         // Automatically create StudentProfile
         // only when the registered user is a STUDENT
@@ -88,7 +104,9 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        return "Registration successful.";
+        return "Registration successful.\r\n" + 
+                "\r\n" + 
+                "Please verify your email before logging in.";
     }
 
     @Override
@@ -101,6 +119,10 @@ public class AuthServiceImpl implements AuthService {
                         new UnauthorizedException(
                                 "Invalid email or password."
                         ));
+
+        if (!user.getEmailVerified()) {
+            throw new EmailNotVerifiedException("Please verify your email before logging in.");
+        }
         // Reject disabled accounts
         if (!Boolean.TRUE.equals(user.getEnabled())) {
         throw new UnauthorizedException(
@@ -165,5 +187,22 @@ public class AuthServiceImpl implements AuthService {
                                 .name()
                 )
                 .build();
+    }
+
+    @Override
+    public void verifyEmail(String token) {
+
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid verification token."));
+
+        if (user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Verification token has expired.");
+        }
+
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+
+        userRepository.save(user);
     }
 }
