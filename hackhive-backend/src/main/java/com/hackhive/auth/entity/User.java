@@ -1,5 +1,7 @@
 package com.hackhive.auth.entity;
 
+import java.time.LocalDateTime;
+
 import com.hackhive.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,8 +35,18 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean emailVerified = false;
 
+    @Column(unique = true)
+    private String emailVerificationToken;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    private LocalDateTime emailVerificationTokenExpiry;
+
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 }

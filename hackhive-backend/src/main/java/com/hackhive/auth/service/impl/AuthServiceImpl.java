@@ -1,7 +1,12 @@
 package com.hackhive.auth.service.impl;
 
+import com.hackhive.auth.dto.OAuthRegistrationData;
+import com.hackhive.auth.dto.request.ForgotPasswordRequest;
 import com.hackhive.auth.dto.request.LoginRequest;
+import com.hackhive.auth.dto.request.OAuthCompleteRegistrationRequest;
 import com.hackhive.auth.dto.request.RegisterRequest;
+import com.hackhive.auth.dto.request.ResendVerificationRequest;
+import com.hackhive.auth.dto.request.ResetPasswordRequest;
 import com.hackhive.auth.dto.response.AuthResponse;
 import com.hackhive.auth.dto.response.UserResponse;
 import com.hackhive.auth.entity.Role;
@@ -10,13 +15,21 @@ import com.hackhive.auth.repository.RoleRepository;
 import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.auth.security.JwtService;
 import com.hackhive.auth.service.AuthService;
+import com.hackhive.auth.service.EmailService;
+import com.hackhive.auth.service.OAuthRegistrationService;
 import com.hackhive.common.enums.RoleType;
 import com.hackhive.common.exception.BadRequestException;
+import com.hackhive.common.exception.EmailNotVerifiedException;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.common.exception.UnauthorizedException;
+import com.hackhive.common.util.TokenGenerator;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +44,8 @@ public class AuthServiceImpl implements AuthService {
     private final StudentProfileRepository studentProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
+    private final EmailService emailService;
+    private final OAuthRegistrationService oauthRegistrationService;
     @Override
     public String register(RegisterRequest request) {
 
@@ -71,8 +85,17 @@ public class AuthServiceImpl implements AuthService {
                 .emailVerified(false)
                 .role(role)
                 .build();
+        
+        user.setEmailVerified(false);
 
+        user.setEmailVerificationToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setEmailVerificationTokenExpiry(
+                TokenGenerator.getVerificationTokenExpiry());
+        
         User savedUser = userRepository.save(user);
+        emailService.sendVerificationEmail(savedUser);
 
         // Automatically create StudentProfile
         // only when the registered user is a STUDENT
@@ -88,7 +111,9 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
-        return "Registration successful.";
+        return "Registration successful.\r\n" + 
+                "\r\n" + 
+                "Please verify your email before logging in.";
     }
 
     @Override
@@ -101,6 +126,10 @@ public class AuthServiceImpl implements AuthService {
                         new UnauthorizedException(
                                 "Invalid email or password."
                         ));
+
+        if (!user.getEmailVerified()) {
+            throw new EmailNotVerifiedException("Please verify your email before logging in.");
+        }
         // Reject disabled accounts
         if (!Boolean.TRUE.equals(user.getEnabled())) {
         throw new UnauthorizedException(
@@ -164,6 +193,147 @@ public class AuthServiceImpl implements AuthService {
                                 .getName()
                                 .name()
                 )
+                .build();
+    }
+
+    @Override
+    public void verifyEmail(String token) {
+
+        User user = userRepository.findByEmailVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid verification token."));
+
+        if (user.getEmailVerificationTokenExpiry().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Verification token has expired.");
+        }
+
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public void resendVerificationEmail(
+            ResendVerificationRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found."));
+
+        if (Boolean.TRUE.equals(user.getEmailVerified())) {
+                throw new RuntimeException(
+                        "Email is already verified.");
+        }
+
+        user.setEmailVerificationToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setEmailVerificationTokenExpiry(
+                TokenGenerator.getVerificationTokenExpiry());
+
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found."));
+
+        user.setPasswordResetToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setPasswordResetTokenExpiry(
+                LocalDateTime.now().plusMinutes(30));
+
+        userRepository.save(user);
+
+        emailService.sendPasswordResetEmail(user);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+
+        User user = userRepository
+                .findByPasswordResetToken(request.getToken())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid password reset token."));
+
+        if (user.getPasswordResetTokenExpiry()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException("Password reset token has expired.");
+        }
+
+        if (!request.getNewPassword()
+                .equals(request.getConfirmPassword())) {
+
+            throw new RuntimeException("Passwords do not match.");
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword()));
+
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+
+        userRepository.save(user);
+    }
+
+    @Override
+    public AuthResponse completeOAuthRegistration(
+        OAuthCompleteRegistrationRequest request) {
+
+        OAuthRegistrationData registration =
+                oauthRegistrationService.getRegistration(
+                        request.getRegistrationId());
+
+        if (registration == null) {
+                throw new BadRequestException(
+                        "Registration session expired.");
+        }
+
+        if (userRepository.findByEmail(
+                registration.getEmail()).isPresent()) {
+
+                throw new BadRequestException(
+                        "User already exists.");
+        }
+
+        Role role = roleRepository.findByName(request.getRole())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Role not found."));
+
+        User user = User.builder()
+                .fullName(registration.getFullName())
+                .email(registration.getEmail())
+                .password(passwordEncoder.encode(
+                        UUID.randomUUID().toString()))
+                .enabled(true)
+                .emailVerified(true)
+                .role(role)
+                .build();
+
+        userRepository.save(user);
+
+        oauthRegistrationService.removeRegistration(
+                request.getRegistrationId());
+
+        String token =
+                jwtService.generateToken(user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().getName().name())
                 .build();
     }
 }

@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AuthField from "./AuthField";
 
-function PasswordInput({ className, inputClassName, error, label, hint, id, ...props }) {
+const PasswordInput = forwardRef(function PasswordInput(
+    { className, inputClassName, error, label, hint, id, ...props },
+    ref
+) {
     const [show, setShow] = useState(false);
 
     return (
         <AuthField
+            ref={ref}
             id={id}
             label={label}
             hint={hint}
@@ -31,6 +35,6 @@ function PasswordInput({ className, inputClassName, error, label, hint, id, ...p
             {...props}
         />
     );
-}
+});
 
 export default PasswordInput;
