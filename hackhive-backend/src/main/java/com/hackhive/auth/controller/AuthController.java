@@ -13,8 +13,12 @@ import com.hackhive.auth.service.EmailService;
 import com.hackhive.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,6 +27,10 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailService emailService;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(
             @Valid @RequestBody RegisterRequest request) {
@@ -84,14 +92,19 @@ public class AuthController {
     }
 
     @GetMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(
-            @RequestParam String token) {
-
-        authService.verifyEmail(token);
-
-        return ResponseEntity.ok(
-            "Email verified successfully.");
+    public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
+        try {
+            authService.verifyEmail(token);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(frontendUrl + "/email-verified"))
+                    .build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(frontendUrl + "/email-verification-failed"))
+                    .build();
+        }
     }
+
 
     @PostMapping("/resend-verification")
     public ResponseEntity<String> resendVerificationEmail(

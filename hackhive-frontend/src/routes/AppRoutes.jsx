@@ -8,7 +8,14 @@ import { DashboardPageSkeleton } from "../components/student-dashboard/Dashboard
 // Lazy Loaded Pages
 const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/auth/Register"));
-const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPasswordPage"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPasswordPage"));
+const PasswordResetSuccess = lazy(() => import("../pages/auth/PasswordResetSuccessPage"));
+const EmailVerified = lazy(() => import("../pages/auth/EmailVerifiedPage"));
+const EmailVerificationFailed = lazy(() => import("../pages/auth/EmailVerificationFailedPage"));
+const VerifyEmailHandler = lazy(() => import("../pages/auth/VerifyEmailHandlerPage"));
+
+
 
 const StudentLayout = lazy(() => import("../components/layout/StudentLayout"));
 const StudentDashboard = lazy(() => import("../pages/student/StudentDashboard"));
@@ -56,9 +63,17 @@ function AppRoutes() {
                 <Routes>
                     <Route element={<AuthRoute />}>
                         <Route path="/" element={<Login />} />
+                        <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
+                        <Route path="/email-verified" element={<EmailVerified />} />
+                        <Route path="/email-verification-failed" element={<EmailVerificationFailed />} />
+                        <Route path="/verify-email" element={<VerifyEmailHandler />} />
                     </Route>
+
+
 
                     <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
                         <Route element={<StudentLayout />}>
