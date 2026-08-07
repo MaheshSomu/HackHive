@@ -18,7 +18,7 @@ public class OrganizerProfile extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "organization_name", nullable = false, length = 150)
+    @Column(name = "organization_name",  length = 150)
     private String organizationName;
 
     @Column(name = "organization_type", length = 100)
@@ -42,6 +42,7 @@ public class OrganizerProfile extends BaseEntity {
     @Column(length = 150)
     private String location;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean verified = false;
 }
