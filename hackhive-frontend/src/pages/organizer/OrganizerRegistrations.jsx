@@ -1,38 +1,55 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { UserCheck, AlertCircle, RotateCcw, Building2, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { Building2, Calendar, Mail, Search, UserCheck, Users } from "lucide-react";
 
 import { organizerService } from "../../services/organizerService";
-import DashboardSection from "../../components/student-dashboard/DashboardSection";
-import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
-import { Card, CardContent } from "../../components/ui/Card";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+
+import RegistrationSummaryCards from "../../components/organizer/registrations/RegistrationSummaryCards";
+import RegistrationToolbar from "../../components/organizer/registrations/RegistrationToolbar";
+import RegistrationTable from "../../components/organizer/registrations/RegistrationTable";
+import RegistrationDrawer from "../../components/organizer/registrations/RegistrationDrawer";
+import RegistrationsSkeleton from "../../components/organizer/registrations/RegistrationsSkeleton";
 
 export default function OrganizerRegistrations() {
     const [events, setEvents] = useState([]);
     const [selectedEventId, setSelectedEventId] = useState("");
     const [registrations, setRegistrations] = useState([]);
-    const [loading, setLoading] = useState(true);
+    
+    // API loading states
+    const [eventsLoading, setEventsLoading] = useState(true);
     const [registrationsLoading, setRegistrationsLoading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [isError, setIsError] = useState(false);
 
-    // Load Organizer Events
+    // Search and filter states
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [typeFilter, setTypeFilter] = useState("ALL");
+
+    // Selected student drawer state
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // 1. Fetch Organizer Events on Mount
     useEffect(() => {
         let isMounted = true;
         const loadEvents = async () => {
             try {
-                setLoading(true);
+                setEventsLoading(true);
                 const res = await organizerService.getMyEvents();
                 if (isMounted) {
                     const list = Array.isArray(res) ? res : [];
                     setEvents(list);
-                    if (list[0]) {
+                    if (list.length > 0) {
                         setSelectedEventId(String(list[0].id));
                     }
                 }
-            } catch {
+            } catch (err) {
+                console.error("Failed to load organizer events:", err);
                 if (isMounted) setEvents([]);
             } finally {
-                if (isMounted) setLoading(false);
+                if (isMounted) setEventsLoading(false);
             }
         };
         loadEvents();
@@ -41,14 +58,17 @@ export default function OrganizerRegistrations() {
         };
     }, []);
 
-    // Load registrations when selectedEventId changes
+    // 2. Fetch registrations whenever selectedEventId changes
     const loadRegistrations = useCallback(async (eventId) => {
         if (!eventId) return;
         try {
             setRegistrationsLoading(true);
+            setIsError(false);
             const res = await organizerService.getEventRegistrations(eventId);
             setRegistrations(Array.isArray(res) ? res : []);
-        } catch {
+        } catch (err) {
+            console.error("Failed to fetch event registrations:", err);
+            setIsError(true);
             setRegistrations([]);
         } finally {
             setRegistrationsLoading(false);
@@ -61,152 +81,187 @@ export default function OrganizerRegistrations() {
         }
     }, [selectedEventId, loadRegistrations]);
 
-    // Filter registrations
+    // Current selected event object
+    const currentEvent = useMemo(() => {
+        return events.find((e) => String(e.id) === String(selectedEventId));
+    }, [events, selectedEventId]);
+
+    // 3. Filtered registrations list
     const filteredRegistrations = useMemo(() => {
         let list = [...registrations];
+
+        // Search filter (Name, Email, College)
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             list = list.filter(
                 (r) =>
+                    (r.fullName && r.fullName.toLowerCase().includes(q)) ||
                     (r.studentName && r.studentName.toLowerCase().includes(q)) ||
+                    (r.email && r.email.toLowerCase().includes(q)) ||
                     (r.studentEmail && r.studentEmail.toLowerCase().includes(q)) ||
                     (r.college && r.college.toLowerCase().includes(q))
             );
         }
-        return list;
-    }, [registrations, searchQuery]);
 
-    if (loading) {
-        return <DashboardPageSkeleton />;
+        // Type filter (Individual vs Team Entry)
+        if (typeFilter !== "ALL") {
+            if (typeFilter === "TEAM") {
+                list = list.filter((r) => Boolean(r.teamName || r.isTeam));
+            } else if (typeFilter === "INDIVIDUAL") {
+                list = list.filter((r) => !r.teamName && !r.isTeam);
+            }
+        }
+
+        return list;
+    }, [registrations, searchQuery, typeFilter]);
+
+    // Export CSV Handler
+    const handleExportCSV = () => {
+        if (filteredRegistrations.length === 0) {
+            toast.error("No registrations to export.");
+            return;
+        }
+
+        const headers = ["Registration ID", "Student Name", "Email", "College", "Branch", "Graduation Year", "Team Name"];
+        const csvRows = [headers.join(",")];
+
+        filteredRegistrations.forEach((r) => {
+            const row = [
+                `"${r.registrationId || ""}"`,
+                `"${(r.fullName || r.studentName || "").replace(/"/g, '""')}"`,
+                `"${(r.email || r.studentEmail || "").replace(/"/g, '""')}"`,
+                `"${(r.college || "").replace(/"/g, '""')}"`,
+                `"${(r.branch || "").replace(/"/g, '""')}"`,
+                `"${(r.graduationYear || "").replace(/"/g, '""')}"`,
+                `"${(r.teamName || "Individual").replace(/"/g, '""')}"`,
+            ];
+            csvRows.push(row.join(","));
+        });
+
+        const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `registrations_event_${selectedEventId}_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Registrations exported as CSV file!");
+    };
+
+    // Open Student Drawer
+    const handleViewDetails = (student) => {
+        setSelectedStudent(student);
+        setIsDrawerOpen(true);
+    };
+
+    if (eventsLoading) {
+        return <RegistrationsSkeleton />;
     }
 
-    const currentEvent = events.find((e) => String(e.id) === String(selectedEventId));
-
     return (
-        <div className="space-y-8 pb-16">
-            {/* Hero Header */}
-            <Card className="overflow-hidden border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <CardContent className="p-6 sm:p-8">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="space-y-1">
-                            <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                                Student Registrations
-                            </span>
-                            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
-                                Event Applicants & Registered Students
-                            </h1>
-                            <p className="max-w-2xl text-xs text-slate-500 dark:text-slate-400 leading-5">
-                                Select an event to inspect student signups, email addresses, and college details.
-                            </p>
-                        </div>
-                    </div>
-                </CardContent>
+        <div className="space-y-6 pb-20 w-full max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
+            {/* Header Hero */}
+            <Card className="border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-100 dark:border-purple-900/60">
+                        <UserCheck className="size-3.5 text-purple-600" />
+                        Event Registrations
+                    </span>
+                    <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
+                        Event Applicants & Registrations
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
+                        Manage student signups, inspect applicant details, and monitor registration rosters for your published events.
+                    </p>
+                </div>
             </Card>
 
-            {/* Event Selector & Search Bar */}
-            <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <CardContent className="p-4 sm:p-5 space-y-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        {/* Event Selector */}
-                        <div className="flex flex-col gap-1.5 flex-1 max-w-md">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                Select Event
-                            </label>
-                            {events.length > 0 ? (
-                                <select
-                                    value={selectedEventId}
-                                    onChange={(e) => setSelectedEventId(e.target.value)}
-                                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-900 outline-none focus:border-purple-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                >
-                                    {events.map((evt) => (
-                                        <option key={evt.id} value={evt.id}>
-                                            {evt.title} ({evt.eventMode || "Hybrid"})
-                                        </option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <p className="text-xs text-slate-400">No events found.</p>
-                            )}
-                        </div>
+            {/* Error Banner */}
+            {isError ? (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-6 text-center text-rose-900 dark:border-rose-950 dark:bg-rose-950/40 dark:text-rose-300 space-y-3 shadow-2xs">
+                    <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-900 dark:text-rose-300">
+                        <AlertCircle className="size-5" />
+                    </div>
+                    <div className="space-y-1 max-w-md mx-auto">
+                        <h4 className="text-sm font-bold">Unable to load event registrations</h4>
+                        <p className="text-xs text-rose-600/80 dark:text-rose-400 font-medium">
+                            There was an error communicating with the server to fetch applicant records for this event.
+                        </p>
+                    </div>
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => loadRegistrations(selectedEventId)}
+                        className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs inline-flex items-center gap-2 px-4 py-2 rounded-xl"
+                    >
+                        <RotateCcw className="size-3.5" /> Retry Fetching
+                    </Button>
+                </div>
+            ) : (
+                <>
+                    {/* Summary Cards */}
+                    <RegistrationSummaryCards
+                        registrations={registrations}
+                        currentEvent={currentEvent}
+                    />
 
-                        {/* Search Input */}
-                        <div className="flex flex-col gap-1.5 flex-1 max-w-md">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                                Search Applicants
-                            </label>
-                            <div className="group relative">
-                                <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-purple-600" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search student by name, email..."
-                                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                />
+                    {/* Toolbar (Event Selector, Search, Filters, Export) */}
+                    <RegistrationToolbar
+                        events={events}
+                        selectedEventId={selectedEventId}
+                        onSelectEvent={setSelectedEventId}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
+                        typeFilter={typeFilter}
+                        onTypeFilterChange={setTypeFilter}
+                        onExportCSV={handleExportCSV}
+                        totalResults={filteredRegistrations.length}
+                    />
+
+                    {/* Main Content Area */}
+                    {registrationsLoading ? (
+                        <div className="p-12 text-center rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 space-y-3 shadow-2xs">
+                            <div className="size-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                            <p className="text-xs font-semibold text-slate-500">Loading registrations list...</p>
+                        </div>
+                    ) : filteredRegistrations.length > 0 ? (
+                        /* Registrations Management Table */
+                        <RegistrationTable
+                            registrations={filteredRegistrations}
+                            onViewDetails={handleViewDetails}
+                        />
+                    ) : (
+                        /* Empty State */
+                        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center space-y-4 dark:border-slate-800 dark:bg-slate-900 shadow-2xs">
+                            <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                                <UserCheck className="size-6" />
+                            </div>
+                            <div className="space-y-1 max-w-sm mx-auto">
+                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                                    {events.length === 0
+                                        ? "No published events found"
+                                        : "No registrations yet for this event"}
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
+                                    {events.length === 0
+                                        ? "Create your first hackathon event to start accepting student registrations."
+                                        : "Students who sign up for this event will appear in this management table automatically."}
+                                </p>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    )}
+                </>
+            )}
 
-            {/* Registrations List */}
-            <DashboardSection
-                id="registrations-list"
-                eyebrow="Applicants"
-                title={currentEvent ? `Registrations for ${currentEvent.title}` : "Student Registrations"}
-                description={`Total ${filteredRegistrations.length} registered students.`}
-            >
-                {registrationsLoading ? (
-                    <div className="space-y-3">
-                        <div className="h-16 w-full animate-pulse rounded-2xl bg-slate-200/70" />
-                        <div className="h-16 w-full animate-pulse rounded-2xl bg-slate-200/70" />
-                        <div className="h-16 w-full animate-pulse rounded-2xl bg-slate-200/70" />
-                    </div>
-                ) : filteredRegistrations.length > 0 ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {filteredRegistrations.map((reg, idx) => {
-                            const initials = (reg.studentName || reg.studentEmail || "S")[0].toUpperCase();
-
-                            return (
-                                <Card
-                                    key={reg.registrationId || idx}
-                                    className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-purple-600 font-bold text-xs text-white">
-                                            {initials}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <h4 className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
-                                                {reg.studentName || "Student Applicant"}
-                                            </h4>
-                                            <p className="truncate text-[11px] text-slate-500">
-                                                {reg.studentEmail}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {reg.college && (
-                                        <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 dark:border-slate-800">
-                                            <span className="font-semibold text-slate-700 dark:text-slate-300">College:</span> {reg.college}
-                                        </div>
-                                    )}
-                                </Card>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                        <CardContent className="p-8">
-                            <EmptyState
-                                icon={<UserCheck className="size-6" />}
-                                title="No student registrations yet"
-                                description="Students who sign up for this event will appear here."
-                            />
-                        </CardContent>
-                    </Card>
-                )}
-            </DashboardSection>
+            {/* View Details Drawer */}
+            <RegistrationDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                student={selectedStudent}
+            />
         </div>
     );
 }

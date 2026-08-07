@@ -23,6 +23,8 @@ import com.hackhive.common.exception.EmailNotVerifiedException;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.common.exception.UnauthorizedException;
 import com.hackhive.common.util.TokenGenerator;
+import com.hackhive.organizer.entity.OrganizerProfile;
+import com.hackhive.organizer.repository.OrganizerProfileRepository;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
     private final OAuthRegistrationService oauthRegistrationService;
+    private final OrganizerProfileRepository organizerProfileRepository;
     @Override
     public String register(RegisterRequest request) {
 
@@ -101,14 +105,22 @@ public class AuthServiceImpl implements AuthService {
         // only when the registered user is a STUDENT
         if (request.getRole() == RoleType.STUDENT) {
 
-            StudentProfile studentProfile =
-                    StudentProfile.builder()
-                            .user(savedUser)
-                            .build();
+        StudentProfile studentProfile =
+                StudentProfile.builder()
+                        .user(savedUser)
+                        .build();
 
-            studentProfileRepository.save(
-                    studentProfile
-            );
+        studentProfileRepository.save(studentProfile);
+
+        } else if (request.getRole() == RoleType.ORGANIZER) {
+
+        OrganizerProfile organizerProfile =
+                OrganizerProfile.builder()
+                        .user(savedUser)
+                        .verified(false)
+                        .build();
+
+        organizerProfileRepository.save(organizerProfile);
         }
 
         return "Registration successful.\r\n" + 
@@ -284,6 +296,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public AuthResponse completeOAuthRegistration(
         OAuthCompleteRegistrationRequest request) {
@@ -320,7 +333,24 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRepository.save(user);
+        if (role.getName() == RoleType.STUDENT) {
 
+        StudentProfile studentProfile =
+                StudentProfile.builder()
+                        .user(user)
+                        .build();
+
+        studentProfileRepository.save(studentProfile);
+
+        } else if (role.getName() == RoleType.ORGANIZER) {
+
+        OrganizerProfile organizerProfile =
+                OrganizerProfile.builder()
+                        .user(user)
+                        .build();
+
+        organizerProfileRepository.save(organizerProfile);
+        }
         oauthRegistrationService.removeRegistration(
                 request.getRegistrationId());
 

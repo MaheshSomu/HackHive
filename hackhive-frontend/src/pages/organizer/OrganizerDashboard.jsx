@@ -1,53 +1,90 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-    Activity,
-    BarChart3,
-    Calendar,
-    CalendarDays,
-    CheckCircle2,
-    Clock,
-    Plus,
-    Sparkles,
-    UserCheck,
-    Users,
-} from "lucide-react";
+import { toast } from "sonner";
 
 import useAuth from "../../hooks/useAuth";
 import { organizerService } from "../../services/organizerService";
-import { Button } from "../../components/ui/Button";
-import { Card, CardContent } from "../../components/ui/Card";
-import DashboardSection from "../../components/student-dashboard/DashboardSection";
-import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import OrganizerEventModal from "../../components/organizer/OrganizerEventModal";
-import { toast } from "sonner";
+
+import OrganizerHero from "../../components/organizer/dashboard/OrganizerHero";
+import OrganizerStatsGrid from "../../components/organizer/dashboard/OrganizerStatsGrid";
+import OrganizerQuickActions from "../../components/organizer/dashboard/OrganizerQuickActions";
+import RecentActivityPanel from "../../components/organizer/dashboard/RecentActivityPanel";
+import UpcomingEventsPanel from "../../components/organizer/dashboard/UpcomingEventsPanel";
+import RecentEventsSection from "../../components/organizer/dashboard/RecentEventsSection";
+import AnalyticsPreviewCard from "../../components/organizer/dashboard/AnalyticsPreviewCard";
+import OrganizerProfileSummaryCard from "../../components/organizer/dashboard/OrganizerProfileSummaryCard";
+import OrganizerDashboardSkeleton from "../../components/organizer/dashboard/OrganizerDashboardSkeleton";
 
 export default function OrganizerDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
     const [events, setEvents] = useState([]);
+    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
-    const loadDashboard = useCallback(async () => {
+    const loadDashboardData = useCallback(async () => {
         try {
             setLoading(true);
-            const eventsRes = await organizerService.getMyEvents();
-            setEvents(Array.isArray(eventsRes) ? eventsRes : []);
-        } catch {
+            const [eventsResult, profileResult] = await Promise.allSettled([
+                organizerService.getMyEvents(),
+                organizerService.getProfile(),
+            ]);
+
+            if (eventsResult.status === "fulfilled") {
+                setEvents(Array.isArray(eventsResult.value) ? eventsResult.value : []);
+            } else {
+                setEvents([]);
+            }
+
+            if (profileResult.status === "fulfilled") {
+                setProfile(profileResult.value);
+            } else {
+                setProfile(null);
+            }
+        } catch (err) {
+            console.error("Error loading organizer dashboard:", err);
             setEvents([]);
-        } finally {
+            setProfile(null);
+        } fontFinally: {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        loadDashboard();
-    }, [loadDashboard]);
+        let isMounted = true;
+        setLoading(true);
 
-    // Metrics calculations
+        const fetchData = async () => {
+            try {
+                const [eventsData, profileData] = await Promise.all([
+                    organizerService.getMyEvents().catch(() => []),
+                    organizerService.getProfile().catch(() => null),
+                ]);
+
+                if (isMounted) {
+                    setEvents(Array.isArray(eventsData) ? eventsData : []);
+                    setProfile(profileData);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    // Aggregated metrics across events
     const stats = useMemo(() => {
         const totalEvents = events.length;
         const now = Date.now();
@@ -63,10 +100,34 @@ export default function OrganizerDashboard() {
             return start > 0 && now < start;
         }).length;
 
+        const totalRegistrations = events.reduce(
+            (acc, curr) => acc + (curr.registrationsCount || 0),
+            0
+        );
+
+        const totalTeams = events.reduce(
+            (acc, curr) => acc + (curr.teamsCount || 0),
+            0
+        );
+
+        const projectsSubmitted = events.reduce(
+            (acc, curr) => acc + (curr.projectsCount || 0),
+            0
+        );
+
+        const pendingReviews = events.reduce(
+            (acc, curr) => acc + (curr.pendingReviewsCount || 0),
+            0
+        );
+
         return {
             totalEvents,
             activeEvents,
             upcomingEvents,
+            totalRegistrations,
+            totalTeams,
+            projectsSubmitted,
+            pendingReviews,
         };
     }, [events]);
 
@@ -86,133 +147,71 @@ export default function OrganizerDashboard() {
     };
 
     if (loading) {
-        return <DashboardPageSkeleton />;
+        return <OrganizerDashboardSkeleton />;
     }
 
-    const organizerName = user?.fullName || "Organizer";
-
     return (
-        <div className="space-y-8 pb-16">
-            {/* Welcome Banner */}
-            <Card className="overflow-hidden border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <CardContent className="p-6 sm:p-8">
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="space-y-1">
-                            <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                                Host Management Console
-                            </span>
-                            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
-                                Welcome back, {organizerName}
-                            </h1>
-                            <p className="max-w-2xl text-xs text-slate-500 dark:text-slate-400 leading-5">
-                                Manage your hackathons, review student registrations, and monitor event performance.
-                            </p>
-                        </div>
+        <div className="space-y-8 pb-20 w-full max-w-7xl mx-auto">
+            {/* 1. Hero Section */}
+            <OrganizerHero
+                user={user}
+                profile={profile}
+                stats={stats}
+                onCreateEvent={() => setIsCreateOpen(true)}
+            />
 
-                        <div className="flex flex-wrap gap-2">
-                            <Button
-                                type="button"
-                                onClick={() => setIsCreateOpen(true)}
-                                className="rounded-xl bg-purple-600 font-bold text-xs text-white hover:bg-purple-500"
-                            >
-                                <Plus className="mr-1.5 size-4" /> Create Event
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* 2. Statistics Grid (6 Cards) */}
+            <OrganizerStatsGrid stats={stats} />
 
-            {/* Stat Cards Grid */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Events</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                            <CalendarDays className="size-4.5" />
-                        </div>
-                    </div>
-                    <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{stats.totalEvents}</p>
-                    <p className="mt-1 text-[11px] text-slate-500">Events published by your account</p>
-                </Card>
+            {/* 3. Quick Actions Shortcuts */}
+            <OrganizerQuickActions
+                onCreateEvent={() => setIsCreateOpen(true)}
+                onNavigate={(path) => navigate(path)}
+            />
 
-                <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Live Events</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                            <Sparkles className="size-4.5" />
-                        </div>
-                    </div>
-                    <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{stats.activeEvents}</p>
-                    <p className="mt-1 text-[11px] text-slate-500">Currently ongoing hackathons</p>
-                </Card>
+            {/* Main Content Layout Grid */}
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+                {/* Left Column: Recent Events & Analytics */}
+                <div className="space-y-8 min-w-0">
+                    {/* 6. Recent Events Section */}
+                    <RecentEventsSection
+                        events={events}
+                        onNavigate={(path) => navigate(path)}
+                        onCreateEvent={() => setIsCreateOpen(true)}
+                    />
 
-                <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Upcoming Events</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                            <Clock className="size-4.5" />
-                        </div>
-                    </div>
-                    <p className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-slate-100">{stats.upcomingEvents}</p>
-                    <p className="mt-1 text-[11px] text-slate-500">Scheduled for upcoming dates</p>
-                </Card>
+                    {/* 7. Analytics Preview Card */}
+                    <AnalyticsPreviewCard
+                        events={events}
+                        onNavigate={(path) => navigate(path)}
+                    />
+                </div>
+
+                {/* Right Column: Profile, Upcoming Events & Activity */}
+                <div className="space-y-8 min-w-0">
+                    {/* 8. Profile Summary Card */}
+                    <OrganizerProfileSummaryCard
+                        profileData={profile}
+                        user={user}
+                        onNavigate={(path) => navigate(path)}
+                    />
+
+                    {/* 5. Upcoming Events Panel */}
+                    <UpcomingEventsPanel
+                        events={events}
+                        onNavigate={(path) => navigate(path)}
+                        onCreateEvent={() => setIsCreateOpen(true)}
+                    />
+
+                    {/* 4. Recent Activity Panel */}
+                    <RecentActivityPanel
+                        events={events}
+                        onCreateEvent={() => setIsCreateOpen(true)}
+                    />
+                </div>
             </div>
 
-            {/* Quick Actions */}
-            <DashboardSection
-                id="quick-actions"
-                eyebrow="Shortcuts"
-                title="Organizer Quick Actions"
-                description="Shortcuts to manage your event portfolio."
-            >
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card
-                        onClick={() => setIsCreateOpen(true)}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-purple-300 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950">
-                            <Plus className="size-4" />
-                        </div>
-                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Create Event</h4>
-                        <p className="mt-0.5 text-[11px] text-slate-500">Publish a new hackathon with multi-step wizard.</p>
-                    </Card>
-
-                    <Card
-                        onClick={() => navigate("/organizer/events")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-purple-300 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950">
-                            <CalendarDays className="size-4" />
-                        </div>
-                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Manage Events</h4>
-                        <p className="mt-0.5 text-[11px] text-slate-500">View, edit, or delete existing events.</p>
-                    </Card>
-
-                    <Card
-                        onClick={() => navigate("/organizer/registrations")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-purple-300 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950">
-                            <UserCheck className="size-4" />
-                        </div>
-                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">View Registrations</h4>
-                        <p className="mt-0.5 text-[11px] text-slate-500">Check registered students and team entries.</p>
-                    </Card>
-
-                    <Card
-                        onClick={() => navigate("/organizer/analytics")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-purple-300 dark:border-slate-800 dark:bg-slate-900"
-                    >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950">
-                            <BarChart3 className="size-4" />
-                        </div>
-                        <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Event Analytics</h4>
-                        <p className="mt-0.5 text-[11px] text-slate-500">Monitor engagement and event metrics.</p>
-                    </Card>
-                </div>
-            </DashboardSection>
-
-            {/* Create Modal */}
+            {/* Create Event Modal */}
             <OrganizerEventModal
                 isOpen={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
