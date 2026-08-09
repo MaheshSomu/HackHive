@@ -1,46 +1,60 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
     BarChart3,
     Calendar,
-    CheckCircle2,
     Clock,
     Filter,
     Globe,
+    Building2,
     Layers,
     Plus,
     RefreshCw,
     Users,
-    Building2,
-    MapPin,
-    ArrowUpRight,
+    AlertCircle,
+    RotateCw,
+    ChevronRight,
 } from "lucide-react";
 
 import { organizerService } from "../../services/organizerService";
 import { Button } from "../../components/ui/Button";
-import { Card } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Skeleton } from "../../components/ui/Skeleton";
+import HackHiveSelect from "../../components/ui/HackHiveSelect";
 import OrganizerEventModal from "../../components/organizer/OrganizerEventModal";
-import { toast } from "sonner";
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return "TBD";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "TBD";
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+};
 
 export default function OrganizerAnalytics() {
     const navigate = useNavigate();
 
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const [filterStatus, setFilterStatus] = useState("ALL"); // ALL | ACTIVE | UPCOMING | COMPLETED
+
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
     const loadAnalyticsData = useCallback(async () => {
         try {
             setLoading(true);
+            setError(false);
             const res = await organizerService.getMyEvents();
             setEvents(Array.isArray(res) ? res : []);
         } catch (err) {
             console.error("Failed to load analytics data:", err);
-            setEvents([]);
+            setError(true);
         } finally {
             setLoading(false);
         }
@@ -50,7 +64,6 @@ export default function OrganizerAnalytics() {
         loadAnalyticsData();
     }, [loadAnalyticsData]);
 
-    // Handle Create Event submit
     const handleCreateSubmit = async (payload) => {
         try {
             setActionLoading(true);
@@ -66,7 +79,7 @@ export default function OrganizerAnalytics() {
         }
     };
 
-    // Filter events based on filterStatus
+    // Filter events based on status dropdown
     const filteredEvents = useMemo(() => {
         if (filterStatus === "ALL") return events;
         const now = Date.now();
@@ -88,7 +101,7 @@ export default function OrganizerAnalytics() {
         });
     }, [events, filterStatus]);
 
-    // Computed Analytics Metrics
+    // Computed Analytics Metrics strictly using backend data
     const metrics = useMemo(() => {
         const totalEvents = events.length;
         const now = Date.now();
@@ -103,6 +116,7 @@ export default function OrganizerAnalytics() {
 
         let totalRegistrations = 0;
         let totalMaxTeamSizeSum = 0;
+        let topEvent = null;
 
         events.forEach((e) => {
             const start = e.startDate ? new Date(e.startDate).getTime() : 0;
@@ -121,23 +135,35 @@ export default function OrganizerAnalytics() {
             else if (mode === "OFFLINE") offlineCount++;
             else hybridCount++;
 
-            totalRegistrations += e.registrationsCount || 0;
+            const regCount = e.registrationCount || 0;
+            totalRegistrations += regCount;
             totalMaxTeamSizeSum += e.maxTeamSize || 4;
+
+            if (!topEvent || regCount > (topEvent.registrationCount || 0)) {
+                topEvent = e;
+            }
         });
 
         const avgRegistrationsPerEvent =
-            totalEvents > 0 ? Math.round(totalRegistrations / totalEvents) : 0;
+            totalEvents > 0 ? (totalRegistrations / totalEvents).toFixed(1) : 0;
 
         const avgMaxTeamSize =
-            totalEvents > 0 ? (totalMaxTeamSizeSum / totalEvents).toFixed(1) : "N/A";
+            totalEvents > 0 ? (totalMaxTeamSizeSum / totalEvents).toFixed(1) : 0;
 
-        // Determine dominant format
-        let dominantFormat = "Online";
-        if (offlineCount >= onlineCount && offlineCount >= hybridCount) {
-            dominantFormat = "In-Person (Offline)";
-        } else if (hybridCount >= onlineCount && hybridCount >= offlineCount) {
-            dominantFormat = "Hybrid";
+        // Calculate dominant format details
+        let dominantFormatName = "Offline";
+        let dominantFormatCount = offlineCount;
+
+        if (onlineCount > offlineCount && onlineCount >= hybridCount) {
+            dominantFormatName = "Online";
+            dominantFormatCount = onlineCount;
+        } else if (hybridCount > offlineCount && hybridCount > onlineCount) {
+            dominantFormatName = "Hybrid";
+            dominantFormatCount = hybridCount;
         }
+
+        const dominantFormatPct =
+            totalEvents > 0 ? Math.round((dominantFormatCount / totalEvents) * 100) : 0;
 
         return {
             totalEvents,
@@ -150,7 +176,9 @@ export default function OrganizerAnalytics() {
             totalRegistrations,
             avgRegistrationsPerEvent,
             avgMaxTeamSize,
-            dominantFormat,
+            topEvent,
+            dominantFormatName,
+            dominantFormatPct,
         };
     }, [events]);
 
@@ -173,182 +201,243 @@ export default function OrganizerAnalytics() {
 
     if (loading) {
         return (
-            <div className="space-y-6 pb-20 w-full max-w-7xl mx-auto">
-                <Skeleton className="h-[140px] w-full rounded-2xl" />
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-8 pb-20 w-full max-w-7xl mx-auto">
+                {/* Header Skeleton */}
+                <Skeleton className="h-[100px] w-full rounded-xl" />
+
+                {/* Key Metrics Skeleton */}
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, i) => (
-                        <Skeleton key={i} className="h-[110px] w-full rounded-xl" />
+                        <Skeleton key={i} className="h-[100px] w-full rounded-xl" />
                     ))}
                 </div>
+
+                {/* Overview Skeleton */}
+                <Skeleton className="h-[220px] w-full rounded-xl" />
+
+                {/* Format & Insights Skeleton */}
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <Skeleton className="h-[260px] w-full rounded-2xl" />
-                    <Skeleton className="h-[260px] w-full rounded-2xl" />
+                    <Skeleton className="h-[240px] w-full rounded-xl" />
+                    <Skeleton className="h-[240px] w-full rounded-xl" />
                 </div>
-                <Skeleton className="h-[320px] w-full rounded-2xl" />
+
+                {/* Table Skeleton */}
+                <Skeleton className="h-[280px] w-full rounded-xl" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="w-full max-w-7xl mx-auto py-12">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center shadow-xs dark:border-red-900/40 dark:bg-red-950/20">
+                    <AlertCircle className="mx-auto size-9 text-red-500 mb-3" />
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                        Unable to load analytics.
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-normal">
+                        Please check your network connection or try again.
+                    </p>
+                    <Button
+                        type="button"
+                        onClick={loadAnalyticsData}
+                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-700 transition-colors shadow-xs"
+                    >
+                        <RotateCw className="size-3.5" /> Retry
+                    </Button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 pb-20 w-full max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
-            {/* Header Controls Bar */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="space-y-8 pb-20 w-full max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
+            {/* 1. Analytics Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-                        Analytics & Insights
+                    <span className="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-400">
+                        ANALYTICS & INSIGHTS
                     </span>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                         Event Insights & Performance
                     </h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-                        Operational metrics, student distribution, and event format analytics.
+                        Track registrations, event performance, capacity, and hosting trends across your hackathons.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Filter dropdown */}
-                    <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-1.5 dark:border-slate-800 dark:bg-slate-800/60">
-                        <Filter className="size-3.5 text-slate-400" />
-                        <select
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                    {/* Event Filter Dropdown */}
+                    <div className="w-44">
+                        <HackHiveSelect
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
-                            className="bg-transparent text-xs font-semibold text-slate-700 outline-none dark:text-slate-300 cursor-pointer"
-                        >
-                            <option value="ALL">All Events ({events.length})</option>
-                            <option value="ACTIVE">Active Events ({metrics.activeCount})</option>
-                            <option value="UPCOMING">Upcoming ({metrics.upcomingCount})</option>
-                            <option value="COMPLETED">Completed ({metrics.completedCount})</option>
-                        </select>
+                            options={[
+                                { value: "ALL", label: `All Events (${events.length})` },
+                                { value: "ACTIVE", label: `Active (${metrics.activeCount})` },
+                                { value: "UPCOMING", label: `Upcoming (${metrics.upcomingCount})` },
+                                { value: "COMPLETED", label: `Completed (${metrics.completedCount})` },
+                            ]}
+                            size="sm"
+                        />
                     </div>
 
+                    {/* Refresh Button */}
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={loadAnalyticsData}
-                        className="text-xs font-semibold gap-1.5 rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="rounded-lg border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
-                        <RefreshCw className="size-3.5" /> Refresh
+                        <RefreshCw className="size-3.5 mr-1.5" /> Refresh
                     </Button>
                 </div>
             </div>
 
-            {/* If 0 events exist, show clean empty state */}
+            {/* Empty State when no events exist */}
             {events.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center space-y-4 dark:border-slate-800 dark:bg-slate-900 shadow-2xs">
-                    <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                        <BarChart3 className="size-6" />
-                    </div>
-                    <div className="space-y-1 max-w-sm mx-auto">
-                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                            No event analytics data available
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
-                            Publish your first hackathon event to start gathering real-time audience metrics, format distributions, and registration growth analytics.
-                        </p>
-                    </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                    <BarChart3 className="mx-auto size-9 text-slate-400 mb-3" />
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                        No analytics available yet.
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-normal max-w-sm mx-auto">
+                        Create your first event to start seeing registrations and event performance insights.
+                    </p>
                     <Button
                         type="button"
                         onClick={() => setIsCreateOpen(true)}
-                        className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-1.5 px-5 py-2.5 rounded-xl shadow-xs"
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-700 transition-colors shadow-xs"
                     >
-                        <Plus className="size-4" /> Create First Event
+                        <Plus className="size-4" /> Create Event
                     </Button>
                 </div>
             ) : (
                 <>
-                    {/* 1. Calm KPI Summary Grid (4 Cards) */}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {/* KPI 1 */}
-                        <Card className="border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {/* 2. Key Metrics Row */}
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        {/* 1. Total Events Hosted */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                                 Total Events Hosted
                             </span>
-                            <div className="flex items-baseline justify-between">
-                                <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-                                    {metrics.totalEvents}
-                                </span>
-                                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <CheckCircle2 className="size-3.5" />
-                                    {metrics.activeCount} Active
-                                </span>
+                            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                                {metrics.totalEvents}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                {metrics.upcomingCount} upcoming event(s) scheduled
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                {metrics.activeCount} active · {metrics.upcomingCount} upcoming
                             </p>
-                        </Card>
+                        </div>
 
-                        {/* KPI 2 */}
-                        <Card className="border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        {/* 2. Total Registrations */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                                 Total Registrations
                             </span>
-                            <div className="flex items-baseline justify-between">
-                                <span className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">
-                                    {metrics.totalRegistrations}
-                                </span>
-                                <span className="text-xs font-medium text-slate-500">
-                                    ~{metrics.avgRegistrationsPerEvent}/event
-                                </span>
+                            <div className="text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
+                                {metrics.totalRegistrations}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                Confirmed student participants
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                Total registered students
                             </p>
-                        </Card>
+                        </div>
 
-                        {/* KPI 3 */}
-                        <Card className="border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Primary Event Format
+                        {/* 3. Upcoming Events */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                Upcoming Events
                             </span>
-                            <div className="flex items-baseline justify-between">
-                                <span className="text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                                    {metrics.dominantFormat}
-                                </span>
+                            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                                {metrics.upcomingCount}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                {metrics.onlineCount} Virtual • {metrics.offlineCount} In-Person • {metrics.hybridCount} Hybrid
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                Scheduled upcoming events
                             </p>
-                        </Card>
+                        </div>
 
-                        {/* KPI 4 */}
-                        <Card className="border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                Avg Max Team Capacity
+                        {/* 4. Average Registrations / Event */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
+                            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                Average Registrations / Event
                             </span>
-                            <div className="flex items-baseline justify-between">
-                                <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-                                    {metrics.avgMaxTeamSize}
-                                </span>
-                                <span className="text-xs font-semibold text-slate-500">
-                                    members/team
-                                </span>
+                            <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                                {metrics.avgRegistrationsPerEvent}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                Max team size setting across events
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                Registrations per hosted event
                             </p>
-                        </Card>
+                        </div>
                     </div>
 
-                    {/* 2. Format Breakdown & Key Indicators (2 Columns) */}
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        {/* Format Distribution Panel */}
-                        <Card className="border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-5">
-                            <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                    Event Format Distribution
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    Ratio of virtual, physical, and hybrid hackathon hosting formats.
-                                </p>
-                            </div>
+                    {/* 3. Registration Overview Section */}
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                            Registration Overview
+                        </h2>
 
-                            <div className="space-y-4">
+                        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredEvents.map((evt) => {
+                                const regCount = evt.registrationCount || 0;
+                                const status = getStatusBadge(evt);
+
+                                return (
+                                    <div
+                                        key={evt.id}
+                                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3"
+                                    >
+                                        <div className="flex items-start justify-between gap-2">
+                                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                                                {evt.title}
+                                            </h3>
+                                            <Badge variant={status.variant} className="text-[10px] font-semibold shrink-0">
+                                                {status.label}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400 font-normal">
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Registrations:</span>
+                                                <span className="font-semibold text-purple-600 dark:text-purple-400">
+                                                    {regCount} {regCount === 1 ? "registration" : "registrations"}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Team capacity:</span>
+                                                <span>{evt.minTeamSize || 1}–{evt.maxTeamSize || 4}</span>
+                                            </div>
+
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Registration closes:</span>
+                                                <span>{formatDate(evt.registrationEndDate)}</span>
+                                            </div>
+
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-500">Start date:</span>
+                                                <span>{formatDate(evt.startDate)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* 4 & 5 & 6. Format Distribution + Registration/Capacity Insights Grid */}
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        {/* Event Format Insights */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+                            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                                Format Distribution
+                            </h2>
+
+                            <div className="space-y-4 text-xs font-normal">
                                 {/* Online */}
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        <span className="flex items-center gap-1.5">
-                                            <Globe className="size-3.5 text-indigo-500" /> Virtual / Online
+                                    <div className="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                                        <span className="flex items-center gap-1.5 font-medium">
+                                            <Globe className="size-3.5 text-purple-600" /> Online
                                         </span>
                                         <span>
                                             {metrics.onlineCount} event(s) (
@@ -360,7 +449,7 @@ export default function OrganizerAnalytics() {
                                     </div>
                                     <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                         <div
-                                            className="h-full bg-purple-600 rounded-full transition-all duration-300"
+                                            className="h-full bg-purple-600 rounded-full transition-all"
                                             style={{
                                                 width: `${
                                                     metrics.totalEvents > 0
@@ -374,9 +463,9 @@ export default function OrganizerAnalytics() {
 
                                 {/* Offline */}
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        <span className="flex items-center gap-1.5">
-                                            <Building2 className="size-3.5 text-purple-500" /> In-Person / Offline
+                                    <div className="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                                        <span className="flex items-center gap-1.5 font-medium">
+                                            <Building2 className="size-3.5 text-slate-600" /> Offline
                                         </span>
                                         <span>
                                             {metrics.offlineCount} event(s) (
@@ -388,7 +477,7 @@ export default function OrganizerAnalytics() {
                                     </div>
                                     <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                         <div
-                                            className="h-full bg-slate-700 dark:bg-slate-300 rounded-full transition-all duration-300"
+                                            className="h-full bg-slate-600 rounded-full transition-all"
                                             style={{
                                                 width: `${
                                                     metrics.totalEvents > 0
@@ -402,9 +491,9 @@ export default function OrganizerAnalytics() {
 
                                 {/* Hybrid */}
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        <span className="flex items-center gap-1.5">
-                                            <Layers className="size-3.5 text-emerald-500" /> Hybrid Format
+                                    <div className="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                                        <span className="flex items-center gap-1.5 font-medium">
+                                            <Layers className="size-3.5 text-indigo-600" /> Hybrid
                                         </span>
                                         <span>
                                             {metrics.hybridCount} event(s) (
@@ -416,7 +505,7 @@ export default function OrganizerAnalytics() {
                                     </div>
                                     <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                         <div
-                                            className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                                            className="h-full bg-indigo-600 rounded-full transition-all"
                                             style={{
                                                 width: `${
                                                     metrics.totalEvents > 0
@@ -428,126 +517,151 @@ export default function OrganizerAnalytics() {
                                     </div>
                                 </div>
                             </div>
-                        </Card>
+                        </div>
 
-                        {/* Operational Takeaways Card */}
-                        <Card className="border border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
-                            <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                    Operational Insights & Recommendations
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    Data-driven takeaways from your hosting history.
-                                </p>
+                        {/* Registration & Capacity Insights */}
+                        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+                            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                                Registration & Capacity Insights
+                            </h2>
+
+                            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400 font-normal">
+                                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                                    <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                        Top Performing Event
+                                    </span>
+                                    <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                        {metrics.topEvent ? metrics.topEvent.title : "None"}
+                                    </div>
+                                    <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
+                                        {metrics.topEvent ? (metrics.topEvent.registrationCount || 0) : 0} registration(s)
+                                    </p>
+                                </div>
+
+                                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
+                                    <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                        Team Capacity Config
+                                    </span>
+                                    <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                                        Average maximum team size: {metrics.avgMaxTeamSize} members
+                                    </div>
+                                </div>
                             </div>
-
-                            <ul className="space-y-3 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                <li className="flex items-start gap-2.5">
-                                    <span className="mt-0.5 size-1.5 rounded-full bg-purple-600 shrink-0" />
-                                    <span>
-                                        <strong className="text-slate-900 dark:text-slate-100">Event Portfolio Volume:</strong> You have hosted {metrics.totalEvents} hackathon instance(s) with an average of {metrics.avgRegistrationsPerEvent} student participant(s) per event.
-                                    </span>
-                                </li>
-
-                                <li className="flex items-start gap-2.5">
-                                    <span className="mt-0.5 size-1.5 rounded-full bg-purple-600 shrink-0" />
-                                    <span>
-                                        <strong className="text-slate-900 dark:text-slate-100">Dominant Mode:</strong> {metrics.dominantFormat} formats generate steady student engagement across regional chapters.
-                                    </span>
-                                </li>
-
-                                <li className="flex items-start gap-2.5">
-                                    <span className="mt-0.5 size-1.5 rounded-full bg-purple-600 shrink-0" />
-                                    <span>
-                                        <strong className="text-slate-900 dark:text-slate-100">Team Structure:</strong> Average configured maximum team size is {metrics.avgMaxTeamSize} members.
-                                    </span>
-                                </li>
-                            </ul>
-                        </Card>
+                        </div>
                     </div>
 
-                    {/* 3. Event Performance Data Table */}
-                    <Card className="border border-slate-200/80 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden space-y-0">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                                    Event Performance Breakdown
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    Detailed breakdown of all published hackathons ({filteredEvents.length} displaying).
-                                </p>
-                            </div>
+                    {/* 7. Operational Insights Section */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3">
+                        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                            Operational Insights
+                        </h2>
+
+                        <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400 font-normal">
+                            <li className="flex items-center gap-2">
+                                <span className="size-1.5 rounded-full bg-purple-600 shrink-0" />
+                                <span>
+                                    You currently have <strong className="text-slate-900 dark:text-slate-100 font-semibold">{metrics.upcomingCount}</strong> upcoming event(s).
+                                </span>
+                            </li>
+
+                            <li className="flex items-center gap-2">
+                                <span className="size-1.5 rounded-full bg-purple-600 shrink-0" />
+                                <span>
+                                    Your events have received <strong className="text-slate-900 dark:text-slate-100 font-semibold">{metrics.totalRegistrations}</strong> total registration(s).
+                                </span>
+                            </li>
+
+                            <li className="flex items-center gap-2">
+                                <span className="size-1.5 rounded-full bg-purple-600 shrink-0" />
+                                <span>
+                                    <strong className="text-slate-900 dark:text-slate-100 font-semibold">{metrics.dominantFormatName}</strong> events represent <strong className="text-slate-900 dark:text-slate-100 font-semibold">{metrics.dominantFormatPct}%</strong> of your event portfolio.
+                                </span>
+                            </li>
+
+                            <li className="flex items-center gap-2">
+                                <span className="size-1.5 rounded-full bg-purple-600 shrink-0" />
+                                <span>
+                                    Average configured maximum team size is <strong className="text-slate-900 dark:text-slate-100 font-semibold">{metrics.avgMaxTeamSize}</strong> members.
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* 8. Event Performance Table */}
+                    <div className="rounded-xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900 overflow-hidden space-y-0">
+                        <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+                            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                                Event Performance Breakdown
+                            </h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                Detailed breakdown of all published hackathons ({filteredEvents.length} displaying).
+                            </p>
                         </div>
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                    <tr className="border-b border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/40 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                                        <th className="py-3 px-6">Event Name</th>
+                                    <tr className="border-b border-slate-100 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-800/50 text-slate-500 font-medium uppercase tracking-wider text-[11px]">
+                                        <th className="py-3 px-5">Event</th>
                                         <th className="py-3 px-4">Format</th>
                                         <th className="py-3 px-4">Start Date</th>
-                                        <th className="py-3 px-4">End Date</th>
+                                        <th className="py-3 px-4">Registration Deadline</th>
                                         <th className="py-3 px-4 text-center">Registrations</th>
                                         <th className="py-3 px-4 text-center">Team Capacity</th>
-                                        <th className="py-3 px-4 text-right">Status</th>
+                                        <th className="py-3 px-4 text-center">Status</th>
+                                        <th className="py-3 px-5 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {filteredEvents.map((evt) => {
                                         const status = getStatusBadge(evt);
-                                        const startDateStr = evt.startDate
-                                            ? new Date(evt.startDate).toLocaleDateString(undefined, {
-                                                  month: "short",
-                                                  day: "numeric",
-                                                  year: "numeric",
-                                              })
-                                            : "TBD";
-
-                                        const endDateStr = evt.endDate
-                                            ? new Date(evt.endDate).toLocaleDateString(undefined, {
-                                                  month: "short",
-                                                  day: "numeric",
-                                                  year: "numeric",
-                                              })
-                                            : "TBD";
+                                        const regCount = evt.registrationCount || 0;
 
                                         return (
                                             <tr
                                                 key={evt.id}
-                                                className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                                                className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
                                             >
-                                                <td className="py-4 px-6 font-bold text-slate-900 dark:text-slate-100">
-                                                    <div className="flex items-center gap-2">
-                                                        <span>{evt.title}</span>
-                                                    </div>
+                                                <td className="py-3.5 px-5 font-semibold text-slate-900 dark:text-slate-100">
+                                                    {evt.title}
                                                 </td>
 
-                                                <td className="py-4 px-4">
-                                                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                                        {evt.eventMode || "ONLINE"}
-                                                    </span>
+                                                <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-normal">
+                                                    {evt.eventMode || "Offline"}
                                                 </td>
 
-                                                <td className="py-4 px-4 text-slate-600 dark:text-slate-400 font-medium">
-                                                    {startDateStr}
+                                                <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-normal">
+                                                    {formatDate(evt.startDate)}
                                                 </td>
 
-                                                <td className="py-4 px-4 text-slate-600 dark:text-slate-400 font-medium">
-                                                    {endDateStr}
+                                                <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-normal">
+                                                    {formatDate(evt.registrationEndDate)}
                                                 </td>
 
-                                                <td className="py-4 px-4 text-center font-bold text-purple-600 dark:text-purple-400">
-                                                    {evt.registrationsCount || 0}
+                                                <td className="py-3.5 px-4 text-center font-semibold text-purple-600 dark:text-purple-400">
+                                                    {regCount}
                                                 </td>
 
-                                                <td className="py-4 px-4 text-center text-slate-600 dark:text-slate-400 font-medium">
-                                                    {evt.minTeamSize || 1} - {evt.maxTeamSize || 4} members
+                                                <td className="py-3.5 px-4 text-center text-slate-600 dark:text-slate-400 font-normal">
+                                                    {evt.minTeamSize || 1}–{evt.maxTeamSize || 4} members
                                                 </td>
 
-                                                <td className="py-4 px-6 text-right">
-                                                    <Badge variant={status.variant} className="px-2.5 py-0.5 text-[10px] font-bold">
+                                                <td className="py-3.5 px-4 text-center">
+                                                    <Badge variant={status.variant} className="text-[10px] font-semibold">
                                                         {status.label}
                                                     </Badge>
+                                                </td>
+
+                                                <td className="py-3.5 px-5 text-right">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => navigate("/organizer/events")}
+                                                        className="rounded-lg border-slate-200 text-xs font-medium text-slate-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                                                    >
+                                                        View
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         );
@@ -555,7 +669,7 @@ export default function OrganizerAnalytics() {
                                 </tbody>
                             </table>
                         </div>
-                    </Card>
+                    </div>
                 </>
             )}
 

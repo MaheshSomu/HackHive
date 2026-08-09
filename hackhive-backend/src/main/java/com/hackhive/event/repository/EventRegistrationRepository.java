@@ -31,4 +31,6 @@ public interface EventRegistrationRepository
             StudentProfile studentProfile
     );
     boolean existsByEvent(Event event);
+
+    long countByEvent(Event event);
 }

@@ -19,6 +19,7 @@ import {
 import useAuth from "../../hooks/useAuth";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
+import HackHiveSelect from "../../components/ui/HackHiveSelect";
 
 export default function StudentSettings() {
     const { user } = useAuth();
@@ -339,20 +340,18 @@ export default function StudentSettings() {
 
                     <div className="space-y-4 max-w-xl">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Language
-                            </label>
-                            <select
-                                value={preferencesConfig.language}
-                                onChange={(e) => {
-                                    setPreferencesConfig((p) => ({ ...p, language: e.target.value }));
-                                    toast.success("Language preference updated");
-                                }}
-                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100 font-semibold"
-                            >
-                                <option value="English (US)">English (US)</option>
-                                <option value="English (UK)">English (UK)</option>
-                            </select>
+                        <HackHiveSelect
+                            label="Language"
+                            value={preferencesConfig.language}
+                            onChange={(e) => {
+                                setPreferencesConfig((p) => ({ ...p, language: e.target.value }));
+                                toast.success("Language preference updated");
+                            }}
+                            options={[
+                                { value: "English (US)", label: "English (US)" },
+                                { value: "English (UK)", label: "English (UK)" },
+                            ]}
+                        />
                         </div>
                     </div>
                 </Card>

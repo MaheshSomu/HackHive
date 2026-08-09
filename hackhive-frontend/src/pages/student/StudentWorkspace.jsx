@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import useAuth from "../../hooks/useAuth";
+import HackHiveSelect from "../../components/ui/HackHiveSelect";
 import { teamService } from "../../services/teamService";
 import { workspaceService } from "../../services/workspaceService";
 import TeamChat from "../../components/workspace/TeamChat";
@@ -407,21 +408,21 @@ export default function StudentWorkspace() {
 
                         {/* Workspace Selector */}
                         {myTeams.length > 0 && (
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <div className="flex flex-col gap-1 min-w-[240px]">
+                                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                     Active Team Workspace
                                 </label>
-                                <select
+                                <HackHiveSelect
                                     value={selectedTeamId}
                                     onChange={(e) => setSelectedTeamId(e.target.value)}
-                                    className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-900 outline-none focus:border-indigo-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                >
-                                    {myTeams.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.name} ({t.eventTitle || "Hackathon"})
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={myTeams.map((t) => ({
+                                        value: t.id,
+                                        label: `${t.name} (${t.eventTitle || "Hackathon"})`,
+                                    }))}
+                                    searchable={myTeams.length > 3}
+                                    searchPlaceholder="Search workspace..."
+                                    size="sm"
+                                />
                             </div>
                         )}
                     </div>

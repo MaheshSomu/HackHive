@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventMapper {
 
-    public EventResponse toResponse(Event event) {
+    public EventResponse toResponse(Event event,Long registrationCount) {
 
         return EventResponse.builder()
                 .id(event.getId())
@@ -31,6 +31,7 @@ public class EventMapper {
                 .eligibility(event.getEligibility())
                 .bannerUrl(event.getBannerUrl())
                 .collegeName(event.getCollegeName())
+                .registrationCount(registrationCount)
                 .build();
     }
 }

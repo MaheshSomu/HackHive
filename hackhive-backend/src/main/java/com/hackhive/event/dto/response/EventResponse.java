@@ -40,4 +40,6 @@ public class EventResponse {
     private String bannerUrl;
 
     private String collegeName;
+
+    private Long registrationCount;
 }

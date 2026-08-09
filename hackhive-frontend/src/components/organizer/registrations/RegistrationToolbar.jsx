@@ -1,5 +1,6 @@
-import { Search, Download, Calendar, Filter } from "lucide-react";
+import { Search, Download, Calendar } from "lucide-react";
 import { Button } from "../../ui/Button";
+import HackHiveSelect from "../../ui/HackHiveSelect";
 
 export default function RegistrationToolbar({
     events = [],
@@ -14,8 +15,13 @@ export default function RegistrationToolbar({
     onExportCSV,
     totalResults = 0,
 }) {
+    const eventOptions = events.map((evt) => ({
+        value: evt.id,
+        label: `${evt.title} (${evt.eventMode || "Offline"})`,
+    }));
+
     return (
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
             {/* Top Row: Event Selector dropdown & Export button */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                 {/* Event Selector */}
@@ -24,23 +30,20 @@ export default function RegistrationToolbar({
                         <Calendar className="size-4.5" />
                     </div>
                     <div className="flex-1 space-y-0.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                             Active Event Context
                         </label>
                         {events.length > 0 ? (
-                            <select
+                            <HackHiveSelect
                                 value={selectedEventId}
                                 onChange={(e) => onSelectEvent(e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100 cursor-pointer"
-                            >
-                                {events.map((evt) => (
-                                    <option key={evt.id} value={evt.id}>
-                                        {evt.title} ({evt.eventMode || "Hybrid"})
-                                    </option>
-                                ))}
-                            </select>
+                                options={eventOptions}
+                                searchable={events.length > 3}
+                                searchPlaceholder="Search events..."
+                                size="sm"
+                            />
                         ) : (
-                            <p className="text-xs text-slate-400 font-medium">No published events found.</p>
+                            <p className="text-xs text-slate-400 font-normal">No published events found.</p>
                         )}
                     </div>
                 </div>
@@ -70,38 +73,38 @@ export default function RegistrationToolbar({
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
                         placeholder="Search applicant by student name, email, or college..."
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 py-2 text-xs text-slate-900 font-medium outline-none transition focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-xs text-slate-900 font-medium outline-none transition focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                     />
                 </div>
 
                 {/* Filter Dropdowns */}
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Status Filter */}
-                    <div className="flex items-center gap-1.5 text-xs">
-                        <span className="text-slate-400 font-medium text-[11px]">Status:</span>
-                        <select
+                    <div className="w-36">
+                        <HackHiveSelect
                             value={statusFilter}
                             onChange={(e) => onStatusFilterChange(e.target.value)}
-                            className="rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-1.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
-                        >
-                            <option value="ALL">All Statuses</option>
-                            <option value="CONFIRMED">Confirmed</option>
-                            <option value="PENDING">Pending</option>
-                        </select>
+                            options={[
+                                { value: "ALL", label: "All Statuses" },
+                                { value: "CONFIRMED", label: "Confirmed" },
+                                { value: "PENDING", label: "Pending" },
+                            ]}
+                            size="sm"
+                        />
                     </div>
 
                     {/* Registration Type Filter */}
-                    <div className="flex items-center gap-1.5 text-xs">
-                        <span className="text-slate-400 font-medium text-[11px]">Type:</span>
-                        <select
+                    <div className="w-36">
+                        <HackHiveSelect
                             value={typeFilter}
                             onChange={(e) => onTypeFilterChange(e.target.value)}
-                            className="rounded-xl border border-slate-200 bg-slate-50/80 px-2.5 py-1.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
-                        >
-                            <option value="ALL">All Types</option>
-                            <option value="INDIVIDUAL">Individual</option>
-                            <option value="TEAM">Team Entry</option>
-                        </select>
+                            options={[
+                                { value: "ALL", label: "All Types" },
+                                { value: "INDIVIDUAL", label: "Individual" },
+                                { value: "TEAM", label: "Team Entry" },
+                            ]}
+                            size="sm"
+                        />
                     </div>
                 </div>
             </div>

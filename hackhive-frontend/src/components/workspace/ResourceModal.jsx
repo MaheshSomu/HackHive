@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Link2, FileText, Globe, ExternalLink, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
+import HackHiveSelect from "../ui/HackHiveSelect";
 
 const RESOURCE_TYPE_OPTIONS = [
     { value: "GITHUB", label: "GitHub Repository", description: "Source code & repository links" },
@@ -26,6 +27,7 @@ export default function ResourceModal({
         register,
         handleSubmit,
         reset,
+        control,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -155,19 +157,19 @@ export default function ResourceModal({
                         {/* Resource Type & URL Grid */}
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                    Resource Type <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    {...register("resourceType", { required: true })}
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100 transition cursor-pointer"
-                                >
-                                    {RESOURCE_TYPE_OPTIONS.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Controller
+                                    name="resourceType"
+                                    control={control}
+                                    rules={{ required: true }}
+                                    render={({ field }) => (
+                                        <HackHiveSelect
+                                            label="Resource Type *"
+                                            value={field.value}
+                                            onChange={(e) => field.onChange(e.target.value)}
+                                            options={RESOURCE_TYPE_OPTIONS}
+                                        />
+                                    )}
+                                />
                             </div>
 
                             <div>

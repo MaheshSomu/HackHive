@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Calendar, Check, X } from "lucide-react";
 import { Button } from "../ui/Button";
+import HackHiveSelect from "../ui/HackHiveSelect";
 
 export default function OrganizerEventModal({
     isOpen,
@@ -19,6 +20,7 @@ export default function OrganizerEventModal({
         handleSubmit,
         watch,
         reset,
+        control,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -170,19 +172,23 @@ export default function OrganizerEventModal({
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                            Event Mode *
-                                        </label>
-                                        <select
-                                            {...register("eventMode", { required: true })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                        >
-                                            <option value="ONLINE">Online</option>
-                                            <option value="OFFLINE">Offline</option>
-                                            <option value="HYBRID">Hybrid</option>
-                                        </select>
-                                    </div>
+                                    <Controller
+                                        name="eventMode"
+                                        control={control}
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <HackHiveSelect
+                                                label="Event Mode *"
+                                                value={field.value}
+                                                onChange={(e) => field.onChange(e.target.value)}
+                                                options={[
+                                                    { value: "ONLINE", label: "Online" },
+                                                    { value: "OFFLINE", label: "Offline" },
+                                                    { value: "HYBRID", label: "Hybrid" },
+                                                ]}
+                                            />
+                                        )}
+                                    />
                                 </div>
 
                                 <div>

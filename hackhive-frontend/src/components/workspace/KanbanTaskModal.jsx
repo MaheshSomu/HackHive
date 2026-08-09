@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "../ui/Button";
+import HackHiveSelect from "../ui/HackHiveSelect";
 
 export default function KanbanTaskModal({
     isOpen,
@@ -18,6 +19,7 @@ export default function KanbanTaskModal({
         register,
         handleSubmit,
         reset,
+        control,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -127,53 +129,63 @@ export default function KanbanTaskModal({
                         </div>
 
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Status
-                                </label>
-                                <select
-                                    {...register("status")}
-                                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                >
-                                    <option value="TODO">To Do</option>
-                                    <option value="IN_PROGRESS">In Progress</option>
-                                    <option value="DONE">Done</option>
-                                </select>
-                            </div>
+                            <Controller
+                                name="status"
+                                control={control}
+                                render={({ field }) => (
+                                    <HackHiveSelect
+                                        label="Status"
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(e.target.value)}
+                                        options={[
+                                            { value: "TODO", label: "To Do" },
+                                            { value: "IN_PROGRESS", label: "In Progress" },
+                                            { value: "DONE", label: "Done" },
+                                        ]}
+                                    />
+                                )}
+                            />
 
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Priority
-                                </label>
-                                <select
-                                    {...register("priority")}
-                                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                >
-                                    <option value="LOW">Low</option>
-                                    <option value="MEDIUM">Medium</option>
-                                    <option value="HIGH">High</option>
-                                    <option value="URGENT">Urgent</option>
-                                </select>
-                            </div>
+                            <Controller
+                                name="priority"
+                                control={control}
+                                render={({ field }) => (
+                                    <HackHiveSelect
+                                        label="Priority"
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(e.target.value)}
+                                        options={[
+                                            { value: "LOW", label: "Low" },
+                                            { value: "MEDIUM", label: "Medium" },
+                                            { value: "HIGH", label: "High" },
+                                            { value: "URGENT", label: "Urgent" },
+                                        ]}
+                                    />
+                                )}
+                            />
                         </div>
 
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Assigned Member
-                                </label>
-                                <select
-                                    {...register("assignedToStudentProfileId")}
-                                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                >
-                                    <option value="">Unassigned</option>
-                                    {members.map((m) => (
-                                        <option key={m.studentProfileId || m.memberId} value={m.studentProfileId}>
-                                            {m.fullName || m.email}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <Controller
+                                name="assignedToStudentProfileId"
+                                control={control}
+                                render={({ field }) => (
+                                    <HackHiveSelect
+                                        label="Assigned Member"
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(e.target.value)}
+                                        options={[
+                                            { value: "", label: "Unassigned" },
+                                            ...members.map((m) => ({
+                                                value: m.studentProfileId || m.memberId,
+                                                label: m.fullName || m.email,
+                                            })),
+                                        ]}
+                                        searchable={members.length > 3}
+                                        searchPlaceholder="Search member..."
+                                    />
+                                )}
+                            />
 
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
