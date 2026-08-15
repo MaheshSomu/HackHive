@@ -26,4 +26,6 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest request);
 
     AuthResponse completeOAuthRegistration(OAuthCompleteRegistrationRequest request);
+
+    void requestPasswordChange();
 }

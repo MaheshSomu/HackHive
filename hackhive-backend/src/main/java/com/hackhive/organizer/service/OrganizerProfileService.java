@@ -15,4 +15,10 @@ public interface OrganizerProfileService {
     OrganizerProfileResponse updateProfile(
             UpdateOrganizerProfileRequest request
     );
+
+    OrganizerProfileResponse uploadLogo(
+            org.springframework.web.multipart.MultipartFile file
+    );
+
+    OrganizerProfileResponse removeLogo();
 }

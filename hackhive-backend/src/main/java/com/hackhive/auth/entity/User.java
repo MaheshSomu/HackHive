@@ -6,6 +6,8 @@ import com.hackhive.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import com.hackhive.auth.enums.AuthProvider;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -49,4 +51,13 @@ public class User extends BaseEntity {
 
     @Column(name = "password_reset_token_expiry")
     private LocalDateTime passwordResetTokenExpiry;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", nullable = false)
+    @Builder.Default
+    private AuthProvider authProvider = AuthProvider.LOCAL;
+
+    public AuthProvider getAuthProvider() {
+        return authProvider == null ? AuthProvider.LOCAL : authProvider;
+    }
 }

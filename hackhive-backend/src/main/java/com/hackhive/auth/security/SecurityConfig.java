@@ -80,11 +80,16 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Authenticated auth APIs
+                        .requestMatchers("/api/auth/change-password-request")
+                        .authenticated()
+
                         // Public APIs
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/api/uploads/**"
                         )
                         .permitAll()
 

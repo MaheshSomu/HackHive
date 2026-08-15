@@ -26,6 +26,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.hackhive.auth.service.EmailService;
+import com.hackhive.organizer.entity.OrganizerNotificationPreference;
+import com.hackhive.organizer.repository.OrganizerNotificationPreferenceRepository;
+
 @Service
 @RequiredArgsConstructor
 public class EventRegistrationServiceImpl
@@ -38,6 +42,8 @@ public class EventRegistrationServiceImpl
     private final UserRepository userRepository;
     private final EventRegistrationMapper eventRegistrationMapper;
     private final TeamMemberRepository teamMemberRepository;
+    private final OrganizerNotificationPreferenceRepository preferenceRepository;
+    private final EmailService emailService;
 
     private User getCurrentUser() {
 
@@ -122,6 +128,34 @@ public class EventRegistrationServiceImpl
 
         registration =
                 eventRegistrationRepository.save(registration);
+
+        // Notify organizer if registration emails are enabled in notification preferences
+        try {
+            OrganizerProfile organizerProfile = event.getOrganizerProfile();
+            if (organizerProfile != null) {
+                boolean sendEmail = preferenceRepository.findByOrganizerProfile(organizerProfile)
+                        .map(OrganizerNotificationPreference::getRegistrations)
+                        .orElse(true);
+
+                if (sendEmail) {
+                    String recipientEmail = organizerProfile.getContactEmail();
+                    if (recipientEmail == null || recipientEmail.isBlank()) {
+                        if (organizerProfile.getUser() != null) {
+                            recipientEmail = organizerProfile.getUser().getEmail();
+                        }
+                    }
+                    if (recipientEmail != null && !recipientEmail.isBlank()) {
+                        String organizerName = organizerProfile.getOrganizationName();
+                        String eventTitle = event.getTitle();
+                        String studentName = studentProfile.getUser() != null ? studentProfile.getUser().getFullName() : "Student";
+                        String studentEmail = studentProfile.getUser() != null ? studentProfile.getUser().getEmail() : "N/A";
+                        emailService.sendNewRegistrationEmail(recipientEmail, organizerName, eventTitle, studentName, studentEmail);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to trigger registration email notification: " + e.getMessage());
+        }
 
         return eventRegistrationMapper
                 .toResponse(registration);

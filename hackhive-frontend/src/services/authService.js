@@ -40,6 +40,11 @@ export const completeOAuthRegistration = async (payload) => {
     return response.data;
 };
 
+export const requestPasswordChange = async () => {
+    const response = await api.post("/auth/change-password-request");
+    return response.data;
+};
+
 
 
 

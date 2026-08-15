@@ -1,6 +1,8 @@
 import { Building2, Globe, Mail, MapPin, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { Badge } from "../../ui/Badge";
 
+import { getImageUrl } from "../../../utils/imageUtils";
+
 export default function ProfileSummaryCard({ profileData, user }) {
     // Calculate profile completion percentage based on 8 core fields
     const completionFields = [
@@ -38,7 +40,7 @@ export default function ProfileSummaryCard({ profileData, user }) {
                     <div className="relative flex size-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-2xl font-black text-white shadow-md ring-4 ring-purple-50 dark:ring-purple-950/40 overflow-hidden">
                         {profileData?.logoUrl ? (
                             <img
-                                src={profileData.logoUrl}
+                                src={getImageUrl(profileData.logoUrl)}
                                 alt={profileData?.organizationName || "Organization Logo"}
                                 className="size-full object-cover"
                                 onError={(e) => {

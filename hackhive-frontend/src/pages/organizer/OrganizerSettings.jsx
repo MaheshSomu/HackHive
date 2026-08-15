@@ -153,6 +153,7 @@ export default function OrganizerSettings() {
                                     profileData={profileData}
                                     onSave={handleUpdateProfile}
                                     saving={saving}
+                                    onProfileUpdated={(updated) => setProfileData(updated)}
                                 />
                             )}
 

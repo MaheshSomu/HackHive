@@ -97,4 +97,44 @@ public void sendPasswordResetEmail(User user) {
 
     mailSender.send(message);
 }
+
+    @Override
+    public void sendNewRegistrationEmail(
+            String recipientEmail,
+            String organizerName,
+            String eventTitle,
+            String studentName,
+            String studentEmail) {
+
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(recipientEmail);
+            message.setSubject("New Registration — " + eventTitle);
+            message.setText("""
+                    Hello %s,
+
+                    A new participant has registered for your event "%s"! 🎉
+
+                    Participant Details:
+                    - Name: %s
+                    - Email: %s
+
+                    Regards,
+                    HackHive Team
+                    """.formatted(
+                    organizerName != null && !organizerName.isBlank() ? organizerName : "Organizer",
+                    eventTitle,
+                    studentName != null ? studentName : "Student",
+                    studentEmail != null ? studentEmail : "N/A"
+            ));
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send registration notification email to " + recipientEmail + ": " + e.getMessage());
+        }
+    }
 }
