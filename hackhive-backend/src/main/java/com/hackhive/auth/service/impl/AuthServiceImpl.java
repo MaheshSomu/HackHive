@@ -38,6 +38,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hackhive.auth.enums.AuthProvider;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -88,6 +90,7 @@ public class AuthServiceImpl implements AuthService {
                 .enabled(true)
                 .emailVerified(false)
                 .role(role)
+                .authProvider(AuthProvider.LOCAL)
                 .build();
         
         user.setEmailVerified(false);
@@ -176,6 +179,7 @@ public class AuthServiceImpl implements AuthService {
                                 .getName()
                                 .name()
                 )
+                .authProvider(user.getAuthProvider().name())
                 .build();
     }
 
@@ -205,6 +209,7 @@ public class AuthServiceImpl implements AuthService {
                                 .getName()
                                 .name()
                 )
+                .authProvider(user.getAuthProvider().name())
                 .build();
     }
 
@@ -330,6 +335,7 @@ public class AuthServiceImpl implements AuthService {
                 .enabled(true)
                 .emailVerified(true)
                 .role(role)
+                .authProvider(AuthProvider.GOOGLE)
                 .build();
 
         userRepository.save(user);
@@ -364,6 +370,41 @@ public class AuthServiceImpl implements AuthService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .role(user.getRole().getName().name())
+                .authProvider(user.getAuthProvider().name())
                 .build();
+    }
+
+    @Override
+    public void requestPasswordChange() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        User user = userRepository
+                .findByEmail(
+                        authentication.getName()
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found."
+                        ));
+
+        if (user.getAuthProvider() == AuthProvider.GOOGLE) {
+            throw new BadRequestException(
+                    "Password management is handled through your Google account."
+            );
+        }
+
+        user.setPasswordResetToken(
+                TokenGenerator.generateVerificationToken());
+
+        user.setPasswordResetTokenExpiry(
+                LocalDateTime.now().plusMinutes(30));
+
+        userRepository.save(user);
+
+        emailService.sendPasswordResetEmail(user);
     }
 }

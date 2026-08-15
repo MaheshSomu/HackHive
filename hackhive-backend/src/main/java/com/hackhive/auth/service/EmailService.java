@@ -8,4 +8,11 @@ public interface EmailService {
 
     void sendPasswordResetEmail(User user);
 
+    void sendNewRegistrationEmail(
+            String recipientEmail,
+            String organizerName,
+            String eventTitle,
+            String studentName,
+            String studentEmail
+    );
 }

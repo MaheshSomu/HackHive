@@ -1,15 +1,30 @@
-import { ShieldCheck, Mail, KeyRound, CheckCircle2, Lock } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ShieldCheck, Mail, KeyRound, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import { Badge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
+import { requestPasswordChange } from "../../../services/authService";
 
 export default function SecuritySection({ user }) {
+    const [loading, setLoading] = useState(false);
+
     // Determine if user authenticated via Google or standard email/password
-    const isGoogleAuth = Boolean(
-        user?.provider === "google" ||
-        user?.authProvider === "GOOGLE" ||
-        user?.googleId ||
-        user?.isGoogle
-    );
+    const isGoogleAuth = user?.authProvider === "GOOGLE";
+
+    const handleChangePasswordRequest = async () => {
+        setLoading(true);
+        try {
+            const res = await requestPasswordChange();
+            const msg = res?.message || "Password reset link sent to your account email.";
+            toast.success(msg);
+        } catch (err) {
+            console.error("Failed to request password change:", err);
+            const msg = err.response?.data?.message || "Unable to send password reset email. Please try again.";
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
@@ -34,7 +49,7 @@ export default function SecuritySection({ user }) {
                         <input
                             type="email"
                             disabled
-                            value={user?.email || "organizer@hackhive.com"}
+                            value={user?.email || ""}
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-xs text-slate-700 font-semibold cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300"
                         />
                     </div>
@@ -46,7 +61,7 @@ export default function SecuritySection({ user }) {
                 {/* Connected Accounts */}
                 <div className="space-y-2">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Connected Authentication Methods
+                        Authentication Method
                     </label>
 
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 dark:bg-slate-800/40 dark:border-slate-800">
@@ -77,11 +92,11 @@ export default function SecuritySection({ user }) {
                             </div>
                             <div className="space-y-0.5">
                                 <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                                    {isGoogleAuth ? "Google Workspace OAuth" : "Email & Password Account"}
+                                    {isGoogleAuth ? "Google OAuth" : "Email & Password Account"}
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                     {isGoogleAuth
-                                        ? "Single sign-on active via Google Security Services."
+                                        ? "Your account is secured through Google."
                                         : "Standard credential authentication via email password."}
                                 </p>
                             </div>
@@ -89,7 +104,7 @@ export default function SecuritySection({ user }) {
 
                         {isGoogleAuth ? (
                             <Badge variant="success" className="gap-1 px-3 py-1 text-xs font-bold">
-                                <CheckCircle2 className="size-3.5 text-emerald-600" /> Google ✓ Connected
+                                <CheckCircle2 className="size-3.5 text-emerald-600" /> Connected
                             </Badge>
                         ) : (
                             <Badge variant="purple" className="px-3 py-1 text-xs font-bold">
@@ -115,30 +130,30 @@ export default function SecuritySection({ user }) {
                                     Password Status
                                 </div>
                                 <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                    Password is securely stored.
+                                    {isGoogleAuth
+                                        ? "Password management is handled through your Google account."
+                                        : "Password is securely stored."}
                                 </p>
                             </div>
                         </div>
 
-                        {isGoogleAuth ? (
+                        {!isGoogleAuth && (
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => alert("Set password workflow will be available in security management.")}
-                                className="text-xs font-bold border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-950/40"
+                                onClick={handleChangePasswordRequest}
+                                disabled={loading}
+                                className="text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 gap-1.5"
                             >
-                                Set Password
-                            </Button>
-                        ) : (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => alert("Change password workflow will be available in security management.")}
-                                className="text-xs font-bold border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                            >
-                                Change Password
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="size-3.5 animate-spin" />
+                                        Sending Link...
+                                    </>
+                                ) : (
+                                    "Change Password"
+                                )}
                             </Button>
                         )}
                     </div>

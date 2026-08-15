@@ -1,11 +1,12 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import ProfileModal from "./ProfileModal";
 import { Button } from "../ui/Button";
+import HackHiveSelect from "../ui/HackHiveSelect";
 
 export default function ExperienceModal({ isOpen, onClose, initialData, onSubmit, isLoading }) {
     const isEdit = Boolean(initialData);
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    const { register, handleSubmit, watch, control, formState: { errors } } = useForm({
         defaultValues: {
             company: initialData?.company || "",
             role: initialData?.role || "",
@@ -65,19 +66,24 @@ export default function ExperienceModal({ isOpen, onClose, initialData, onSubmit
 
                 <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Employment Type
-                        </label>
-                        <select
-                            {...register("employmentType")}
-                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                        >
-                            <option value="Full-time">Full-time</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Internship">Internship</option>
-                            <option value="Contract">Contract</option>
-                            <option value="Freelance">Freelance</option>
-                        </select>
+                        <Controller
+                            name="employmentType"
+                            control={control}
+                            render={({ field }) => (
+                                <HackHiveSelect
+                                    label="Employment Type"
+                                    value={field.value}
+                                    onChange={(e) => field.onChange(e.target.value)}
+                                    options={[
+                                        { value: "Full-time", label: "Full-time" },
+                                        { value: "Part-time", label: "Part-time" },
+                                        { value: "Internship", label: "Internship" },
+                                        { value: "Contract", label: "Contract" },
+                                        { value: "Freelance", label: "Freelance" },
+                                    ]}
+                                />
+                            )}
+                        />
                     </div>
 
                     <div>

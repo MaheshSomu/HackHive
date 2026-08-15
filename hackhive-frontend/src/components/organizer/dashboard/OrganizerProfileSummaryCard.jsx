@@ -2,6 +2,7 @@ import { ShieldCheck, Settings, Building2 } from "lucide-react";
 import { Card } from "../../ui/Card";
 import { Badge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
+import { getImageUrl } from "../../../utils/imageUtils";
 
 export default function OrganizerProfileSummaryCard({ profileData, user, onNavigate }) {
     const completionFields = [
@@ -54,7 +55,7 @@ export default function OrganizerProfileSummaryCard({ profileData, user, onNavig
                 <div className="relative flex size-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-xl font-black text-white shadow-md overflow-hidden ring-2 ring-purple-100 dark:ring-purple-950">
                     {profileData?.logoUrl ? (
                         <img
-                            src={profileData.logoUrl}
+                            src={getImageUrl(profileData.logoUrl)}
                             alt={profileData?.organizationName || "Logo"}
                             className="size-full object-cover"
                             onError={(e) => {

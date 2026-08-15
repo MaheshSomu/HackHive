@@ -19,6 +19,7 @@ import DashboardSection from "../../components/student-dashboard/DashboardSectio
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
+import HackHiveSelect from "../../components/ui/HackHiveSelect";
 
 export default function StudentEvents() {
     const [events, setEvents] = useState([]);
@@ -228,47 +229,47 @@ export default function StudentEvents() {
                         {/* Controls Group */}
                         <div className="flex flex-wrap items-center gap-3 text-xs">
                             {/* Mode Select */}
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-slate-400 font-medium">Mode:</span>
-                                <select
+                            <div className="w-36">
+                                <HackHiveSelect
                                     value={modeFilter}
                                     onChange={(e) => setModeFilter(e.target.value)}
-                                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                    <option value="ALL">All Modes</option>
-                                    <option value="ONLINE">Online</option>
-                                    <option value="OFFLINE">Offline</option>
-                                    <option value="HYBRID">Hybrid</option>
-                                </select>
+                                    options={[
+                                        { value: "ALL", label: "All Modes" },
+                                        { value: "ONLINE", label: "Online" },
+                                        { value: "OFFLINE", label: "Offline" },
+                                        { value: "HYBRID", label: "Hybrid" },
+                                    ]}
+                                    size="sm"
+                                />
                             </div>
 
                             {/* Team Size Select */}
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-slate-400 font-medium">Team:</span>
-                                <select
+                            <div className="w-40">
+                                <HackHiveSelect
                                     value={teamSizeFilter}
                                     onChange={(e) => setTeamSizeFilter(e.target.value)}
-                                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                    <option value="ALL">All Sizes</option>
-                                    <option value="SOLO">Solo (1 Member)</option>
-                                    <option value="SMALL">Small (1-3 Members)</option>
-                                    <option value="LARGE">Large (4+ Members)</option>
-                                </select>
+                                    options={[
+                                        { value: "ALL", label: "All Sizes" },
+                                        { value: "SOLO", label: "Solo (1 Member)" },
+                                        { value: "SMALL", label: "Small (1-3 Members)" },
+                                        { value: "LARGE", label: "Large (4+ Members)" },
+                                    ]}
+                                    size="sm"
+                                />
                             </div>
 
                             {/* Sort Select */}
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-slate-400 font-medium">Sort:</span>
-                                <select
+                            <div className="w-40">
+                                <HackHiveSelect
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                    <option value="deadline">Closing Deadline</option>
-                                    <option value="latest">Start Date</option>
-                                    <option value="title">Event Title</option>
-                                </select>
+                                    options={[
+                                        { value: "deadline", label: "Closing Deadline" },
+                                        { value: "latest", label: "Start Date" },
+                                        { value: "title", label: "Event Title" },
+                                    ]}
+                                    size="sm"
+                                />
                             </div>
 
                             {/* Toggle Checkbox */}

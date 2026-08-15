@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import useAuth from "../../hooks/useAuth";
+import HackHiveSelect from "../../components/ui/HackHiveSelect";
 import { teamService } from "../../services/teamService";
 import { eventService } from "../../services/eventService";
 import TeamCard from "../../components/teams/TeamCard";
@@ -258,20 +259,18 @@ export default function StudentTeams() {
                                 />
                             </div>
 
-                            <div className="flex items-center gap-2 text-xs">
-                                <span className="text-slate-400 font-medium">Filter Event:</span>
-                                <select
+                            <div className="w-48">
+                                <HackHiveSelect
                                     value={eventFilter}
                                     onChange={(e) => setEventFilter(e.target.value)}
-                                    className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                    <option value="ALL">All Events</option>
-                                    {events.map((evt) => (
-                                        <option key={evt.id} value={evt.id}>
-                                            {evt.title}
-                                        </option>
-                                    ))}
-                                </select>
+                                    options={[
+                                        { value: "ALL", label: "All Events" },
+                                        ...events.map((evt) => ({ value: evt.id, label: evt.title })),
+                                    ]}
+                                    searchable={events.length > 3}
+                                    searchPlaceholder="Search events..."
+                                    size="sm"
+                                />
                             </div>
                         </div>
                     </CardContent>

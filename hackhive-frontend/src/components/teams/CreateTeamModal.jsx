@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Calendar, Check, Layers, Users, X } from "lucide-react";
 import { Button } from "../ui/Button";
+import HackHiveSelect from "../ui/HackHiveSelect";
 
 export default function CreateTeamModal({
     isOpen,
@@ -18,6 +19,7 @@ export default function CreateTeamModal({
         handleSubmit,
         watch,
         setValue,
+        control,
         formState: { errors },
         reset,
     } = useForm({
@@ -129,21 +131,25 @@ export default function CreateTeamModal({
                                 </div>
 
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                            Maximum Members *
-                                        </label>
-                                        <select
-                                            {...register("maxMembers", { required: true })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
-                                        >
-                                            <option value={2}>2 Members</option>
-                                            <option value={3}>3 Members</option>
-                                            <option value={4}>4 Members</option>
-                                            <option value={5}>5 Members</option>
-                                            <option value={6}>6 Members</option>
-                                        </select>
-                                    </div>
+                                    <Controller
+                                        name="maxMembers"
+                                        control={control}
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <HackHiveSelect
+                                                label="Maximum Members *"
+                                                value={field.value}
+                                                onChange={(e) => field.onChange(e.target.value)}
+                                                options={[
+                                                    { value: 2, label: "2 Members" },
+                                                    { value: 3, label: "3 Members" },
+                                                    { value: 4, label: "4 Members" },
+                                                    { value: 5, label: "5 Members" },
+                                                    { value: 6, label: "6 Members" },
+                                                ]}
+                                            />
+                                        )}
+                                    />
 
                                     <div>
                                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -161,20 +167,25 @@ export default function CreateTeamModal({
                         ) : (
                             <form onSubmit={handleSubmit(handleFinalSubmit)} className="space-y-5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                        Select Target Event *
-                                    </label>
                                     {events.length > 0 ? (
-                                        <select
-                                            {...register("eventId", { required: "Event selection is required" })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100 font-medium"
-                                        >
-                                            {events.map((evt) => (
-                                                <option key={evt.id} value={evt.id}>
-                                                    {evt.title} ({evt.eventMode || "Hybrid"})
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <Controller
+                                            name="eventId"
+                                            control={control}
+                                            rules={{ required: "Event selection is required" }}
+                                            render={({ field }) => (
+                                                <HackHiveSelect
+                                                    label="Select Target Event *"
+                                                    value={field.value}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                    options={events.map((evt) => ({
+                                                        value: evt.id,
+                                                        label: `${evt.title} (${evt.eventMode || "Hybrid"})`,
+                                                    }))}
+                                                    searchable={events.length > 3}
+                                                    searchPlaceholder="Search events..."
+                                                />
+                                            )}
+                                        />
                                     ) : (
                                         <div className="mt-1 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40">
                                             No events found. Please create or browse an event first.

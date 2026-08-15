@@ -152,4 +152,18 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/change-password-request")
+    public ResponseEntity<ApiResponse<Void>> requestPasswordChange() {
+
+        authService.requestPasswordChange();
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .success(true)
+                .message("Password reset link sent to your account email.")
+                .data(null)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 }
