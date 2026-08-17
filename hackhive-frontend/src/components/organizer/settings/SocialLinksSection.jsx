@@ -96,14 +96,20 @@ export default function SocialLinksSection() {
         }
     };
 
+    const normalizeUrl = (url) => {
+        if (!url || !url.trim()) return "";
+        let trimmed = url.trim();
+        if (!/^https?:\/\//i.test(trimmed)) {
+            trimmed = `https://${trimmed}`;
+        }
+        return trimmed;
+    };
+
     const validateUrl = (platformKey, url) => {
         if (!url || !url.trim()) return null;
-        const lower = url.trim().toLowerCase();
-        if (!lower.startsWith("http://") && !lower.startsWith("https://")) {
-            return "URL must start with http:// or https://";
-        }
+        const normalized = normalizeUrl(url);
         try {
-            const parsed = new URL(url.trim());
+            const parsed = new URL(normalized);
             const host = parsed.hostname.toLowerCase();
             switch (platformKey) {
                 case "LINKEDIN":
@@ -160,11 +166,12 @@ export default function SocialLinksSection() {
             for (const p of PLATFORMS) {
                 const currentVal = (socialLinks[p.key] || "").trim();
                 const origVal = (originalLinks[p.key] || "").trim();
+                const normalizedVal = normalizeUrl(currentVal);
 
-                if (currentVal && currentVal !== origVal) {
+                if (currentVal && normalizedVal !== origVal) {
                     await organizerService.saveSocialLink({
                         platform: p.key,
-                        url: currentVal,
+                        url: normalizedVal,
                     });
                 } else if (!currentVal && origVal) {
                     if (linkIds[p.key]) {
