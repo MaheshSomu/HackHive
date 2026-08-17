@@ -30,6 +30,7 @@ const StudentSettings = lazy(() => import("../pages/student/StudentSettings"));
 
 const OrganizerLayout = lazy(() => import("../components/layout/OrganizerLayout"));
 const OrganizerDashboard = lazy(() => import("../pages/organizer/OrganizerDashboard"));
+const OrganizerProfile = lazy(() => import("../pages/organizer/OrganizerProfile"));
 const OrganizerEvents = lazy(() => import("../pages/organizer/OrganizerEvents"));
 const OrganizerRegistrations = lazy(() => import("../pages/organizer/OrganizerRegistrations"));
 const OrganizerAnalytics = lazy(() => import("../pages/organizer/OrganizerAnalytics"));
@@ -97,6 +98,7 @@ function AppRoutes() {
                         <Route element={<OrganizerLayout />}>
                             <Route path="/organizer" element={<Navigate to="/organizer/dashboard" replace />} />
                             <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+                            <Route path="/organizer/profile" element={<OrganizerProfile />} />
                             <Route path="/organizer/events" element={<OrganizerEvents />} />
                             <Route path="/organizer/registrations" element={<OrganizerRegistrations />} />
                             <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />

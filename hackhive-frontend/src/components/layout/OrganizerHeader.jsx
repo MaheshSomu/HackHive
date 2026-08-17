@@ -1,22 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+    ChevronDown,
     ChevronRight,
     LogOut,
     Menu,
     PanelLeft,
     PanelLeftClose,
     Search,
+    Settings,
+    User,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
+import { organizerService } from "../../services/organizerService";
+import { getImageUrl } from "../../utils/imageUtils";
 import NotificationCenter from "../notifications/NotificationCenter";
 import GlobalSearchModal from "../search/GlobalSearchModal";
 
 const routeTitleMap = {
     "/organizer/dashboard": "Dashboard",
+    "/organizer/profile": "Profile",
     "/organizer/events": "Manage Events",
     "/organizer/registrations": "Registrations",
     "/organizer/analytics": "Analytics",
+    "/organizer/settings": "Settings",
 };
 
 export default function OrganizerHeader({
@@ -27,11 +34,32 @@ export default function OrganizerHeader({
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [profile, setProfile] = useState(null);
 
     const currentTitle = routeTitleMap[location.pathname] || "Dashboard";
 
-    const initials = (user?.fullName || user?.email || "Organizer")
+    useEffect(() => {
+        let isMounted = true;
+        organizerService
+            .getProfile()
+            .then((data) => {
+                if (isMounted && data) {
+                    setProfile(data);
+                }
+            })
+            .catch(() => {
+                // Ignore silent fetch error, will fallback to auth user info
+            });
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const orgName = profile?.organizationName || user?.fullName || "Organizer";
+    const initials = orgName
         .split(" ")
         .map((n) => n[0])
         .join("")
@@ -39,8 +67,14 @@ export default function OrganizerHeader({
         .toUpperCase();
 
     const handleLogout = () => {
+        setIsMenuOpen(false);
         logout();
         navigate("/");
+    };
+
+    const handleNavigate = (path) => {
+        setIsMenuOpen(false);
+        navigate(path);
     };
 
     useEffect(() => {
@@ -48,6 +82,9 @@ export default function OrganizerHeader({
             if ((e.metaKey || e.ctrlKey) && e.key === "k") {
                 e.preventDefault();
                 setIsSearchOpen((prev) => !prev);
+            }
+            if (e.key === "Escape") {
+                setIsMenuOpen(false);
             }
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -101,32 +138,117 @@ export default function OrganizerHeader({
                     </button>
                 </div>
 
-                {/* User Profile */}
-                <div className="flex items-center gap-3">
+                {/* User Profile & Dropdown Area */}
+                <div className="relative flex items-center gap-3">
                     <NotificationCenter />
-                    <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 font-bold text-xs text-white shadow-xs">
-                            {initials}
+
+                    {/* Organizer Profile Clickable Trigger */}
+                    <button
+                        type="button"
+                        onClick={() => setIsMenuOpen((prev) => !prev)}
+                        className="group flex items-center gap-2.5 rounded-xl border border-transparent p-1.5 text-left transition hover:border-slate-200 hover:bg-slate-100/70 focus:outline-hidden dark:hover:border-slate-800 dark:hover:bg-slate-800/70"
+                        aria-expanded={isMenuOpen}
+                        aria-haspopup="true"
+                    >
+                        {/* Logo or Initials */}
+                        <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-purple-100 dark:ring-purple-950/60">
+                            {profile?.logoUrl ? (
+                                <img
+                                    src={getImageUrl(profile.logoUrl)}
+                                    alt={orgName}
+                                    className="size-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                    }}
+                                />
+                            ) : null}
+                            <span className={profile?.logoUrl ? "hidden" : "block"}>{initials}</span>
                         </div>
 
+                        {/* Name and Role */}
                         <div className="hidden text-left md:block">
-                            <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                                {user?.fullName || "Organizer"}
+                            <p className="max-w-[130px] truncate text-xs font-semibold text-slate-900 group-hover:text-purple-600 dark:text-slate-100 dark:group-hover:text-purple-400">
+                                {orgName}
                             </p>
-                            <p className="max-w-[120px] truncate text-[10px] font-semibold text-purple-600 dark:text-purple-400">
+                            <p className="max-w-[130px] truncate text-[10px] font-semibold text-purple-600 dark:text-purple-400">
                                 ORGANIZER
                             </p>
                         </div>
-                    </div>
 
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition dark:hover:bg-rose-950/40"
-                        title="Logout"
-                    >
-                        <LogOut className="size-4" />
+                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-purple-600 dark:text-purple-400" : ""}`} />
                     </button>
+
+                    {/* Professional Dropdown Menu */}
+                    {isMenuOpen && (
+                        <>
+                            {/* Backdrop overlay for closing on click outside */}
+                            <div
+                                onClick={() => setIsMenuOpen(false)}
+                                className="fixed inset-0 z-40"
+                            />
+
+                            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                                {/* Header / Identity Card */}
+                                <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 font-bold text-sm text-white shadow-xs overflow-hidden">
+                                        {profile?.logoUrl ? (
+                                            <img
+                                                src={getImageUrl(profile.logoUrl)}
+                                                alt={orgName}
+                                                className="size-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = "none";
+                                                }}
+                                            />
+                                        ) : null}
+                                        <span className={profile?.logoUrl ? "hidden" : "block"}>{initials}</span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
+                                            {orgName}
+                                        </p>
+                                        <p className="truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                                            {user?.email || "Organizer"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="my-1.5 h-px bg-slate-100 dark:bg-slate-800" />
+
+                                {/* Options */}
+                                <div className="space-y-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleNavigate("/organizer/profile")}
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition dark:text-slate-200 dark:hover:bg-purple-950/40 dark:hover:text-purple-300"
+                                    >
+                                        <User className="size-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                                        <span>View Profile</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleNavigate("/organizer/settings")}
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition dark:text-slate-200 dark:hover:bg-purple-950/40 dark:hover:text-purple-300"
+                                    >
+                                        <Settings className="size-4 text-slate-400 shrink-0" />
+                                        <span>Settings</span>
+                                    </button>
+                                </div>
+
+                                <div className="my-1.5 h-px bg-slate-100 dark:bg-slate-800" />
+
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 transition dark:text-rose-400 dark:hover:bg-rose-950/40"
+                                >
+                                    <LogOut className="size-4 shrink-0" />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </header>
 
@@ -134,3 +256,4 @@ export default function OrganizerHeader({
         </>
     );
 }
+
