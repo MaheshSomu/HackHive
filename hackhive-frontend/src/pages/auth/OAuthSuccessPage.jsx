@@ -38,6 +38,7 @@ function OAuthSuccessPage() {
                     fullName: userData.fullName,
                     email: userData.email,
                     role: userData.role,
+                    authProvider: userData.authProvider || "GOOGLE",
                 };
 
                 if (isMounted) {
