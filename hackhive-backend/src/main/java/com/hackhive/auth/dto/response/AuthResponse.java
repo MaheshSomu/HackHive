@@ -27,4 +27,6 @@ public class AuthResponse {
 
     private String authProvider;
 
+    private Boolean emailVerified;
+
 }

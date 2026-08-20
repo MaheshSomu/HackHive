@@ -18,6 +18,7 @@ import com.hackhive.auth.service.AuthService;
 import com.hackhive.auth.service.EmailService;
 import com.hackhive.auth.service.OAuthRegistrationService;
 import com.hackhive.common.enums.RoleType;
+import com.hackhive.common.exception.AccountDeactivatedException;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.EmailNotVerifiedException;
 import com.hackhive.common.exception.ResourceNotFoundException;
@@ -142,22 +143,24 @@ public class AuthServiceImpl implements AuthService {
                                 "Invalid email or password."
                         ));
 
-        if (!user.getEmailVerified()) {
-            throw new EmailNotVerifiedException("Please verify your email before logging in.");
-        }
-        // Reject disabled accounts
-        if (!Boolean.TRUE.equals(user.getEnabled())) {
-        throw new UnauthorizedException(
-                "Your account has been disabled."
-        );
-        }
-        // Verify password
+        // Verify password first
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
             throw new UnauthorizedException(
                     "Invalid email or password."
+            );
+        }
+
+        if (!user.getEmailVerified()) {
+            throw new EmailNotVerifiedException("Please verify your email before logging in.");
+        }
+
+        // Reject disabled accounts with clear reactivation message
+        if (!Boolean.TRUE.equals(user.getEnabled())) {
+            throw new AccountDeactivatedException(
+                    "Your account is currently deactivated. You can request account reactivation."
             );
         }
 
@@ -180,6 +183,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name()
                 )
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
@@ -210,6 +214,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name()
                 )
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
@@ -371,6 +376,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().getName().name())
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
@@ -406,5 +412,44 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         emailService.sendPasswordResetEmail(user);
+    }
+
+    @Override
+    @Transactional
+    public void requestAccountReactivation(ForgotPasswordRequest request) {
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
+            return;
+        }
+
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+
+        // Prevent account enumeration by only sending email if user exists and is disabled
+        if (user != null && !Boolean.TRUE.equals(user.getEnabled())) {
+            user.setAccountReactivationToken(TokenGenerator.generateVerificationToken());
+            user.setAccountReactivationTokenExpiry(LocalDateTime.now().plusMinutes(30));
+            userRepository.save(user);
+            emailService.sendAccountReactivationEmail(user);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void reactivateAccount(String token) {
+        if (token == null || token.isBlank()) {
+            throw new BadRequestException("Invalid reactivation token.");
+        }
+
+        User user = userRepository.findByAccountReactivationToken(token)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired reactivation token. Please request a new link."));
+
+        if (user.getAccountReactivationTokenExpiry() == null ||
+                user.getAccountReactivationTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Reactivation link has expired. Please request a new link.");
+        }
+
+        user.setEnabled(true);
+        user.setAccountReactivationToken(null);
+        user.setAccountReactivationTokenExpiry(null);
+        userRepository.save(user);
     }
 }

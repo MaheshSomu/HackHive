@@ -16,6 +16,7 @@ const EmailVerificationFailed = lazy(() => import("../pages/auth/EmailVerificati
 const VerifyEmailHandler = lazy(() => import("../pages/auth/VerifyEmailHandlerPage"));
 const OAuthCompleteRegistration = lazy(() => import("../pages/auth/OAuthCompleteRegistrationPage"));
 const OAuthSuccess = lazy(() => import("../pages/auth/OAuthSuccessPage"));
+const ReactivateAccount = lazy(() => import("../pages/auth/ReactivateAccountPage"));
 
 
 
@@ -70,14 +71,17 @@ function AppRoutes() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
-                        <Route path="/email-verified" element={<EmailVerified />} />
-                        <Route path="/email-verification-failed" element={<EmailVerificationFailed />} />
-                        <Route path="/verify-email" element={<VerifyEmailHandler />} />
                         <Route path="/oauth-complete-registration" element={<OAuthCompleteRegistration />} />
                         <Route path="/oauth-success" element={<OAuthSuccess />} />
                     </Route>
+
+                    {/* Unprotected Reset Password & Verification Callback Routes */}
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
+                    <Route path="/email-verified" element={<EmailVerified />} />
+                    <Route path="/email-verification-failed" element={<EmailVerificationFailed />} />
+                    <Route path="/verify-email" element={<VerifyEmailHandler />} />
+                    <Route path="/reactivate-account" element={<ReactivateAccount />} />
 
 
 

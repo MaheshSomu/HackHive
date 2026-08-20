@@ -101,6 +101,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/organizer/**")
                         .hasRole("ORGANIZER")
 
+                        // Student APIs
+                        .requestMatchers("/api/student/**")
+                        .hasRole("STUDENT")
+
                         // All remaining APIs require authentication
                         .anyRequest()
                         .authenticated()

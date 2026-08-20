@@ -166,4 +166,34 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/request-account-reactivation")
+    public ResponseEntity<ApiResponse<Void>> requestAccountReactivation(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        authService.requestAccountReactivation(request);
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .success(true)
+                .message("If an account with that email exists and is deactivated, a reactivation link has been sent.")
+                .data(null)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reactivate-account")
+    public ResponseEntity<ApiResponse<Void>> reactivateAccount(
+            @RequestParam("token") String token) {
+
+        authService.reactivateAccount(token);
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .success(true)
+                .message("Account reactivated successfully. You can now log in.")
+                .data(null)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 }

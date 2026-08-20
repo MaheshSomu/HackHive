@@ -10,4 +10,6 @@ public interface StudentService {
     StudentProfileResponse updateMyProfile(
             UpdateStudentProfileRequest request
     );
+
+    void deactivateAccount();
 }
