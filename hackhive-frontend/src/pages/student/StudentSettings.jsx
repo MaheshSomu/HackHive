@@ -24,7 +24,7 @@ export default function StudentSettings() {
                 <div className="space-y-1">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/60">
                         <Sliders className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                        Account Controls & SaaS Settings
+                        Account Controls
                     </span>
                     <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
                         Student Settings
