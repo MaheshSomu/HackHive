@@ -45,6 +45,16 @@ export const requestPasswordChange = async () => {
     return response.data;
 };
 
+export const requestAccountReactivation = async (email) => {
+    const response = await api.post("/auth/request-account-reactivation", { email });
+    return response.data;
+};
+
+export const reactivateAccount = async (token) => {
+    const response = await api.post(`/auth/reactivate-account?token=${encodeURIComponent(token)}`);
+    return response.data;
+};
+
 
 
 

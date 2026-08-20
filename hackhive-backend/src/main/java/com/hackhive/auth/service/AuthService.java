@@ -28,4 +28,8 @@ public interface AuthService {
     AuthResponse completeOAuthRegistration(OAuthCompleteRegistrationRequest request);
 
     void requestPasswordChange();
+
+    void requestAccountReactivation(ForgotPasswordRequest request);
+
+    void reactivateAccount(String token);
 }

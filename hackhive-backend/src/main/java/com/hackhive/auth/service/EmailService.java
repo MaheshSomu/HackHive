@@ -8,6 +8,8 @@ public interface EmailService {
 
     void sendPasswordResetEmail(User user);
 
+    void sendAccountReactivationEmail(User user);
+
     void sendNewRegistrationEmail(
             String recipientEmail,
             String organizerName,

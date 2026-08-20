@@ -99,6 +99,43 @@ public void sendPasswordResetEmail(User user) {
 }
 
     @Override
+    public void sendAccountReactivationEmail(User user) {
+
+        String reactivationLink =
+                frontendUrl + "/reactivate-account?token="
+                        + user.getAccountReactivationToken();
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(fromEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Reactivate Your HackHive Account");
+
+        message.setText("""
+                Hello %s,
+
+                We received a request to reactivate your HackHive account.
+
+                Click the link below to reactivate your account:
+
+                %s
+
+                This link will expire in 30 minutes.
+
+                If you didn't request account reactivation,
+                you can safely ignore this email.
+
+                Regards,
+                HackHive Team
+                """.formatted(
+                user.getFullName(),
+                reactivationLink
+        ));
+
+        mailSender.send(message);
+    }
+
+    @Override
     public void sendNewRegistrationEmail(
             String recipientEmail,
             String organizerName,

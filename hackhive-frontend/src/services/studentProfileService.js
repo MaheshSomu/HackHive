@@ -59,4 +59,7 @@ export const studentProfileService = {
         );
     },
     deleteResume: () => request(api.delete("/student/resume")),
+
+    // 9. Account Deactivation
+    deactivateAccount: () => request(api.post("/student/account/deactivate")),
 };

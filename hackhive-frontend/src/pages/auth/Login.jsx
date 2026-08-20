@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Loader2, Mail, AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AuthLayout from "../../components/layout/AuthLayout";
@@ -15,6 +15,7 @@ import useAuth from "../../hooks/useAuth";
 import { loginSchema } from "../../validations/loginSchema";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { getDashboardPath } from "../../utils/authRoutes";
+import { requestAccountReactivation } from "../../services/authService";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,18 +54,25 @@ function GithubIcon() {
 function Login() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
     const { login, loading } = useAuth();
+
+    const [isDeactivated, setIsDeactivated] = useState(false);
+    const [deactivatedEmail, setDeactivatedEmail] = useState("");
+    const [reactivatingLoading, setReactivatingLoading] = useState(false);
+    const [reactivationSent, setReactivationSent] = useState(false);
 
     const {
         register,
         handleSubmit,
         setValue,
+        getValues,
         control,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            email: location.state?.email || "",
+            email: location.state?.email || searchParams.get("email") || "",
             password: "",
             remember: true,
         },
@@ -74,9 +82,19 @@ function Login() {
         if (location.state?.email) {
             setValue("email", location.state.email, { shouldValidate: true });
         }
-    }, [location.state, setValue]);
+        if (searchParams.get("error") === "account_deactivated") {
+            setIsDeactivated(true);
+            const emailParam = searchParams.get("email");
+            if (emailParam) {
+                setDeactivatedEmail(emailParam);
+                setValue("email", emailParam, { shouldValidate: true });
+            }
+        }
+    }, [location.state, searchParams, setValue]);
 
     const onSubmit = handleSubmit(async (values) => {
+        setIsDeactivated(false);
+        setReactivationSent(false);
         try {
             const auth = await login(
                 {
@@ -89,16 +107,38 @@ function Login() {
             toast.success(`Welcome back, ${auth.fullName}.`);
             navigate(getDashboardPath(auth.role), { replace: true });
         } catch (error) {
-            toast.error(getApiErrorMessage(error));
+            const errorMsg = getApiErrorMessage(error);
+            if (errorMsg.toLowerCase().includes("deactivated") || error.response?.status === 403) {
+                setIsDeactivated(true);
+                setDeactivatedEmail(values.email);
+            } else {
+                toast.error(errorMsg);
+            }
         }
     });
 
-    const handleGoogleSocialLogin = () => {
-        const backendBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api").replace(/\/api\/?$/, "");
-        window.location.href =
-        "http://localhost:8080/oauth2/authorization/google";
+    const handleRequestReactivation = async () => {
+        const emailToUse = deactivatedEmail || getValues("email");
+        if (!emailToUse) {
+            toast.error("Please enter your email address to request reactivation.");
+            return;
+        }
+
+        setReactivatingLoading(true);
+        try {
+            await requestAccountReactivation(emailToUse);
+            setReactivationSent(true);
+            toast.success("Reactivation link sent. Please check your email inbox.");
+        } catch (err) {
+            toast.error(getApiErrorMessage(err, "Failed to request account reactivation."));
+        } finally {
+            setReactivatingLoading(false);
+        }
     };
 
+    const handleGoogleSocialLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    };
 
     const handleGithubSocialLogin = () => {
         toast.info("GitHub Sign-In will be available soon.");
@@ -117,6 +157,43 @@ function Login() {
                             subtitle="Sign in to continue your HackHive workspace."
                         />
                     </div>
+
+                    {isDeactivated && (
+                        <div className="rounded-2xl border border-rose-200 bg-rose-50/90 p-4 dark:border-rose-900/60 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 space-y-3">
+                            <div className="flex items-start gap-3">
+                                <ShieldAlert className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+                                <div className="space-y-1">
+                                    <p className="text-xs font-bold">Your account is currently deactivated.</p>
+                                    <p className="text-[11px] text-rose-700/90 dark:text-rose-300/90 font-medium leading-relaxed">
+                                        Account login is disabled. You can request a secure email reactivation link below.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {reactivationSent ? (
+                                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                    <span>Reactivation link sent. Check your email.</span>
+                                </div>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    disabled={reactivatingLoading}
+                                    onClick={handleRequestReactivation}
+                                    className="w-full font-bold text-xs bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl"
+                                >
+                                    {reactivatingLoading ? (
+                                        <span className="inline-flex items-center gap-2">
+                                            <Loader2 className="size-3.5 animate-spin" />
+                                            Sending Reactivation Email...
+                                        </span>
+                                    ) : (
+                                        "Reactivate Account"
+                                    )}
+                                </Button>
+                            )}
+                        </div>
+                    )}
 
                     <form className="space-y-5" onSubmit={onSubmit}>
                         <AuthField
@@ -225,4 +302,3 @@ function Login() {
 }
 
 export default Login;
-

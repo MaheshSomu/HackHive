@@ -47,4 +47,16 @@ public class StudentController {
                         .build()
         );
     }
+
+    @PostMapping("/account/deactivate")
+    public ResponseEntity<ApiResponse<Void>> deactivateAccount() {
+        studentService.deactivateAccount();
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Student account deactivated successfully.")
+                        .build()
+        );
+    }
 }

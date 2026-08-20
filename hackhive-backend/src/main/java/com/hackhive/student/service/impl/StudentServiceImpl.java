@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -91,5 +92,19 @@ public class StudentServiceImpl implements StudentService {
                 .resumeUrl(profile.getResumeUrl())
                 .profileImageUrl(profile.getProfileImageUrl())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void deactivateAccount() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found."));
+
+        user.setEnabled(false);
+        userRepository.save(user);
     }
 }

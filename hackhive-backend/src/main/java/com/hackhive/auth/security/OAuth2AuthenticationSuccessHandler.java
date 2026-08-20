@@ -40,6 +40,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         User user = userRepository.findByEmail(email).orElse(null);
 
         if (user != null) {
+            if (!Boolean.TRUE.equals(user.getEnabled())) {
+                String encodedEmail = java.net.URLEncoder.encode(email, java.nio.charset.StandardCharsets.UTF_8);
+                response.sendRedirect(
+                        frontendUrl + "/login?error=account_deactivated&email=" + encodedEmail
+                );
+                return;
+            }
 
             String jwt = jwtService.generateToken(user.getEmail());
 

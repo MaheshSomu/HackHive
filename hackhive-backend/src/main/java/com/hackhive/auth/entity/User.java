@@ -52,6 +52,12 @@ public class User extends BaseEntity {
     @Column(name = "password_reset_token_expiry")
     private LocalDateTime passwordResetTokenExpiry;
 
+    @Column(name = "account_reactivation_token")
+    private String accountReactivationToken;
+
+    @Column(name = "account_reactivation_token_expiry")
+    private LocalDateTime accountReactivationTokenExpiry;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider", nullable = false)
     @Builder.Default
