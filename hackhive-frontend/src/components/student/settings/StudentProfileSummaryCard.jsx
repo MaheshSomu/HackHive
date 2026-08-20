@@ -50,7 +50,9 @@ export default function StudentProfileSummaryCard({ user }) {
                                 <span>{user?.role || "STUDENT"}</span>
                             </Badge>
 
-                            <StatusPill status="active" label="Verified Account" />
+                            {user?.emailVerified !== undefined && (
+                                <StatusPill status={user.emailVerified ? "active" : "pending"} label={user.emailVerified ? "Verified Account" : "Pending Verification"} />
+                            )}
                         </div>
 
                         {/* Metadata line */}

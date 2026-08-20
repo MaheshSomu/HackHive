@@ -180,6 +180,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name()
                 )
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
@@ -210,6 +211,7 @@ public class AuthServiceImpl implements AuthService {
                                 .name()
                 )
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
@@ -371,6 +373,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().getName().name())
                 .authProvider(user.getAuthProvider().name())
+                .emailVerified(user.getEmailVerified())
                 .build();
     }
 
