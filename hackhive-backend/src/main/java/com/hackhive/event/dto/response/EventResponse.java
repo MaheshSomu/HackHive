@@ -3,6 +3,8 @@ package com.hackhive.event.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 
+import com.hackhive.event.enums.RegistrationType;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -42,4 +44,10 @@ public class EventResponse {
     private String collegeName;
 
     private Long registrationCount;
+
+    private RegistrationType registrationType;
+
+    private BigDecimal registrationFee;
+
+    private Integer maxParticipants;
 }

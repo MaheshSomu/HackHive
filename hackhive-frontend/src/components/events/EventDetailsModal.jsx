@@ -33,11 +33,15 @@ export default function EventDetailsModal({
     isOpen,
     onClose,
     isRegistered,
+    userRegistration,
     onRegister,
     onCancel,
     isRegistering,
 }) {
     if (!isOpen || !event) return null;
+
+    const isConfirmed = isRegistered || (userRegistration && (!userRegistration.status || userRegistration.status === "CONFIRMED"));
+    const isPendingPayment = userRegistration && userRegistration.status === "PENDING_PAYMENT";
 
     const isClosed = (() => {
         if (!event.registrationEndDate) return false;
@@ -108,6 +112,15 @@ export default function EventDetailsModal({
                             </h1>
 
                             <div className="flex flex-wrap gap-2 pt-1">
+                                <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                    event.registrationType === "PAID" && Number(event.registrationFee) > 0
+                                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                                        : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                }`}>
+                                    {event.registrationType === "PAID" && Number(event.registrationFee) > 0
+                                        ? `Registration Fee: ₹${event.registrationFee}`
+                                        : "Registration: Free"}
+                                </span>
                                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                     Mode: {event.eventMode || "Hybrid"}
                                 </span>
@@ -203,16 +216,34 @@ export default function EventDetailsModal({
                             Close
                         </Button>
 
-                        {isRegistered ? (
+                        {isConfirmed ? (
                             <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => onCancel(event.id)}
+                                onClick={() => {
+                                    if (event.registrationType === "PAID" || userRegistration?.amountPaid > 0) {
+                                        const confirmed = window.confirm(
+                                            "Refund Policy Notice:\n\nCancelling your registration will release your spot in this event. Please note that registration fees are non-refundable under the platform policy.\n\nAre you sure you want to proceed with cancellation?"
+                                        );
+                                        if (!confirmed) return;
+                                    }
+                                    onCancel(event.id);
+                                }}
                                 disabled={isRegistering}
                                 className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-semibold"
                             >
                                 {isRegistering ? "Cancelling..." : "Cancel Registration"}
+                            </Button>
+                        ) : isPendingPayment ? (
+                            <Button
+                                type="button"
+                                size="sm"
+                                disabled={isClosed || isRegistering}
+                                onClick={() => onRegister(event.id)}
+                                className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6"
+                            >
+                                {isRegistering ? "Processing..." : "Complete Payment"}
                             </Button>
                         ) : (
                             <Button
@@ -222,7 +253,13 @@ export default function EventDetailsModal({
                                 onClick={() => onRegister(event.id)}
                                 className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6"
                             >
-                                {isRegistering ? "Registering..." : isClosed ? "Registration Closed" : "Register Now"}
+                                {isRegistering
+                                    ? "Processing..."
+                                    : isClosed
+                                    ? "Registration Closed"
+                                    : event.registrationType === "PAID" && Number(event.registrationFee) > 0
+                                    ? `Register & Pay (₹${event.registrationFee})`
+                                    : "Register Now"}
                             </Button>
                         )}
                     </div>

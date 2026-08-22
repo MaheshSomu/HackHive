@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.hackhive.event.enums.RegistrationType;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -42,4 +44,11 @@ public class UpdateEventRequest {
     private String bannerUrl;
 
     private String collegeName;
+
+    private RegistrationType registrationType;
+
+    private BigDecimal registrationFee;
+
+    @jakarta.validation.constraints.Min(value = 1, message = "Max participants must be at least 1")
+    private Integer maxParticipants;
 }

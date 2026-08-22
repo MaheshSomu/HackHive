@@ -15,6 +15,7 @@ import {
 import { eventService } from "../../services/eventService";
 import EventCard from "../../components/events/EventCard";
 import EventDetailsModal from "../../components/events/EventDetailsModal";
+import PaymentReceiptModal from "../../components/events/PaymentReceiptModal";
 import DashboardSection from "../../components/student-dashboard/DashboardSection";
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import { Button } from "../../components/ui/Button";
@@ -40,6 +41,7 @@ export default function StudentEvents() {
 
     // Modal State
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -62,22 +64,89 @@ export default function StudentEvents() {
         fetchData();
     }, [fetchData]);
 
-    // Set of registered event IDs
+    // Set of registered event IDs (only count confirmed registrations)
     const registeredEventIds = useMemo(() => {
-        return new Set(registrations.map((r) => r.eventId));
+        return new Set(
+            registrations
+                .filter((r) => !r.status || r.status === "CONFIRMED")
+                .map((r) => r.eventId)
+        );
     }, [registrations]);
 
-    // Register Handler
+    // Map of eventId -> registration object
+    const registrationMap = useMemo(() => {
+        const map = new Map();
+        registrations.forEach((r) => map.set(r.eventId, r));
+        return map;
+    }, [registrations]);
+
+    // Register Handler supporting FREE and PAID events
     const handleRegister = async (eventId) => {
         try {
             setRegisteringId(eventId);
-            const res = await eventService.registerForEvent(eventId);
-            setRegistrations((prev) => [...prev, res]);
-            toast.success("Event registration successful!");
+            const initRes = await eventService.initiateRegistration(eventId);
+
+            // FREE Event
+            if (initRes.isFree) {
+                toast.success(initRes.message || "Event registration successful!");
+                await fetchData();
+                setRegisteringId(null);
+                return;
+            }
+
+            // PAID Event -> Open Razorpay Checkout
+            const options = {
+                key: initRes.keyId,
+                amount: initRes.amount,
+                currency: initRes.currency || "INR",
+                name: "HackHive",
+                description: `Registration for ${initRes.eventTitle}`,
+                order_id: initRes.razorpayOrderId,
+                prefill: {
+                    name: initRes.studentName || "",
+                    email: initRes.studentEmail || "",
+                },
+                theme: {
+                    color: "#7c3aed",
+                },
+                handler: async function (response) {
+                    try {
+                        await eventService.verifyPayment({
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpaySignature: response.razorpay_signature,
+                        });
+                        toast.success("Payment verified! Event registration confirmed.");
+                        await fetchData();
+                    } catch (err) {
+                        const msg = err?.response?.data?.message || "Payment verification failed.";
+                        toast.error(msg);
+                    } finally {
+                        setRegisteringId(null);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        toast.info("Payment window closed. You can complete registration anytime.");
+                        setRegisteringId(null);
+                    },
+                },
+            };
+
+            if (window.Razorpay) {
+                const rzp = new window.Razorpay(options);
+                rzp.on("payment.failed", function (resp) {
+                    toast.error(resp.error?.description || "Payment failed at gateway.");
+                    setRegisteringId(null);
+                });
+                rzp.open();
+            } else {
+                toast.error("Razorpay SDK unavailable. Please refresh the page.");
+                setRegisteringId(null);
+            }
         } catch (err) {
-            const msg = err?.response?.data?.message || "Could not complete event registration.";
+            const msg = err?.response?.data?.message || "Could not initiate registration.";
             toast.error(msg);
-        } finally {
             setRegisteringId(null);
         }
     };
@@ -305,9 +374,11 @@ export default function StudentEvents() {
                                 key={event.id}
                                 event={event}
                                 isRegistered={registeredEventIds.has(event.id)}
+                                userRegistration={registrationMap.get(event.id)}
                                 onViewDetails={(ev) => setSelectedEvent(ev)}
                                 onRegister={handleRegister}
                                 onCancel={handleCancelRegistration}
+                                onViewReceipt={(reg, evt) => setSelectedReceipt({ registration: reg, event: evt })}
                                 isRegistering={registeringId === event.id}
                             />
                         ))}
@@ -364,9 +435,18 @@ export default function StudentEvents() {
                 isOpen={Boolean(selectedEvent)}
                 onClose={() => setSelectedEvent(null)}
                 isRegistered={selectedEvent ? registeredEventIds.has(selectedEvent.id) : false}
+                userRegistration={selectedEvent ? registrationMap.get(selectedEvent.id) : null}
                 onRegister={handleRegister}
                 onCancel={handleCancelRegistration}
                 isRegistering={registeringId === selectedEvent?.id}
+            />
+
+            {/* Payment Receipt Modal */}
+            <PaymentReceiptModal
+                isOpen={Boolean(selectedReceipt)}
+                onClose={() => setSelectedReceipt(null)}
+                registration={selectedReceipt?.registration}
+                event={selectedReceipt?.event}
             />
         </div>
     );

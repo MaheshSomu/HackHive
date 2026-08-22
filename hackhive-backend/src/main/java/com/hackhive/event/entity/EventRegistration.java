@@ -1,9 +1,14 @@
 package com.hackhive.event.entity;
 
 import com.hackhive.common.entity.BaseEntity;
+import com.hackhive.event.enums.PaymentStatus;
+import com.hackhive.event.enums.RegistrationStatus;
 import com.hackhive.student.entity.StudentProfile;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(
@@ -34,4 +39,26 @@ public class EventRegistration extends BaseEntity {
             nullable = false
     )
     private StudentProfile studentProfile;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_status", nullable = false, length = 30)
+    @Builder.Default
+    private RegistrationStatus status = RegistrationStatus.CONFIRMED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false, length = 30)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.NOT_APPLICABLE;
+
+    @Column(name = "amount_paid", precision = 10, scale = 2)
+    private BigDecimal amountPaid;
+
+    @Column(name = "razorpay_order_id", length = 100)
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id", length = 100)
+    private String razorpayPaymentId;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
 }

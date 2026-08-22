@@ -26,7 +26,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hackhive.event.entity.EventRegistration;
+import com.hackhive.event.enums.RegistrationStatus;
+
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -74,17 +78,17 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event not found."));
-        boolean registeredForEvent =
+        Optional<EventRegistration> registrationOpt =
                 eventRegistrationRepository
-                        .existsByEventAndStudentProfile(
+                        .findByEventAndStudentProfile(
                                 event,
                                 studentProfile
                         );
 
-        if (!registeredForEvent) {
-        throw new BadRequestException(
-                "You must register for the event before creating a team."
-        );
+        if (registrationOpt.isEmpty()
+                || registrationOpt.get().getStatus() != RegistrationStatus.CONFIRMED) {
+            throw new BadRequestException(
+                    "You must complete confirmed registration before creating a team for this event.");
         }
         if (request.getMaxMembers() < 1) {
             throw new BadRequestException(

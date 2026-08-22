@@ -47,9 +47,50 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                             {name}
                         </h3>
                         <p className="text-xs text-slate-500 truncate">{email}</p>
-                        <Badge variant="success" className="gap-1 text-[10px] px-2 py-0">
-                            <CheckCircle2 className="size-3" /> Confirmed Signup
+                        <Badge variant={student.registrationStatus === "CONFIRMED" || !student.registrationStatus ? "success" : "warning"} className="gap-1 text-[10px] px-2 py-0">
+                            <CheckCircle2 className="size-3" /> {student.registrationStatus || "CONFIRMED"}
                         </Badge>
+                    </div>
+                </div>
+
+                {/* Payment & Registration Details */}
+                <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Registration & Payment Info
+                    </h4>
+                    <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-500 font-medium">Registration Type:</span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100">
+                                {student.registrationType || "FREE"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-500 font-medium">Registration Status:</span>
+                            <span className={`font-bold ${student.registrationStatus === "CONFIRMED" || !student.registrationStatus ? "text-emerald-600" : "text-amber-600"}`}>
+                                {student.registrationStatus || "CONFIRMED"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-500 font-medium">Payment Status:</span>
+                            <span className={`font-bold ${student.paymentStatus === "PAID" ? "text-indigo-600" : "text-slate-600"}`}>
+                                {student.paymentStatus || "NOT_APPLICABLE"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-500 font-medium">Amount Paid:</span>
+                            <span className="font-extrabold text-slate-900 dark:text-slate-100">
+                                ₹{student.amountPaid || 0}
+                            </span>
+                        </div>
+                        {student.paidAt && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Paid Date:</span>
+                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                    {new Date(student.paidAt).toLocaleString()}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

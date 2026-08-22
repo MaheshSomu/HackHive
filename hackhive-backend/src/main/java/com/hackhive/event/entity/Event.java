@@ -5,6 +5,8 @@ import com.hackhive.organizer.entity.OrganizerProfile;
 import jakarta.persistence.*;
 import lombok.*;
 
+import com.hackhive.event.enums.RegistrationType;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -58,4 +60,16 @@ public class Event extends BaseEntity {
 
     @Column(name = "college_name", length = 200)
     private String collegeName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_type", nullable = false, length = 20)
+    @Builder.Default
+    private RegistrationType registrationType = RegistrationType.FREE;
+
+    @Column(name = "registration_fee", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal registrationFee = BigDecimal.ZERO;
+
+    @Column(name = "max_participants")
+    private Integer maxParticipants;
 }

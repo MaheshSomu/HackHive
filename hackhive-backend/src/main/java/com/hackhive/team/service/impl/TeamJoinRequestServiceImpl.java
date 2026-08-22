@@ -4,6 +4,8 @@ import com.hackhive.auth.entity.User;
 import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.ResourceNotFoundException;
+import com.hackhive.event.entity.EventRegistration;
+import com.hackhive.event.enums.RegistrationStatus;
 import com.hackhive.event.repository.EventRegistrationRepository;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -70,17 +73,17 @@ public class TeamJoinRequestServiceImpl
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Team not found."));
-        boolean registeredForEvent =
+        Optional<EventRegistration> regOpt =
                 eventRegistrationRepository
-                        .existsByEventAndStudentProfile(
+                        .findByEventAndStudentProfile(
                                 team.getEvent(),
                                 studentProfile
                         );
 
-        if (!registeredForEvent) {
-        throw new BadRequestException(
-                "You must register for the event before joining a team."
-        );
+        if (regOpt.isEmpty() || regOpt.get().getStatus() != RegistrationStatus.CONFIRMED) {
+            throw new BadRequestException(
+                    "You must complete confirmed registration before joining a team for this event."
+            );
         }
         if (!team.getOpen()) {
             throw new BadRequestException(
@@ -263,6 +266,20 @@ public class TeamJoinRequestServiceImpl
 
         StudentProfile student =
                 joinRequest.getStudentProfile();
+
+        Optional<EventRegistration> studentRegOpt =
+                eventRegistrationRepository
+                        .findByEventAndStudentProfile(
+                                team.getEvent(),
+                                student
+                        );
+
+        if (studentRegOpt.isEmpty() || studentRegOpt.get().getStatus() != RegistrationStatus.CONFIRMED) {
+            throw new BadRequestException(
+                    "Student registration is not confirmed for this event."
+            );
+        }
+
         boolean alreadyInEventTeam =
                 teamMemberRepository
                         .existsByStudentProfileAndTeam_Event(
