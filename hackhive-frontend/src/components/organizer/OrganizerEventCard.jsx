@@ -63,7 +63,7 @@ export default function OrganizerEventCard({
                     )}
 
                     {/* Status badge */}
-                    <div className="absolute top-3 left-3">
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5">
                         <span
                             className={`rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs ${
                                 status.tone === "emerald"
@@ -74,6 +74,9 @@ export default function OrganizerEventCard({
                             }`}
                         >
                             {status.label}
+                        </span>
+                        <span className="rounded-full bg-slate-950/70 border border-white/20 px-2.5 py-1 text-[10px] font-bold text-amber-300 shadow-xs backdrop-blur-xs">
+                            {event.registrationType === "PAID" && Number(event.registrationFee) > 0 ? `₹${event.registrationFee}` : "Free"}
                         </span>
                     </div>
 

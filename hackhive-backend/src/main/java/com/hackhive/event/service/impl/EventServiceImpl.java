@@ -21,6 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.hackhive.event.enums.RegistrationType;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -85,6 +87,15 @@ public class EventServiceImpl implements EventService {
                 request.getMaxTeamSize()
         );
 
+        RegistrationType regType = request.getRegistrationType() != null
+                ? request.getRegistrationType()
+                : RegistrationType.FREE;
+
+        BigDecimal resolvedFee = validateAndResolveRegistrationPricing(
+                regType,
+                request.getRegistrationFee()
+        );
+
         Event event = Event.builder()
                 .organizerProfile(organizerProfile)
                 .title(request.getTitle())
@@ -104,6 +115,9 @@ public class EventServiceImpl implements EventService {
                 .eligibility(request.getEligibility())
                 .bannerUrl(request.getBannerUrl())
                 .collegeName(request.getCollegeName())
+                .registrationType(regType)
+                .registrationFee(resolvedFee)
+                .maxParticipants(request.getMaxParticipants())
                 .build();
 
         event = eventRepository.save(event);
@@ -151,6 +165,22 @@ public class EventServiceImpl implements EventService {
                 request.getMaxTeamSize()
         );
 
+        RegistrationType regType = request.getRegistrationType() != null
+                ? request.getRegistrationType()
+                : RegistrationType.FREE;
+
+        BigDecimal resolvedFee = validateAndResolveRegistrationPricing(
+                regType,
+                request.getRegistrationFee()
+        );
+
+        if (request.getMaxParticipants() != null && request.getMaxParticipants() > 0) {
+            long confirmedCount = eventRegistrationRepository.countByEventAndStatus(event, com.hackhive.event.enums.RegistrationStatus.CONFIRMED);
+            if (request.getMaxParticipants() < confirmedCount) {
+                throw new BadRequestException("Max participants cannot be less than the current confirmed registrations (" + confirmedCount + ").");
+            }
+        }
+
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setLocation(request.getLocation());
@@ -185,6 +215,10 @@ public class EventServiceImpl implements EventService {
         event.setCollegeName(
                 request.getCollegeName()
         );
+
+        event.setRegistrationType(regType);
+        event.setRegistrationFee(resolvedFee);
+        event.setMaxParticipants(request.getMaxParticipants());
 
         event = eventRepository.save(event);
 
@@ -340,6 +374,34 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException(
                     "Minimum team size cannot exceed maximum team size."
             );
+        }
+    }
+
+    private BigDecimal validateAndResolveRegistrationPricing(
+            RegistrationType registrationType,
+            BigDecimal registrationFee) {
+
+        RegistrationType type = registrationType != null
+                ? registrationType
+                : RegistrationType.FREE;
+
+        if (registrationFee != null && registrationFee.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("Registration fee cannot be negative.");
+        }
+
+        if (type == RegistrationType.FREE) {
+            if (registrationFee != null && registrationFee.compareTo(BigDecimal.ZERO) > 0) {
+                throw new BadRequestException("Registration fee must be 0 for FREE events.");
+            }
+            return BigDecimal.ZERO;
+        } else {
+            if (registrationFee == null) {
+                throw new BadRequestException("Registration fee is required for PAID events.");
+            }
+            if (registrationFee.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Registration fee must be greater than 0 for PAID events.");
+            }
+            return registrationFee;
         }
     }
 }

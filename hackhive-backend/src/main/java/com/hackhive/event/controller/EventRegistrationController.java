@@ -1,9 +1,12 @@
 package com.hackhive.event.controller;
 
 import com.hackhive.common.response.ApiResponse;
+import com.hackhive.event.dto.request.VerifyPaymentRequest;
 import com.hackhive.event.dto.response.EventRegistrationResponse;
+import com.hackhive.event.dto.response.InitiatePaymentResponse;
 import com.hackhive.event.dto.response.RegisteredStudentResponse;
 import com.hackhive.event.service.EventRegistrationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +39,42 @@ public class EventRegistrationController {
                         .success(true)
                         .message(
                                 "Event registration successful.")
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @PostMapping("/events/{eventId}/initiate")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<InitiatePaymentResponse>>
+    initiateRegistration(@PathVariable Long eventId) {
+
+        InitiatePaymentResponse response =
+                eventRegistrationService
+                        .initiateRegistration(eventId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<InitiatePaymentResponse>builder()
+                        .success(true)
+                        .message(response.getMessage())
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @PostMapping("/verify-payment")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<EventRegistrationResponse>>
+    verifyPayment(@Valid @RequestBody VerifyPaymentRequest request) {
+
+        EventRegistrationResponse response =
+                eventRegistrationService
+                        .verifyPayment(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<EventRegistrationResponse>builder()
+                        .success(true)
+                        .message("Payment verified and registration confirmed.")
                         .data(response)
                         .build()
         );

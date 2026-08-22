@@ -115,25 +115,47 @@ export default function OrganizerRegistrations() {
         return list;
     }, [registrations, searchQuery, typeFilter]);
 
-    // Export CSV Handler
+    // Export Financial & Registration Audit CSV Handler
     const handleExportCSV = () => {
         if (filteredRegistrations.length === 0) {
             toast.error("No registrations to export.");
             return;
         }
 
-        const headers = ["Registration ID", "Student Name", "Email", "College", "Branch", "Graduation Year", "Team Name"];
+        const headers = [
+            "Registration ID",
+            "Student Name",
+            "Email",
+            "College",
+            "Branch",
+            "Graduation Year",
+            "Event Title",
+            "Registration Type",
+            "Registration Status",
+            "Payment Status",
+            "Amount Paid (INR)",
+            "Razorpay Order ID",
+            "Razorpay Payment ID",
+            "Paid Timestamp"
+        ];
         const csvRows = [headers.join(",")];
 
         filteredRegistrations.forEach((r) => {
             const row = [
-                `"${r.registrationId || ""}"`,
+                `"${r.registrationId || r.id || ""}"`,
                 `"${(r.fullName || r.studentName || "").replace(/"/g, '""')}"`,
                 `"${(r.email || r.studentEmail || "").replace(/"/g, '""')}"`,
                 `"${(r.college || "").replace(/"/g, '""')}"`,
                 `"${(r.branch || "").replace(/"/g, '""')}"`,
                 `"${(r.graduationYear || "").replace(/"/g, '""')}"`,
-                `"${(r.teamName || "Individual").replace(/"/g, '""')}"`,
+                `"${(currentEvent?.title || "").replace(/"/g, '""')}"`,
+                `"${(r.registrationType || currentEvent?.registrationType || "FREE").replace(/"/g, '""')}"`,
+                `"${(r.registrationStatus || "CONFIRMED").replace(/"/g, '""')}"`,
+                `"${(r.paymentStatus || "NOT_APPLICABLE").replace(/"/g, '""')}"`,
+                `"${r.amountPaid != null ? r.amountPaid : 0}"`,
+                `"${(r.razorpayOrderId || "").replace(/"/g, '""')}"`,
+                `"${(r.razorpayPaymentId || "").replace(/"/g, '""')}"`,
+                `"${r.paidAt ? new Date(r.paidAt).toISOString() : ""}"`,
             ];
             csvRows.push(row.join(","));
         });
@@ -142,11 +164,11 @@ export default function OrganizerRegistrations() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", `registrations_event_${selectedEventId}_${Date.now()}.csv`);
+        link.setAttribute("download", `financial_audit_event_${selectedEventId}_${Date.now()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Registrations exported as CSV file!");
+        toast.success("Financial & Registration audit report exported as CSV!");
     };
 
     // Open Student Drawer

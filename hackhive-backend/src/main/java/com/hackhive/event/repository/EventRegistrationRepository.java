@@ -33,4 +33,10 @@ public interface EventRegistrationRepository
     boolean existsByEvent(Event event);
 
     long countByEvent(Event event);
+
+    long countByEventAndStatus(Event event, com.hackhive.event.enums.RegistrationStatus status);
+
+    Optional<EventRegistration> findByRazorpayOrderId(String razorpayOrderId);
+
+    Optional<EventRegistration> findByRazorpayPaymentId(String razorpayPaymentId);
 }

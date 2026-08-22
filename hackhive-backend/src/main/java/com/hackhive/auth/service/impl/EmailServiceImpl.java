@@ -174,4 +174,58 @@ public void sendPasswordResetEmail(User user) {
             System.err.println("Failed to send registration notification email to " + recipientEmail + ": " + e.getMessage());
         }
     }
+
+    @Override
+    public void sendPaymentReceiptEmail(
+            String recipientEmail,
+            String studentName,
+            String eventTitle,
+            Long registrationId,
+            String razorpayOrderId,
+            String razorpayPaymentId,
+            String amountPaid,
+            String paymentStatus,
+            String paidAt) {
+
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(recipientEmail);
+            message.setSubject("Payment Receipt & Registration Confirmation — " + eventTitle);
+            message.setText("""
+                    Hello %s,
+
+                    Thank you for your payment! Your registration for "%s" is confirmed. 🎉
+
+                    Transaction Receipt Details:
+                    - Event: %s
+                    - Registration ID: %s
+                    - Amount Paid: ₹%s
+                    - Payment Status: %s
+                    - Razorpay Order ID: %s
+                    - Razorpay Payment ID: %s
+                    - Paid Date: %s
+
+                    Regards,
+                    HackHive Team
+                    """.formatted(
+                    studentName != null ? studentName : "Participant",
+                    eventTitle,
+                    eventTitle,
+                    registrationId != null ? registrationId : "N/A",
+                    amountPaid != null ? amountPaid : "0.00",
+                    paymentStatus != null ? paymentStatus : "PAID",
+                    razorpayOrderId != null ? razorpayOrderId : "N/A",
+                    razorpayPaymentId != null ? razorpayPaymentId : "N/A",
+                    paidAt != null ? paidAt : "N/A"
+            ));
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send student payment receipt email to " + recipientEmail + ": " + e.getMessage());
+        }
+    }
 }

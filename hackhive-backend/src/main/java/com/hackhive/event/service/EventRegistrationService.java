@@ -1,6 +1,8 @@
 package com.hackhive.event.service;
 
+import com.hackhive.event.dto.request.VerifyPaymentRequest;
 import com.hackhive.event.dto.response.EventRegistrationResponse;
+import com.hackhive.event.dto.response.InitiatePaymentResponse;
 import com.hackhive.event.dto.response.RegisteredStudentResponse;
 
 import java.util.List;
@@ -9,6 +11,14 @@ public interface EventRegistrationService {
 
     EventRegistrationResponse registerForEvent(
             Long eventId
+    );
+
+    InitiatePaymentResponse initiateRegistration(
+            Long eventId
+    );
+
+    EventRegistrationResponse verifyPayment(
+            VerifyPaymentRequest request
     );
 
     List<EventRegistrationResponse> getMyRegistrations();

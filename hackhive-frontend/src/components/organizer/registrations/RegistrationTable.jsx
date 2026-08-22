@@ -82,7 +82,8 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
                             </th>
                             <th className="py-3 px-4 text-center">Type / Team</th>
                             <th className="py-3 px-4 text-center">Grad Year</th>
-                            <th className="py-3 px-4 text-center">Status</th>
+                            <th className="py-3 px-4 text-center">Registration Status</th>
+                            <th className="py-3 px-4 text-center">Payment Info</th>
                             <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -98,6 +99,9 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
                                 .slice(0, 2);
 
                             const rowIndex = (currentPage - 1) * pageSize + index + 1;
+                            const isConfirmed = !reg.registrationStatus || reg.registrationStatus === "CONFIRMED";
+                            const isPaidEvent = reg.registrationType === "PAID";
+                            const isPaid = reg.paymentStatus === "PAID";
 
                             return (
                                 <tr
@@ -155,9 +159,33 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
                                     </td>
 
                                     <td className="py-3.5 px-4 text-center">
-                                        <Badge variant="success" className="px-2.5 py-0.5 text-[10px] font-bold">
-                                            Confirmed
-                                        </Badge>
+                                        {isConfirmed ? (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                                                Confirmed
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                                                Payment Pending
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    <td className="py-3.5 px-4 text-center">
+                                        {isPaidEvent ? (
+                                            isPaid ? (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                                                    PAID (₹{reg.amountPaid || 0})
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                                    UNPAID
+                                                </span>
+                                            )
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                                FREE (₹0)
+                                            </span>
+                                        )}
                                     </td>
 
                                     <td className="py-3.5 px-4 text-right">

@@ -37,6 +37,8 @@ export default function OrganizerEventModal({
             eligibility: "Open for all students",
             bannerUrl: "",
             collegeName: "",
+            registrationType: "FREE",
+            registrationFee: 0,
         },
     });
 
@@ -56,6 +58,8 @@ export default function OrganizerEventModal({
                 eligibility: initialData.eligibility || "Open for all students",
                 bannerUrl: initialData.bannerUrl || "",
                 collegeName: initialData.collegeName || "",
+                registrationType: initialData.registrationType || "FREE",
+                registrationFee: initialData.registrationFee !== undefined && initialData.registrationFee !== null ? initialData.registrationFee : 0,
             });
         } else {
             reset({
@@ -72,6 +76,8 @@ export default function OrganizerEventModal({
                 eligibility: "Open for all students",
                 bannerUrl: "",
                 collegeName: "",
+                registrationType: "FREE",
+                registrationFee: 0,
             });
         }
         setStep(1);
@@ -86,6 +92,9 @@ export default function OrganizerEventModal({
 
     const handleFinalSubmit = (data) => {
         const formatISO = (val) => (val ? (val.length === 16 ? `${val}:00` : val) : null);
+        const isPaid = data.registrationType === "PAID";
+        const fee = isPaid ? parseFloat(data.registrationFee) || 0 : 0;
+
         const payload = {
             ...data,
             title: data.title.trim(),
@@ -96,6 +105,8 @@ export default function OrganizerEventModal({
             registrationEndDate: formatISO(data.registrationEndDate),
             minTeamSize: parseInt(data.minTeamSize, 10) || 1,
             maxTeamSize: parseInt(data.maxTeamSize, 10) || 4,
+            registrationType: data.registrationType || "FREE",
+            registrationFee: fee,
         };
         onSubmit(payload);
     };
@@ -237,7 +248,62 @@ export default function OrganizerEventModal({
 
                         {step === 3 && (
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Step 3: Rules & Team Sizes</h4>
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Step 3: Rules, Pricing & Team Sizes</h4>
+
+                                {/* Pricing Section */}
+                                <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50/60 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
+                                    <label className="block text-xs font-bold text-slate-900 dark:text-slate-100">
+                                        Registration Type *
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer text-slate-700 dark:text-slate-300">
+                                            <input
+                                                type="radio"
+                                                value="FREE"
+                                                {...register("registrationType")}
+                                                className="size-4 text-purple-600 focus:ring-purple-500"
+                                            />
+                                            <span>Free Event</span>
+                                        </label>
+                                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer text-slate-700 dark:text-slate-300">
+                                            <input
+                                                type="radio"
+                                                value="PAID"
+                                                {...register("registrationType")}
+                                                className="size-4 text-purple-600 focus:ring-purple-500"
+                                            />
+                                            <span>Paid Event</span>
+                                        </label>
+                                    </div>
+
+                                    {formData.registrationType === "PAID" && (
+                                        <div className="pt-2">
+                                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                                Registration Fee (₹) *
+                                            </label>
+                                            <div className="relative mt-1">
+                                                <span className="pointer-events-none absolute left-3 top-2 text-xs font-bold text-slate-400">
+                                                    ₹
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="1"
+                                                    {...register("registrationFee", {
+                                                        required: formData.registrationType === "PAID" ? "Registration fee is required for paid events" : false,
+                                                        min: { value: 0.01, message: "Fee must be greater than 0" },
+                                                    })}
+                                                    placeholder="e.g. 500"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white pl-7 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                                                />
+                                            </div>
+                                            {errors.registrationFee && (
+                                                <p className="mt-1 text-[11px] text-rose-500">{errors.registrationFee.message}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div>
                                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                                         Eligibility Criteria
@@ -248,6 +314,22 @@ export default function OrganizerEventModal({
                                         placeholder="e.g. Open to undergraduate and graduate students"
                                         className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                        Max Participants (Capacity Limit - Optional)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        {...register("maxParticipants", { min: { value: 1, message: "Must be at least 1" } })}
+                                        placeholder="e.g. 100 (Leave blank for unlimited)"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                    />
+                                    {errors.maxParticipants && (
+                                        <p className="mt-1 text-[11px] text-rose-500">{errors.maxParticipants.message}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid gap-3 sm:grid-cols-2">
@@ -343,6 +425,7 @@ export default function OrganizerEventModal({
                                         <div><span className="font-semibold">Location:</span> {formData.location}</div>
                                         <div><span className="font-semibold">Team Size:</span> {formData.minTeamSize}-{formData.maxTeamSize}</div>
                                         <div><span className="font-semibold">Host:</span> {formData.collegeName || "N/A"}</div>
+                                        <div><span className="font-semibold">Registration:</span> {formData.registrationType === "PAID" ? `PAID (₹${formData.registrationFee || 0})` : "FREE"}</div>
                                     </div>
                                 </div>
                             </div>

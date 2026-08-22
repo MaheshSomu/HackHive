@@ -40,13 +40,19 @@ function getCountdownText(deadlineString) {
 export default function EventCard({
     event,
     isRegistered,
+    userRegistration,
     onViewDetails,
     onRegister,
     onCancel,
+    onViewReceipt,
     isRegistering,
 }) {
     const isClosed = getCountdownText(event.registrationEndDate) === "Closed";
     const countdown = getCountdownText(event.registrationEndDate);
+
+    const isConfirmed = isRegistered || (userRegistration && (!userRegistration.status || userRegistration.status === "CONFIRMED"));
+    const isPendingPayment = userRegistration && userRegistration.status === "PENDING_PAYMENT";
+    const isFull = event.maxParticipants && event.maxParticipants > 0 && (event.registrationCount ?? 0) >= event.maxParticipants;
 
     return (
         <Card className="group relative flex flex-col justify-between overflow-hidden border-slate-200/80 bg-white transition-all duration-200 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
@@ -73,18 +79,34 @@ export default function EventCard({
                     )}
 
                     {/* Status Badge Overlays */}
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                        {isRegistered ? (
+                    <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+                        {isConfirmed ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs">
-                                <CheckCircle2 className="size-3" /> Registered
+                                <CheckCircle2 className="size-3" /> {userRegistration?.paymentStatus === "PAID" ? "Registered / Paid" : "Registered"}
+                            </span>
+                        ) : isPendingPayment ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs">
+                                Payment Pending
                             </span>
                         ) : isClosed ? (
                             <span className="rounded-full bg-rose-500/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs">
                                 Registration Closed
                             </span>
+                        ) : isFull ? (
+                            <span className="rounded-full bg-rose-600/90 px-2.5 py-1 text-[10px] font-extrabold text-white shadow-xs backdrop-blur-xs">
+                                Sold Out
+                            </span>
                         ) : (
                             <span className="rounded-full bg-indigo-600/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs">
                                 {countdown}
+                            </span>
+                        )}
+                        <span className="rounded-full bg-slate-950/75 border border-white/20 px-2.5 py-1 text-[10px] font-bold text-amber-300 shadow-xs backdrop-blur-xs">
+                            {event.registrationType === "PAID" && Number(event.registrationFee) > 0 ? `₹${event.registrationFee} Registration Fee` : "Free"}
+                        </span>
+                        {event.maxParticipants && event.maxParticipants > 0 && (
+                            <span className="rounded-full bg-slate-900/80 border border-white/10 px-2.5 py-1 text-[10px] font-semibold text-slate-200 backdrop-blur-xs">
+                                {event.registrationCount || 0} / {event.maxParticipants} Registered
                             </span>
                         )}
                     </div>
@@ -97,61 +119,39 @@ export default function EventCard({
                 </div>
 
                 {/* Card Content */}
-                <CardContent className="space-y-4 p-5">
+                <CardContent className="p-5 space-y-4">
                     <div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                            <Building2 className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                            <span className="font-semibold truncate">
-                                {event.organizerName || event.collegeName || "HackHive Host"}
-                            </span>
-                        </div>
-
-                        <h3 className="mt-1 line-clamp-1 text-base font-bold text-slate-900 dark:text-slate-100">
+                        <h3 className="text-base font-bold text-slate-900 line-clamp-1 dark:text-slate-100">
                             {event.title}
                         </h3>
-
-                        {event.description && (
-                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                                {event.description}
-                            </p>
-                        )}
+                        <p className="mt-1 line-clamp-2 text-xs text-slate-500 font-medium">
+                            {event.description || "Join this exciting hackathon, build solutions, and compete with talented developers."}
+                        </p>
                     </div>
 
-                    {/* Meta Grid */}
-                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-xs dark:border-slate-800">
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            <Calendar className="size-3.5 text-slate-400 shrink-0" />
+                    <div className="grid grid-cols-2 gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400 border-t border-slate-100 pt-3 dark:border-slate-800">
+                        <div className="flex items-center gap-1.5 truncate">
+                            <Building2 className="size-3.5 text-indigo-500 shrink-0" />
+                            <span className="truncate">{event.collegeName || "HackHive Community"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate">
+                            <MapPin className="size-3.5 text-indigo-500 shrink-0" />
+                            <span className="truncate">{event.location || "Online"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 truncate">
+                            <Calendar className="size-3.5 text-indigo-500 shrink-0" />
                             <span className="truncate">{formatDate(event.startDate)}</span>
                         </div>
-
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            <Clock className="size-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">Deadline: {formatDate(event.registrationEndDate)}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            <Users className="size-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">Team: {event.minTeamSize || 1}-{event.maxTeamSize || 4} members</span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            <MapPin className="size-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{event.location || event.eventMode || "Online"}</span>
+                        <div className="flex items-center gap-1.5 truncate">
+                            <Users className="size-3.5 text-indigo-500 shrink-0" />
+                            <span>{event.minTeamSize || 1}-{event.maxTeamSize || 4} Members</span>
                         </div>
                     </div>
-
-                    {/* Eligibility Badge */}
-                    {event.eligibility && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-                            <Shield className="size-3.5 text-indigo-500 shrink-0" />
-                            <span className="truncate font-medium">{event.eligibility}</span>
-                        </div>
-                    )}
                 </CardContent>
             </div>
 
-            {/* Card Actions Footer */}
-            <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+            {/* Actions Footer */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
                 <Button
                     type="button"
                     variant="outline"
@@ -162,26 +162,57 @@ export default function EventCard({
                     View Details
                 </Button>
 
-                {isRegistered ? (
+                {isConfirmed ? (
+                    <div className="flex items-center gap-1.5">
+                        {userRegistration?.paymentStatus === "PAID" && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onViewReceipt(userRegistration, event)}
+                                className="rounded-xl text-xs font-bold border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                            >
+                                Receipt
+                            </Button>
+                        )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onCancel(event.id)}
+                            disabled={isRegistering}
+                            className="rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        >
+                            {isRegistering ? "Cancelling..." : "Cancel"}
+                        </Button>
+                    </div>
+                ) : isPendingPayment ? (
                     <Button
                         type="button"
-                        variant="ghost"
                         size="sm"
-                        onClick={() => onCancel(event.id)}
-                        disabled={isRegistering}
-                        className="rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        disabled={isClosed || isFull || isRegistering}
+                        onClick={() => onRegister(event.id)}
+                        className="flex-1 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-50"
                     >
-                        {isRegistering ? "Cancelling..." : "Cancel"}
+                        {isRegistering ? "Processing..." : "Complete Payment"}
                     </Button>
                 ) : (
                     <Button
                         type="button"
                         size="sm"
-                        disabled={isClosed || isRegistering}
+                        disabled={isClosed || isFull || isRegistering}
                         onClick={() => onRegister(event.id)}
                         className="flex-1 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50"
                     >
-                        {isRegistering ? "Registering..." : isClosed ? "Closed" : "Register Now"}
+                        {isRegistering
+                            ? "Processing..."
+                            : isClosed
+                            ? "Closed"
+                            : isFull
+                            ? "Sold Out"
+                            : event.registrationType === "PAID" && Number(event.registrationFee) > 0
+                            ? `Register & Pay (₹${event.registrationFee})`
+                            : "Register Now"}
                     </Button>
                 )}
             </div>

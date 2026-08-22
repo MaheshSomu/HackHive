@@ -17,4 +17,16 @@ public interface EmailService {
             String studentName,
             String studentEmail
     );
+
+    void sendPaymentReceiptEmail(
+            String recipientEmail,
+            String studentName,
+            String eventTitle,
+            Long registrationId,
+            String razorpayOrderId,
+            String razorpayPaymentId,
+            String amountPaid,
+            String paymentStatus,
+            String paidAt
+    );
 }
