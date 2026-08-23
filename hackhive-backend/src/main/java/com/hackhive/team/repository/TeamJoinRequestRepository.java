@@ -33,4 +33,6 @@ public interface TeamJoinRequestRepository
             StudentProfile studentProfile,
             String status
     );
+
+    void deleteByTeam(Team team);
 }

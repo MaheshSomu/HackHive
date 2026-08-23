@@ -12,4 +12,6 @@ public interface StudentService {
     );
 
     void deactivateAccount();
+
+    com.hackhive.student.dto.response.StudentLookupResponse lookupStudentByEmail(String email);
 }

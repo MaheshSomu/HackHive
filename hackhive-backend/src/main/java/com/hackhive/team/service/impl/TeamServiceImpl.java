@@ -17,9 +17,13 @@ import com.hackhive.team.entity.Team;
 import com.hackhive.team.entity.TeamMember;
 import com.hackhive.team.mapper.TeamMapper;
 import com.hackhive.team.mapper.TeamMemberMapper;
+import com.hackhive.team.repository.TeamJoinRequestRepository;
 import com.hackhive.team.repository.TeamMemberRepository;
 import com.hackhive.team.repository.TeamRepository;
 import com.hackhive.team.service.TeamService;
+import com.hackhive.workspace.repository.ChatMessageRepository;
+import com.hackhive.workspace.repository.KanbanTaskRepository;
+import com.hackhive.workspace.repository.TeamResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,6 +42,10 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final TeamJoinRequestRepository teamJoinRequestRepository;
+    private final TeamResourceRepository teamResourceRepository;
+    private final KanbanTaskRepository kanbanTaskRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final EventRepository eventRepository;
     private final EventRegistrationRepository eventRegistrationRepository;
     private final StudentProfileRepository studentProfileRepository;
@@ -201,6 +209,12 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Team not found or you are not the team leader."));
+
+        teamJoinRequestRepository.deleteByTeam(team);
+        teamMemberRepository.deleteByTeam(team);
+        teamResourceRepository.deleteByTeam(team);
+        kanbanTaskRepository.deleteByTeam(team);
+        chatMessageRepository.deleteByTeam(team);
 
         teamRepository.delete(team);
     }

@@ -13,8 +13,18 @@ public interface EventRegistrationService {
             Long eventId
     );
 
+    EventRegistrationResponse registerForEvent(
+            Long eventId,
+            com.hackhive.event.dto.request.InitiateRegistrationRequest request
+    );
+
     InitiatePaymentResponse initiateRegistration(
             Long eventId
+    );
+
+    InitiatePaymentResponse initiateRegistration(
+            Long eventId,
+            com.hackhive.event.dto.request.InitiateRegistrationRequest request
     );
 
     EventRegistrationResponse verifyPayment(

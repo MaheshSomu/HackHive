@@ -8,8 +8,10 @@ async function request(promise) {
 
 export const studentProfileService = {
     // 1. Personal Information
+    getMyProfile: () => request(api.get("/student/profile")),
     getProfile: () => request(api.get("/student/profile")),
     updateProfile: (data) => request(api.put("/student/profile", data)),
+    lookupStudentByEmail: (email) => request(api.get(`/student/lookup?email=${encodeURIComponent(email)}`)),
 
     // 2. Skills
     getSkills: () => request(api.get("/student/skills")),

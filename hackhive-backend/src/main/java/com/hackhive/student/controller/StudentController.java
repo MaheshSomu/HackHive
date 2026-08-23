@@ -59,4 +59,20 @@ public class StudentController {
                         .build()
         );
     }
+
+    @GetMapping("/lookup")
+    public ResponseEntity<ApiResponse<com.hackhive.student.dto.response.StudentLookupResponse>> lookupStudent(
+            @RequestParam String email) {
+
+        com.hackhive.student.dto.response.StudentLookupResponse response =
+                studentService.lookupStudentByEmail(email);
+
+        return ResponseEntity.ok(
+                ApiResponse.<com.hackhive.student.dto.response.StudentLookupResponse>builder()
+                        .success(true)
+                        .message("Student lookup completed.")
+                        .data(response)
+                        .build()
+        );
+    }
 }

@@ -147,6 +147,10 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
                                             <Badge variant="purple" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
                                                 <Layers className="size-3" /> {reg.teamName}
                                             </Badge>
+                                        ) : reg.participantCount && reg.participantCount > 1 ? (
+                                            <Badge variant="purple" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
+                                                <Layers className="size-3" /> {reg.participantCount} Members
+                                            </Badge>
                                         ) : (
                                             <Badge variant="secondary" className="gap-1 px-2.5 py-0.5 text-[10px] font-medium">
                                                 <User className="size-3" /> Individual

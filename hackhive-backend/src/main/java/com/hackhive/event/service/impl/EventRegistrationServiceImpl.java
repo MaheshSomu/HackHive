@@ -5,12 +5,15 @@ import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.auth.service.EmailService;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.exception.ResourceNotFoundException;
+import com.hackhive.event.dto.request.InitiateRegistrationRequest;
+import com.hackhive.event.dto.request.EventRegistrationMemberRequest;
 import com.hackhive.event.dto.request.VerifyPaymentRequest;
 import com.hackhive.event.dto.response.EventRegistrationResponse;
 import com.hackhive.event.dto.response.InitiatePaymentResponse;
 import com.hackhive.event.dto.response.RegisteredStudentResponse;
 import com.hackhive.event.entity.Event;
 import com.hackhive.event.entity.EventRegistration;
+import com.hackhive.event.entity.EventRegistrationMember;
 import com.hackhive.event.enums.PaymentStatus;
 import com.hackhive.event.enums.RegistrationStatus;
 import com.hackhive.event.enums.RegistrationType;
@@ -102,7 +105,13 @@ public class EventRegistrationServiceImpl
     @Override
     @Transactional
     public EventRegistrationResponse registerForEvent(Long eventId) {
-        InitiatePaymentResponse initiateResponse = initiateRegistration(eventId);
+        return registerForEvent(eventId, null);
+    }
+
+    @Override
+    @Transactional
+    public EventRegistrationResponse registerForEvent(Long eventId, InitiateRegistrationRequest request) {
+        InitiatePaymentResponse initiateResponse = initiateRegistration(eventId, request);
         if (initiateResponse.isFree()) {
             EventRegistration reg = eventRegistrationRepository.findById(initiateResponse.getRegistrationId())
                     .orElseThrow(() -> new ResourceNotFoundException("Event registration not found."));
@@ -115,6 +124,12 @@ public class EventRegistrationServiceImpl
     @Override
     @Transactional
     public InitiatePaymentResponse initiateRegistration(Long eventId) {
+        return initiateRegistration(eventId, null);
+    }
+
+    @Override
+    @Transactional
+    public InitiatePaymentResponse initiateRegistration(Long eventId, InitiateRegistrationRequest request) {
         StudentProfile studentProfile = getCurrentStudentProfile();
 
         Event event = eventRepository.findById(eventId)
@@ -126,6 +141,36 @@ public class EventRegistrationServiceImpl
         }
         if (now.isAfter(event.getRegistrationEndDate())) {
             throw new BadRequestException("Event registration has already closed.");
+        }
+
+        // Validate Participant Count & Team Rules
+        int count = 1;
+        if (request != null && request.getParticipantCount() != null && request.getParticipantCount() > 0) {
+            count = request.getParticipantCount();
+        }
+
+        if (event.getMaxTeamSize() != null && event.getMaxTeamSize() > 1) {
+            if (count > event.getMaxTeamSize()) {
+                throw new BadRequestException("Participant count exceeds the event maximum team size of " + event.getMaxTeamSize() + ".");
+            }
+        } else {
+            if (count > 1) {
+                throw new BadRequestException("This event only allows individual registrations.");
+            }
+        }
+
+        // Validate Additional Members if count > 1
+        if (count > 1 && request != null) {
+            List<EventRegistrationMemberRequest> addMembers = request.getMembers();
+            if (addMembers == null || addMembers.size() < (count - 1)) {
+                throw new BadRequestException("Please provide details for all " + (count - 1) + " additional team members.");
+            }
+            for (int i = 0; i < count - 1; i++) {
+                EventRegistrationMemberRequest m = addMembers.get(i);
+                if (m == null || m.getFullName() == null || m.getFullName().isBlank() || m.getEmail() == null || m.getEmail().isBlank()) {
+                    throw new BadRequestException("Name and Email are required for additional member #" + (i + 1) + ".");
+                }
+            }
         }
 
         Optional<EventRegistration> existingOpt = eventRegistrationRepository
@@ -159,6 +204,87 @@ public class EventRegistrationServiceImpl
                     .event(event)
                     .studentProfile(studentProfile)
                     .build();
+        }
+
+        // Save Registration Form Fields
+        String phone = (request != null && request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank())
+                ? request.getPhoneNumber()
+                : null;
+        registration.setPhoneNumber(phone);
+        registration.setParticipantCount(count);
+
+        // Clear existing member list if re-initiating
+        if (registration.getMembers() != null) {
+            registration.getMembers().clear();
+        } else {
+            registration.setMembers(new java.util.ArrayList<>());
+        }
+
+        // Primary Participant Member
+        String primaryName = (request != null && request.getFullName() != null && !request.getFullName().isBlank())
+                ? request.getFullName()
+                : (studentProfile.getUser() != null ? studentProfile.getUser().getFullName() : "Student");
+        String primaryEmail = (request != null && request.getEmail() != null && !request.getEmail().isBlank())
+                ? request.getEmail()
+                : (studentProfile.getUser() != null ? studentProfile.getUser().getEmail() : "");
+        String primaryCollege = (request != null && request.getCollege() != null && !request.getCollege().isBlank())
+                ? request.getCollege()
+                : studentProfile.getCollege();
+        String primaryBranch = (request != null && request.getBranch() != null && !request.getBranch().isBlank())
+                ? request.getBranch()
+                : studentProfile.getBranch();
+        String primaryGradYear = (request != null && request.getGraduationYear() != null && !request.getGraduationYear().isBlank())
+                ? request.getGraduationYear()
+                : studentProfile.getGraduationYear();
+
+        EventRegistrationMember primaryMember = EventRegistrationMember.builder()
+                .eventRegistration(registration)
+                .fullName(primaryName)
+                .email(primaryEmail)
+                .college(primaryCollege)
+                .branch(primaryBranch)
+                .graduationYear(primaryGradYear)
+                .isPrimary(true)
+                .memberIndex(0)
+                .studentProfile(studentProfile)
+                .isHackHiveMember(true)
+                .build();
+        registration.getMembers().add(primaryMember);
+
+        // Additional Team Members
+        if (count > 1 && request != null && request.getMembers() != null) {
+            for (int i = 0; i < count - 1; i++) {
+                EventRegistrationMemberRequest mReq = request.getMembers().get(i);
+                
+                // Perform backend email verification to detect existing HackHive account
+                String memberEmail = mReq.getEmail() != null ? mReq.getEmail().trim() : "";
+                StudentProfile foundProfile = null;
+                boolean isMember = false;
+                if (!memberEmail.isBlank()) {
+                    Optional<User> uOpt = userRepository.findByEmail(memberEmail);
+                    if (uOpt.isPresent()) {
+                        Optional<StudentProfile> spOpt = studentProfileRepository.findByUser(uOpt.get());
+                        if (spOpt.isPresent()) {
+                            foundProfile = spOpt.get();
+                            isMember = true;
+                        }
+                    }
+                }
+
+                EventRegistrationMember addMember = EventRegistrationMember.builder()
+                        .eventRegistration(registration)
+                        .fullName(mReq.getFullName())
+                        .email(mReq.getEmail())
+                        .college(mReq.getCollege() != null ? mReq.getCollege() : primaryCollege)
+                        .branch(mReq.getBranch() != null ? mReq.getBranch() : "")
+                        .graduationYear(mReq.getGraduationYear() != null ? mReq.getGraduationYear() : "")
+                        .isPrimary(false)
+                        .memberIndex(i + 1)
+                        .studentProfile(foundProfile)
+                        .isHackHiveMember(isMember)
+                        .build();
+                registration.getMembers().add(addMember);
+            }
         }
 
         // Handle FREE Event

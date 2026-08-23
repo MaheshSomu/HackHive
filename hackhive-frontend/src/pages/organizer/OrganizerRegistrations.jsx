@@ -126,9 +126,14 @@ export default function OrganizerRegistrations() {
             "Registration ID",
             "Student Name",
             "Email",
+            "Phone Number",
             "College",
             "Branch",
             "Graduation Year",
+            "Participant Count",
+            "Member Names",
+            "Member Emails",
+            "Member Account Types",
             "Event Title",
             "Registration Type",
             "Registration Status",
@@ -141,13 +146,23 @@ export default function OrganizerRegistrations() {
         const csvRows = [headers.join(",")];
 
         filteredRegistrations.forEach((r) => {
+            const membersList = Array.isArray(r.members) ? r.members : [];
+            const memberNamesStr = membersList.map((m) => m.fullName).join(" | ");
+            const memberEmailsStr = membersList.map((m) => m.email).join(" | ");
+            const memberTypesStr = membersList.map((m) => (m.isHackHiveMember || m.studentProfileId || m.isPrimary ? "HackHive Member" : "External Participant")).join(" | ");
+
             const row = [
                 `"${r.registrationId || r.id || ""}"`,
                 `"${(r.fullName || r.studentName || "").replace(/"/g, '""')}"`,
                 `"${(r.email || r.studentEmail || "").replace(/"/g, '""')}"`,
+                `"${(r.phoneNumber || "").replace(/"/g, '""')}"`,
                 `"${(r.college || "").replace(/"/g, '""')}"`,
                 `"${(r.branch || "").replace(/"/g, '""')}"`,
                 `"${(r.graduationYear || "").replace(/"/g, '""')}"`,
+                `"${r.participantCount || 1}"`,
+                `"${memberNamesStr.replace(/"/g, '""')}"`,
+                `"${memberEmailsStr.replace(/"/g, '""')}"`,
+                `"${memberTypesStr.replace(/"/g, '""')}"`,
                 `"${(currentEvent?.title || "").replace(/"/g, '""')}"`,
                 `"${(r.registrationType || currentEvent?.registrationType || "FREE").replace(/"/g, '""')}"`,
                 `"${(r.registrationStatus || "CONFIRMED").replace(/"/g, '""')}"`,

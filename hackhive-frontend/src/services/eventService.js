@@ -20,8 +20,8 @@ export const eventService = {
 
     // Student Registrations
     getMyRegistrations: () => request(api.get("/event-registrations/my-registrations")),
-    registerForEvent: (eventId) => request(api.post(`/event-registrations/events/${eventId}`)),
-    initiateRegistration: (eventId) => request(api.post(`/event-registrations/events/${eventId}/initiate`)),
+    registerForEvent: (eventId, data) => request(api.post(`/event-registrations/events/${eventId}`, data)),
+    initiateRegistration: (eventId, data) => request(api.post(`/event-registrations/events/${eventId}/initiate`, data)),
     verifyPayment: (data) => request(api.post("/event-registrations/verify-payment", data)),
     cancelRegistration: (eventId) => request(api.delete(`/event-registrations/events/${eventId}`)),
 };

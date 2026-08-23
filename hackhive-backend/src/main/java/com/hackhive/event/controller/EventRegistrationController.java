@@ -1,6 +1,7 @@
 package com.hackhive.event.controller;
 
 import com.hackhive.common.response.ApiResponse;
+import com.hackhive.event.dto.request.InitiateRegistrationRequest;
 import com.hackhive.event.dto.request.VerifyPaymentRequest;
 import com.hackhive.event.dto.response.EventRegistrationResponse;
 import com.hackhive.event.dto.response.InitiatePaymentResponse;
@@ -28,11 +29,12 @@ public class EventRegistrationController {
     @PostMapping("/events/{eventId}")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<EventRegistrationResponse>>
-    registerForEvent(@PathVariable Long eventId) {
+    registerForEvent(@PathVariable Long eventId,
+                     @Valid @RequestBody(required = false) InitiateRegistrationRequest request) {
 
         EventRegistrationResponse response =
                 eventRegistrationService
-                        .registerForEvent(eventId);
+                        .registerForEvent(eventId, request);
 
         return ResponseEntity.ok(
                 ApiResponse.<EventRegistrationResponse>builder()
@@ -47,11 +49,12 @@ public class EventRegistrationController {
     @PostMapping("/events/{eventId}/initiate")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<InitiatePaymentResponse>>
-    initiateRegistration(@PathVariable Long eventId) {
+    initiateRegistration(@PathVariable Long eventId,
+                         @Valid @RequestBody(required = false) InitiateRegistrationRequest request) {
 
         InitiatePaymentResponse response =
                 eventRegistrationService
-                        .initiateRegistration(eventId);
+                        .initiateRegistration(eventId, request);
 
         return ResponseEntity.ok(
                 ApiResponse.<InitiatePaymentResponse>builder()

@@ -7,6 +7,7 @@ import {
     Crown,
     ExternalLink,
     LogOut,
+    Trash2,
     UserPlus,
     Users,
 } from "lucide-react";
@@ -21,6 +22,7 @@ export default function TeamCard({
     onViewDetails,
     onOpenWorkspace,
     onLeaveTeam,
+    onDeleteTeam,
     onRequestJoin,
     isActionLoading,
 }) {
@@ -110,13 +112,25 @@ export default function TeamCard({
                             Workspace <ExternalLink className="ml-1 size-3" />
                         </Button>
 
+                        {isLeader && onDeleteTeam && (
+                            <button
+                                type="button"
+                                onClick={() => onDeleteTeam(team)}
+                                disabled={isActionLoading}
+                                title="Delete Team Workspace"
+                                className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40 transition-colors"
+                            >
+                                <Trash2 className="size-3.5" />
+                            </button>
+                        )}
+
                         {!isLeader && onLeaveTeam && (
                             <button
                                 type="button"
                                 onClick={() => onLeaveTeam(team.id)}
                                 disabled={isActionLoading}
                                 title="Leave Team"
-                                className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40"
+                                className="inline-flex size-8 items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-800 dark:hover:bg-rose-950/40 transition-colors"
                             >
                                 <LogOut className="size-3.5" />
                             </button>

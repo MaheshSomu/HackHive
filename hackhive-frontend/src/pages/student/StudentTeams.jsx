@@ -28,6 +28,7 @@ import DashboardSection from "../../components/student-dashboard/DashboardSectio
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 
 export default function StudentTeams() {
     const { user: authUser } = useAuth();
@@ -46,9 +47,11 @@ export default function StudentTeams() {
     const [eventFilter, setEventFilter] = useState("ALL");
     const [actionLoadingId, setActionLoadingId] = useState(null);
 
-    // Modals
+    // Modals & Deletion State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null);
+    const [teamToDelete, setTeamToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const loadData = useCallback(async () => {
         try {
@@ -85,6 +88,32 @@ export default function StudentTeams() {
     const myTeamIds = useMemo(() => {
         return new Set(myTeams.map((t) => t.id));
     }, [myTeams]);
+
+    // Delete Team Trigger Handler
+    const handleInitiateDelete = (team) => {
+        setTeamToDelete(team);
+    };
+
+    // Confirm Delete Team Handler
+    const handleConfirmDeleteTeam = async () => {
+        if (!teamToDelete) return;
+        try {
+            setIsDeleting(true);
+            await teamService.deleteTeam(teamToDelete.id);
+            setMyTeams((prev) => prev.filter((t) => t.id !== teamToDelete.id));
+            setOpenTeams((prev) => prev.filter((t) => t.id !== teamToDelete.id));
+            if (selectedTeam && selectedTeam.id === teamToDelete.id) {
+                setSelectedTeam(null);
+            }
+            toast.success("Team workspace deleted successfully.");
+            setTeamToDelete(null);
+        } catch (err) {
+            const msg = err?.response?.data?.message || "Failed to delete team.";
+            toast.error(msg);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     // Create Team Handler
     const handleCreateTeam = async (payload) => {
@@ -382,6 +411,7 @@ export default function StudentTeams() {
                                         onViewDetails={(t) => setSelectedTeam(t)}
                                         onOpenWorkspace={() => navigate("/student/workspace")}
                                         onLeaveTeam={handleLeaveTeam}
+                                        onDeleteTeam={handleInitiateDelete}
                                         onRequestJoin={handleRequestJoin}
                                         isActionLoading={actionLoadingId === team.id}
                                     />
@@ -408,9 +438,9 @@ export default function StudentTeams() {
                                             <Button
                                                 type="button"
                                                 onClick={() => setIsCreateOpen(true)}
-                                                className="rounded-xl bg-indigo-600 text-xs font-bold text-white"
+                                                className="rounded-xl bg-slate-900 text-xs font-bold text-white hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500"
                                             >
-                                                Create Your First Team
+                                                <Plus className="mr-1.5 size-4" /> Create Team
                                             </Button>
                                         ) : (
                                             <Button
@@ -450,6 +480,20 @@ export default function StudentTeams() {
                 currentUserId={authUser?.userId}
                 currentStudentProfileId={authUser?.userId}
                 onRefresh={loadData}
+                onDeleteTeam={handleInitiateDelete}
+            />
+
+            {/* Team Deletion Confirmation Modal */}
+            <ConfirmModal
+                isOpen={Boolean(teamToDelete)}
+                onClose={() => setTeamToDelete(null)}
+                onConfirm={handleConfirmDeleteTeam}
+                title="Delete Team Workspace"
+                description={`Are you sure you want to delete "${teamToDelete?.name}"? This will disband the team and delete all associated team members, pending join requests, kanban tasks, resources, and chat messages. Your event registration and payment history will NOT be affected.`}
+                confirmText="Delete Team"
+                cancelText="Cancel"
+                isDanger={true}
+                isLoading={isDeleting}
             />
         </div>
     );
