@@ -36,4 +36,10 @@ public class RegisteredStudentResponse {
     private BigDecimal amountPaid;
 
     private LocalDateTime paidAt;
+
+    private String phoneNumber;
+
+    private Integer participantCount;
+
+    private java.util.List<EventRegistrationMemberResponse> members;
 }

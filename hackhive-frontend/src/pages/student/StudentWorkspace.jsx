@@ -148,6 +148,17 @@ export default function StudentWorkspace() {
                     setResourceError(true);
                 }
             }
+
+            if (membersRes.status === "rejected" || tasksRes.status === "rejected" || resourcesRes.status === "rejected") {
+                const refreshedTeams = await teamService.getMyTeams().catch(() => []);
+                const list = Array.isArray(refreshedTeams) ? refreshedTeams : [];
+                setMyTeams(list);
+                if (!list.some((t) => String(t.id) === String(teamId))) {
+                    setSelectedTeamId(list[0] ? String(list[0].id) : "");
+                    toast.error("Workspace access updated. Selected team may have been disbanded.");
+                    return;
+                }
+            }
         } catch {
             setResourceError(true);
         } finally {

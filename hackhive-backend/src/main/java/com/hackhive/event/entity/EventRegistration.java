@@ -61,4 +61,15 @@ public class EventRegistration extends BaseEntity {
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "participant_count")
+    @Builder.Default
+    private Integer participantCount = 1;
+
+    @OneToMany(mappedBy = "eventRegistration", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<EventRegistrationMember> members = new java.util.ArrayList<>();
 }

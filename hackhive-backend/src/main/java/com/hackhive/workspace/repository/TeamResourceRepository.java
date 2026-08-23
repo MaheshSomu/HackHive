@@ -19,4 +19,6 @@ public interface TeamResourceRepository
             Team team,
             String resourceType
     );
+
+    void deleteByTeam(Team team);
 }

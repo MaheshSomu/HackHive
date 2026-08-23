@@ -29,6 +29,7 @@ export default function TeamDetailsModal({
     currentUserId,
     currentStudentProfileId,
     onRefresh,
+    onDeleteTeam,
 }) {
     const [members, setMembers] = useState([]);
     const [joinRequests, setJoinRequests] = useState([]);
@@ -305,7 +306,21 @@ export default function TeamDetailsModal({
                             Close
                         </Button>
 
-                        {!isLeader && (
+                        {isLeader && onDeleteTeam ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    onClose();
+                                    onDeleteTeam(team);
+                                }}
+                                disabled={actionLoading}
+                                className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold"
+                            >
+                                <Trash2 className="mr-1 size-3.5" /> Delete Team Workspace
+                            </Button>
+                        ) : !isLeader && (
                             <Button
                                 type="button"
                                 variant="ghost"

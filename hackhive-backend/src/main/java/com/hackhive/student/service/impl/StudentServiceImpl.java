@@ -4,6 +4,7 @@ import com.hackhive.auth.entity.User;
 import com.hackhive.auth.repository.UserRepository;
 import com.hackhive.common.exception.ResourceNotFoundException;
 import com.hackhive.student.dto.request.UpdateStudentProfileRequest;
+import com.hackhive.student.dto.response.StudentLookupResponse;
 import com.hackhive.student.dto.response.StudentProfileResponse;
 import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
@@ -13,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -106,5 +109,35 @@ public class StudentServiceImpl implements StudentService {
 
         user.setEnabled(false);
         userRepository.save(user);
+    }
+
+    @Override
+    public StudentLookupResponse lookupStudentByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return StudentLookupResponse.builder().exists(false).build();
+        }
+
+        String normalizedEmail = email.trim();
+        Optional<User> userOpt = userRepository.findByEmail(normalizedEmail);
+        if (userOpt.isEmpty()) {
+            return StudentLookupResponse.builder().exists(false).build();
+        }
+
+        User user = userOpt.get();
+        Optional<StudentProfile> profileOpt = studentProfileRepository.findByUser(user);
+        if (profileOpt.isEmpty()) {
+            return StudentLookupResponse.builder().exists(false).build();
+        }
+
+        StudentProfile profile = profileOpt.get();
+        return StudentLookupResponse.builder()
+                .exists(true)
+                .studentProfileId(profile.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .college(profile.getCollege())
+                .branch(profile.getBranch())
+                .graduationYear(profile.getGraduationYear())
+                .build();
     }
 }

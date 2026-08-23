@@ -1,4 +1,4 @@
-import { X, Mail, Phone, GraduationCap, Building2, Layers, Globe, FileText, Sparkles, CheckCircle2, ExternalLink } from "lucide-react";
+import { X, Mail, Phone, GraduationCap, Building2, Layers, Globe, FileText, Sparkles, CheckCircle2, ExternalLink, Users, CreditCard } from "lucide-react";
 import { Badge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
 
@@ -14,6 +14,9 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
         .toUpperCase()
         .slice(0, 2);
 
+    const participantCount = student.participantCount || 1;
+    const members = Array.isArray(student.members) ? student.members : [];
+
     return (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-xs flex justify-end transition-opacity animate-in fade-in duration-200">
             {/* Backdrop click dismiss */}
@@ -25,7 +28,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                         <Badge variant="purple" className="px-2.5 py-0.5 text-[10px] font-bold">
-                            Applicant Profile
+                            Applicant & Registration Details
                         </Badge>
                     </div>
                     <button
@@ -47,18 +50,29 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                             {name}
                         </h3>
                         <p className="text-xs text-slate-500 truncate">{email}</p>
-                        <Badge variant={student.registrationStatus === "CONFIRMED" || !student.registrationStatus ? "success" : "warning"} className="gap-1 text-[10px] px-2 py-0">
-                            <CheckCircle2 className="size-3" /> {student.registrationStatus || "CONFIRMED"}
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                            <Badge variant={student.registrationStatus === "CONFIRMED" || !student.registrationStatus ? "success" : "warning"} className="gap-1 text-[10px] px-2 py-0">
+                                <CheckCircle2 className="size-3" /> {student.registrationStatus || "CONFIRMED"}
+                            </Badge>
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                                {participantCount > 1 ? `${participantCount} Participants` : "Individual Entry"}
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
-                {/* Payment & Registration Details */}
+                {/* Registration & Payment Info */}
                 <div className="space-y-3">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Registration & Payment Info
+                        Registration & Payment Overview
                     </h4>
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                            <span className="text-slate-500 font-medium">Registration ID:</span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100">
+                                #{student.registrationId || student.id || "N/A"}
+                            </span>
+                        </div>
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 font-medium">Registration Type:</span>
                             <span className="font-bold text-slate-900 dark:text-slate-100">
@@ -80,26 +94,54 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 font-medium">Amount Paid:</span>
                             <span className="font-extrabold text-slate-900 dark:text-slate-100">
-                                ₹{student.amountPaid || 0}
+                                ₹{student.amountPaid != null ? student.amountPaid : 0}
                             </span>
                         </div>
                         {student.paidAt && (
                             <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Paid Date:</span>
+                                <span className="text-slate-500 font-medium">Paid Timestamp:</span>
                                 <span className="font-medium text-slate-700 dark:text-slate-300">
                                     {new Date(student.paidAt).toLocaleString()}
+                                </span>
+                            </div>
+                        )}
+                        {student.razorpayOrderId && (
+                            <div className="flex justify-between items-center border-t border-slate-100 pt-2 dark:border-slate-800">
+                                <span className="text-slate-500 font-medium">Razorpay Order ID:</span>
+                                <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                                    {student.razorpayOrderId}
+                                </span>
+                            </div>
+                        )}
+                        {student.razorpayPaymentId && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-slate-500 font-medium">Razorpay Payment ID:</span>
+                                <span className="font-mono text-[11px] text-indigo-600 font-bold">
+                                    {student.razorpayPaymentId}
                                 </span>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Academic Information */}
+                {/* Primary Participant Information */}
                 <div className="space-y-3">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Academic Details
+                        Primary Participant Details
                     </h4>
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-3 text-xs">
+                        <div className="flex items-center gap-3">
+                            <Mail className="size-4 text-purple-600 shrink-0" />
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 truncate">{email}</span>
+                        </div>
+
+                        {student.phoneNumber && (
+                            <div className="flex items-center gap-3">
+                                <Phone className="size-4 text-purple-600 shrink-0" />
+                                <span className="font-medium text-slate-800 dark:text-slate-200">{student.phoneNumber}</span>
+                            </div>
+                        )}
+
                         <div className="flex items-start gap-3">
                             <Building2 className="size-4 text-purple-600 shrink-0 mt-0.5" />
                             <div>
@@ -112,7 +154,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                             <div className="flex items-start gap-3">
                                 <GraduationCap className="size-4 text-purple-600 shrink-0 mt-0.5" />
                                 <div>
-                                    <span className="text-[11px] font-bold text-slate-400 block">Branch & Major</span>
+                                    <span className="text-[11px] font-bold text-slate-400 block">Branch & Department</span>
                                     <span className="font-semibold text-slate-900 dark:text-slate-100">{student.branch}</span>
                                 </div>
                             </div>
@@ -130,78 +172,67 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                     </div>
                 </div>
 
-                {/* Contact & Links */}
-                <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Contact & Links
-                    </h4>
-                    <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-3 text-xs">
-                        <div className="flex items-center gap-3">
-                            <Mail className="size-4 text-purple-600 shrink-0" />
-                            <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{email}</span>
+                {/* Team / All Registered Members List */}
+                {members.length > 0 && (
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                                Participating Members ({members.length})
+                            </h4>
                         </div>
 
-                        {student.phoneNumber && (
-                            <div className="flex items-center gap-3">
-                                <Phone className="size-4 text-purple-600 shrink-0" />
-                                <span className="font-medium text-slate-800 dark:text-slate-200">{student.phoneNumber}</span>
-                            </div>
-                        )}
-
-                        {student.githubUrl && (
-                            <div className="flex items-center gap-3">
-                                <Globe className="size-4 text-slate-600 shrink-0" />
-                                <a
-                                    href={student.githubUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="font-semibold text-purple-600 hover:underline truncate flex items-center gap-1"
-                                >
-                                    GitHub Profile <ExternalLink className="size-3" />
-                                </a>
-                            </div>
-                        )}
-
-                        {student.linkedinUrl && (
-                            <div className="flex items-center gap-3">
-                                <Globe className="size-4 text-blue-600 shrink-0" />
-                                <a
-                                    href={student.linkedinUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="font-semibold text-purple-600 hover:underline truncate flex items-center gap-1"
-                                >
-                                    LinkedIn Profile <ExternalLink className="size-3" />
-                                </a>
-                            </div>
-                        )}
-
-                        {student.resumeUrl && (
-                            <div className="flex items-center gap-3">
-                                <FileText className="size-4 text-rose-500 shrink-0" />
-                                <a
-                                    href={student.resumeUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="font-semibold text-purple-600 hover:underline truncate flex items-center gap-1"
-                                >
-                                    View Attached Resume <ExternalLink className="size-3" />
-                                </a>
-                            </div>
-                        )}
+                        <div className="space-y-2">
+                            {members.map((m, idx) => {
+                                const isHackHiveMember = Boolean(m.isHackHiveMember || m.studentProfileId || m.isPrimary);
+                                return (
+                                    <div
+                                        key={m.id || idx}
+                                        className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs dark:bg-slate-800/40 dark:border-slate-800 space-y-1.5 text-xs"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-bold text-slate-900 dark:text-slate-100">
+                                                {m.fullName}
+                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                {m.isPrimary && (
+                                                    <span className="rounded bg-purple-100 px-2 py-0.5 text-[9px] font-bold text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                                                        Primary
+                                                    </span>
+                                                )}
+                                                {isHackHiveMember ? (
+                                                    <span className="rounded bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                                        ✓ HackHive Member
+                                                    </span>
+                                                ) : (
+                                                    <span className="rounded bg-slate-100 px-2 py-0.5 text-[9px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                                        External Participant
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 font-medium">{m.email}</p>
+                                        <div className="flex flex-wrap gap-2 text-[10px] text-slate-400 pt-0.5">
+                                            {m.college && <span>College: {m.college}</span>}
+                                            {m.branch && <span>• Branch: {m.branch}</span>}
+                                            {m.graduationYear && <span>• Grad: {m.graduationYear}</span>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Team Entry Information */}
                 {student.teamName && (
                     <div className="space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                            Team Info
+                            Team Workspace Info
                         </h4>
                         <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 dark:bg-purple-950/30 dark:border-purple-900/60 flex items-center gap-3">
                             <Layers className="size-5 text-purple-600 shrink-0" />
                             <div>
-                                <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block">Formed Team</span>
+                                <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block">Formed Workspace</span>
                                 <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{student.teamName}</span>
                             </div>
                         </div>
@@ -215,7 +246,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                         onClick={onClose}
                         className="w-full bg-slate-900 text-white dark:bg-slate-800 hover:bg-slate-800 text-xs font-bold py-2.5 rounded-xl"
                     >
-                        Close Drawer
+                        Close Details
                     </Button>
                 </div>
             </div>

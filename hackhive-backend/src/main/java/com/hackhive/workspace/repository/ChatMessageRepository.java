@@ -14,4 +14,6 @@ public interface ChatMessageRepository
     List<ChatMessage> findByTeamOrderByCreatedAtAsc(
             Team team
     );
+
+    void deleteByTeam(Team team);
 }

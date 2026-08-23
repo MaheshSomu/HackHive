@@ -290,6 +290,12 @@ public class KanbanTaskServiceImpl
         return kanbanTaskRepository
                 .findByAssignedTo(currentStudent)
                 .stream()
+                .filter(task ->
+                        teamMemberRepository
+                                .existsByTeamAndStudentProfile(
+                                        task.getTeam(),
+                                        currentStudent
+                                ))
                 .map(kanbanTaskMapper::toResponse)
                 .toList();
     }

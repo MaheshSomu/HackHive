@@ -239,7 +239,12 @@ public class TeamJoinRequestServiceImpl
                                 new ResourceNotFoundException(
                                         "Join request not found."));
 
-        Team team = joinRequest.getTeam();
+        // Acquire pessimistic write lock on team row to serialize concurrent join-request approvals
+        Team team = teamRepository
+                .findByIdForUpdate(joinRequest.getTeam().getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Team not found."));
 
         if (!team.getLeader()
                 .getId()

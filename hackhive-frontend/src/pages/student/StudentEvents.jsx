@@ -12,9 +12,11 @@ import {
     Trophy,
 } from "lucide-react";
 
+import useAuth from "../../hooks/useAuth";
 import { eventService } from "../../services/eventService";
 import EventCard from "../../components/events/EventCard";
 import EventDetailsModal from "../../components/events/EventDetailsModal";
+import EventRegistrationModal from "../../components/events/EventRegistrationModal";
 import PaymentReceiptModal from "../../components/events/PaymentReceiptModal";
 import DashboardSection from "../../components/student-dashboard/DashboardSection";
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
@@ -23,6 +25,7 @@ import { Card, CardContent } from "../../components/ui/Card";
 import HackHiveSelect from "../../components/ui/HackHiveSelect";
 
 export default function StudentEvents() {
+    const { user: authUser } = useAuth();
     const [events, setEvents] = useState([]);
     const [registrations, setRegistrations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -42,6 +45,7 @@ export default function StudentEvents() {
     // Modal State
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [selectedReceipt, setSelectedReceipt] = useState(null);
+    const [registeringEventModal, setRegisteringEventModal] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -80,21 +84,47 @@ export default function StudentEvents() {
         return map;
     }, [registrations]);
 
-    // Register Handler supporting FREE and PAID events
-    const handleRegister = async (eventId) => {
+    // Click Register -> Open Registration Form Modal
+    const handleRegister = (targetEventOrId) => {
+        let target = typeof targetEventOrId === "object"
+            ? targetEventOrId
+            : events.find((e) => e.id === targetEventOrId);
+
+        if (!target && selectedEvent && selectedEvent.id === targetEventOrId) {
+            target = selectedEvent;
+        }
+
+        if (target) {
+            setRegisteringEventModal(target);
+        } else {
+            toast.error("Event details unavailable.");
+        }
+    };
+
+    // Registration Form Submission Handler supporting FREE and PAID events
+    const handleFormSubmit = async (formData) => {
+        if (!registeringEventModal) return;
+        const targetEvent = registeringEventModal;
+        const eventId = targetEvent.id;
+
         try {
             setRegisteringId(eventId);
-            const initRes = await eventService.initiateRegistration(eventId);
+            const initRes = await eventService.initiateRegistration(eventId, formData);
 
             // FREE Event
             if (initRes.isFree) {
                 toast.success(initRes.message || "Event registration successful!");
+                setRegisteringEventModal(null);
+                setSelectedEvent(null);
                 await fetchData();
                 setRegisteringId(null);
                 return;
             }
 
-            // PAID Event -> Open Razorpay Checkout
+            // PAID Event -> Close form modal & Open Razorpay Checkout
+            setRegisteringEventModal(null);
+            setSelectedEvent(null);
+
             const options = {
                 key: initRes.keyId,
                 amount: initRes.amount,
@@ -103,8 +133,9 @@ export default function StudentEvents() {
                 description: `Registration for ${initRes.eventTitle}`,
                 order_id: initRes.razorpayOrderId,
                 prefill: {
-                    name: initRes.studentName || "",
-                    email: initRes.studentEmail || "",
+                    name: formData.fullName || initRes.studentName || "",
+                    email: formData.email || initRes.studentEmail || "",
+                    contact: formData.phoneNumber || "",
                 },
                 theme: {
                     color: "#7c3aed",
@@ -136,7 +167,28 @@ export default function StudentEvents() {
             if (window.Razorpay) {
                 const rzp = new window.Razorpay(options);
                 rzp.on("payment.failed", function (resp) {
-                    toast.error(resp.error?.description || "Payment failed at gateway.");
+                    const errorDesc = resp.error?.description || "";
+                    const reason = resp.error?.reason || "";
+                    const isExpiredOrder =
+                        reason === "order_expired" ||
+                        errorDesc.toLowerCase().includes("expired") ||
+                        errorDesc.toLowerCase().includes("stale") ||
+                        errorDesc.toLowerCase().includes("invalid order") ||
+                        errorDesc.toLowerCase().includes("order_id_invalid");
+
+                    if (isExpiredOrder) {
+                        toast.error("Your payment session has expired.", {
+                            action: {
+                                label: "Refresh Payment Session",
+                                onClick: () => {
+                                    handleFormSubmit({ ...formData, forceRefresh: true });
+                                },
+                            },
+                            duration: 10000,
+                        });
+                    } else {
+                        toast.error(errorDesc || "Payment failed at gateway.");
+                    }
                     setRegisteringId(null);
                 });
                 rzp.open();
@@ -447,6 +499,16 @@ export default function StudentEvents() {
                 onClose={() => setSelectedReceipt(null)}
                 registration={selectedReceipt?.registration}
                 event={selectedReceipt?.event}
+            />
+
+            {/* Hackathon Registration Form Modal */}
+            <EventRegistrationModal
+                event={registeringEventModal}
+                isOpen={Boolean(registeringEventModal)}
+                onClose={() => setRegisteringEventModal(null)}
+                onSubmit={handleFormSubmit}
+                loading={registeringId === registeringEventModal?.id}
+                authUser={authUser}
             />
         </div>
     );

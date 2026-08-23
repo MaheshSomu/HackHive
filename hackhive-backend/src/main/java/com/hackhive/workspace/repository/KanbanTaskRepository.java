@@ -29,4 +29,6 @@ public interface KanbanTaskRepository
             Team team,
             StudentProfile assignedTo
     );
+
+    void deleteByTeam(Team team);
 }
