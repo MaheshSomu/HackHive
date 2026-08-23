@@ -23,7 +23,10 @@ public class TeamMapper {
                 .description(team.getDescription())
                 .eventId(team.getEvent().getId())
                 .eventTitle(team.getEvent().getTitle())
-                .leaderId(team.getLeader().getId())
+                .leaderId(
+                        team.getLeader()
+                                .getUser()
+                                .getId())
                 .leaderName(
                         team.getLeader()
                                 .getUser()
