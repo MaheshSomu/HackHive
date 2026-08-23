@@ -167,7 +167,28 @@ export default function StudentEvents() {
             if (window.Razorpay) {
                 const rzp = new window.Razorpay(options);
                 rzp.on("payment.failed", function (resp) {
-                    toast.error(resp.error?.description || "Payment failed at gateway.");
+                    const errorDesc = resp.error?.description || "";
+                    const reason = resp.error?.reason || "";
+                    const isExpiredOrder =
+                        reason === "order_expired" ||
+                        errorDesc.toLowerCase().includes("expired") ||
+                        errorDesc.toLowerCase().includes("stale") ||
+                        errorDesc.toLowerCase().includes("invalid order") ||
+                        errorDesc.toLowerCase().includes("order_id_invalid");
+
+                    if (isExpiredOrder) {
+                        toast.error("Your payment session has expired.", {
+                            action: {
+                                label: "Refresh Payment Session",
+                                onClick: () => {
+                                    handleFormSubmit({ ...formData, forceRefresh: true });
+                                },
+                            },
+                            duration: 10000,
+                        });
+                    } else {
+                        toast.error(errorDesc || "Payment failed at gateway.");
+                    }
                     setRegisteringId(null);
                 });
                 rzp.open();

@@ -56,7 +56,7 @@ export default function RegistrationToolbar({
                         size="sm"
                         disabled={totalResults === 0}
                         onClick={onExportCSV}
-                        className="text-xs font-semibold gap-1.5 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-50"
+                        className="text-xs font-semibold gap-1.5 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                     >
                         <Download className="size-3.5 text-purple-600 dark:text-purple-400" /> Export CSV
                     </Button>
@@ -72,7 +72,7 @@ export default function RegistrationToolbar({
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search applicant by student name, email, or college..."
+                        placeholder="Search by student name, email, college, or team member..."
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-xs text-slate-900 font-medium outline-none transition focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                     />
                 </div>

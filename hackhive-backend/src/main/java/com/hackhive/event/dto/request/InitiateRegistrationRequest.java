@@ -35,4 +35,6 @@ public class InitiateRegistrationRequest {
     private Integer participantCount = 1;
 
     private List<EventRegistrationMemberRequest> members;
+
+    private Boolean forceRefresh;
 }

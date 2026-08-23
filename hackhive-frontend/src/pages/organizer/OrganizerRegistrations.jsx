@@ -90,17 +90,27 @@ export default function OrganizerRegistrations() {
     const filteredRegistrations = useMemo(() => {
         let list = [...registrations];
 
-        // Search filter (Name, Email, College)
+        // Search filter (Primary Name, Email, College, or Additional Team Members)
         if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase();
-            list = list.filter(
-                (r) =>
+            const q = searchQuery.trim().toLowerCase();
+            list = list.filter((r) => {
+                const memberMatch =
+                    Array.isArray(r.members) &&
+                    r.members.some(
+                        (member) =>
+                            (member.fullName || "").toLowerCase().includes(q) ||
+                            (member.email || "").toLowerCase().includes(q)
+                    );
+
+                return (
                     (r.fullName && r.fullName.toLowerCase().includes(q)) ||
                     (r.studentName && r.studentName.toLowerCase().includes(q)) ||
                     (r.email && r.email.toLowerCase().includes(q)) ||
                     (r.studentEmail && r.studentEmail.toLowerCase().includes(q)) ||
-                    (r.college && r.college.toLowerCase().includes(q))
-            );
+                    (r.college && r.college.toLowerCase().includes(q)) ||
+                    memberMatch
+                );
+            });
         }
 
         // Type filter (Individual vs Team Entry)
@@ -112,8 +122,16 @@ export default function OrganizerRegistrations() {
             }
         }
 
+        // Status filter (CONFIRMED vs PENDING)
+        if (statusFilter !== "ALL") {
+            list = list.filter((r) => {
+                const status = (r.registrationStatus || r.status || "CONFIRMED").toUpperCase();
+                return status.includes(statusFilter.toUpperCase());
+            });
+        }
+
         return list;
-    }, [registrations, searchQuery, typeFilter]);
+    }, [registrations, searchQuery, statusFilter, typeFilter]);
 
     // Export Financial & Registration Audit CSV Handler
     const handleExportCSV = () => {

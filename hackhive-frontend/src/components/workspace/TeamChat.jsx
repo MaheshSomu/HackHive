@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
+    AlertTriangle,
     ArrowDown,
     Calendar,
     CheckCheck,
@@ -10,12 +11,48 @@ import {
     Send,
     Users,
     Wifi,
+    WifiOff,
 } from "lucide-react";
 
 import useAuth from "../../hooks/useAuth";
 import { workspaceService } from "../../services/workspaceService";
+import { storage } from "../../utils/storage";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+
+function parseStompFrame(text) {
+    if (!text) return null;
+    const nullIdx = text.indexOf("\0");
+    const clean = nullIdx >= 0 ? text.slice(0, nullIdx) : text;
+    const lines = clean.split("\n");
+    const command = lines[0].trim();
+    const headers = {};
+    let i = 1;
+    for (; i < lines.length; i++) {
+        const line = lines[i];
+        if (line === "" || line === "\r") {
+            i++;
+            break;
+        }
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+            const k = line.slice(0, colonIdx).trim();
+            const v = line.slice(colonIdx + 1).trim();
+            headers[k] = v;
+        }
+    }
+    const body = lines.slice(i).join("\n");
+    return { command, headers, body };
+}
+
+function createStompFrame(command, headers = {}, body = "") {
+    let str = command + "\n";
+    for (const [k, v] of Object.entries(headers)) {
+        str += `${k}:${v}\n`;
+    }
+    str += "\n" + body + "\0";
+    return str;
+}
 
 function formatTime(dateStr) {
     if (!dateStr) return "";
@@ -54,8 +91,22 @@ export default function TeamChat({ team, members = [] }) {
     const [sending, setSending] = useState(false);
     const [unreadNotice, setUnreadNotice] = useState(false);
 
+    // Connection State: 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'AUTH_ERROR'
+    const [connectionState, setConnectionState] = useState("CONNECTING");
+
     const scrollContainerRef = useRef(null);
     const isNearBottomRef = useRef(true);
+
+    const activeSocketRef = useRef(null);
+    const reconnectTimerRef = useRef(null);
+    const connectionStateRef = useRef("CONNECTING");
+    const authToastShownRef = useRef(false);
+    const reconnectToastShownRef = useRef(false);
+
+    const updateConnectionState = (newState) => {
+        connectionStateRef.current = newState;
+        setConnectionState(newState);
+    };
 
     const checkIsNearBottom = () => {
         const el = scrollContainerRef.current;
@@ -108,9 +159,135 @@ export default function TeamChat({ team, members = [] }) {
 
     useEffect(() => {
         loadHistory();
-        const interval = setInterval(loadHistory, 3000);
+        const interval = setInterval(loadHistory, 4000);
         return () => clearInterval(interval);
     }, [loadHistory]);
+
+    // WebSocket STOMP Connection Lifecycle
+    useEffect(() => {
+        if (!team?.id) return;
+
+        authToastShownRef.current = false;
+        reconnectToastShownRef.current = false;
+
+        const connectWebSocket = () => {
+            const token = storage.getToken();
+            if (!token) {
+                updateConnectionState("AUTH_ERROR");
+                if (!authToastShownRef.current) {
+                    authToastShownRef.current = true;
+                    toast.error("Your session has expired. Please log in again.");
+                }
+                return;
+            }
+
+            const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+
+            try {
+                updateConnectionState(reconnectToastShownRef.current ? "RECONNECTING" : "CONNECTING");
+                const ws = new WebSocket(wsUrl);
+                activeSocketRef.current = ws;
+
+                ws.onopen = () => {
+                    ws.send(
+                        createStompFrame("CONNECT", {
+                            "accept-version": "1.1,1.0",
+                            "heart-beat": "10000,10000",
+                            Authorization: `Bearer ${token}`,
+                        })
+                    );
+                };
+
+                ws.onmessage = (event) => {
+                    const frame = parseStompFrame(event.data);
+                    if (!frame) return;
+
+                    if (frame.command === "CONNECTED") {
+                        updateConnectionState("CONNECTED");
+                        reconnectToastShownRef.current = false;
+
+                        ws.send(
+                            createStompFrame("SUBSCRIBE", {
+                                id: `sub-${team.id}`,
+                                destination: `/topic/teams/${team.id}/chat`,
+                            })
+                        );
+                    } else if (frame.command === "MESSAGE") {
+                        try {
+                            const newMsg = JSON.parse(frame.body);
+                            if (newMsg && newMsg.id) {
+                                setMessages((prev) => {
+                                    if (prev.some((m) => m.id === newMsg.id)) return prev;
+                                    if (!isNearBottomRef.current) setUnreadNotice(true);
+                                    return [...prev, newMsg];
+                                });
+                                if (isNearBottomRef.current) {
+                                    setTimeout(() => scrollToBottom(true), 50);
+                                }
+                            }
+                        } catch {
+                            // ignore malformed body
+                        }
+                    } else if (frame.command === "ERROR") {
+                        const errorMsg = (frame.headers.message || frame.body || "").toLowerCase();
+                        if (
+                            errorMsg.includes("expired") ||
+                            errorMsg.includes("invalid") ||
+                            errorMsg.includes("token") ||
+                            errorMsg.includes("authorization") ||
+                            errorMsg.includes("disabled") ||
+                            errorMsg.includes("user not found")
+                        ) {
+                            updateConnectionState("AUTH_ERROR");
+                            if (!authToastShownRef.current) {
+                                authToastShownRef.current = true;
+                                toast.error("Your session has expired. Please log in again.");
+                            }
+                            ws.close();
+                        } else {
+                            updateConnectionState("DISCONNECTED");
+                            ws.close();
+                        }
+                    }
+                };
+
+                ws.onclose = () => {
+                    if (connectionStateRef.current === "AUTH_ERROR") return;
+
+                    updateConnectionState("RECONNECTING");
+                    if (!reconnectToastShownRef.current) {
+                        reconnectToastShownRef.current = true;
+                        toast.error("Chat connection lost. Reconnecting...");
+                    }
+
+                    reconnectTimerRef.current = setTimeout(() => {
+                        connectWebSocket();
+                    }, 5000);
+                };
+
+                ws.onerror = () => {
+                    // Handled natively via onclose
+                };
+            } catch {
+                updateConnectionState("DISCONNECTED");
+            }
+        };
+
+        connectWebSocket();
+
+        return () => {
+            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+            if (activeSocketRef.current) {
+                activeSocketRef.current.onopen = null;
+                activeSocketRef.current.onmessage = null;
+                activeSocketRef.current.onclose = null;
+                activeSocketRef.current.onerror = null;
+                activeSocketRef.current.close();
+                activeSocketRef.current = null;
+            }
+        };
+    }, [team?.id]);
 
     const handleSend = async (e) => {
         if (e) e.preventDefault();
@@ -187,9 +364,23 @@ export default function TeamChat({ team, members = [] }) {
                             <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100">
                                 #{team?.name || "team-chat"}
                             </h3>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                                <Wifi className="size-3" /> Live Channel
-                            </span>
+                            {connectionState === "CONNECTED" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                                    <Wifi className="size-3" /> Live Channel
+                                </span>
+                            ) : connectionState === "RECONNECTING" || connectionState === "CONNECTING" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+                                    <RefreshCw className="size-3 animate-spin" /> Reconnecting...
+                                </span>
+                            ) : connectionState === "AUTH_ERROR" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-400">
+                                    <AlertTriangle className="size-3" /> Session Expired
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                                    <WifiOff className="size-3" /> Disconnected
+                                </span>
+                            )}
                         </div>
                         <p className="text-[11px] text-slate-500 truncate">
                             {team?.eventTitle || "Hackathon"} • {members.length} members

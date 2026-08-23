@@ -195,7 +195,8 @@ public class EventRegistrationServiceImpl
             if (registration.getStatus() == RegistrationStatus.CONFIRMED) {
                 throw new BadRequestException("You are already registered for this event.");
             }
-            if (registration.getStatus() == RegistrationStatus.CANCELLED) {
+            if (registration.getStatus() == RegistrationStatus.CANCELLED
+                    || (request != null && Boolean.TRUE.equals(request.getForceRefresh()))) {
                 registration.setRazorpayOrderId(null);
                 registration.setRazorpayPaymentId(null);
             }
