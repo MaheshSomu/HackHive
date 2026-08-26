@@ -1,6 +1,31 @@
 import React, { useState, useRef, useEffect, useId, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { ChevronDown, Check, Search } from "lucide-react";
 import { Label } from "./label";
+
+const PORTAL_THEMES = {
+    student: {
+        triggerOpen: "border-indigo-500 ring-2 ring-indigo-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-indigo-300 text-slate-800 dark:border-slate-800 dark:hover:border-indigo-700",
+        chevronOpen: "rotate-180 text-indigo-600 dark:text-indigo-400",
+        optionSelected: "bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-950/60 dark:text-indigo-300",
+        checkIcon: "text-indigo-600 dark:text-indigo-400",
+    },
+    organizer: {
+        triggerOpen: "border-purple-500 ring-2 ring-purple-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-purple-300 text-slate-800 dark:border-slate-800 dark:hover:border-purple-700",
+        chevronOpen: "rotate-180 text-purple-600 dark:text-purple-400",
+        optionSelected: "bg-purple-50 text-purple-700 font-semibold dark:bg-purple-950/60 dark:text-purple-300",
+        checkIcon: "text-purple-600 dark:text-purple-400",
+    },
+    admin: {
+        triggerOpen: "border-rose-500 ring-2 ring-rose-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-rose-300 text-slate-800 dark:border-slate-800 dark:hover:border-rose-700",
+        chevronOpen: "rotate-180 text-rose-600 dark:text-rose-400",
+        optionSelected: "bg-rose-50 text-rose-700 font-semibold dark:bg-rose-950/60 dark:text-rose-300",
+        checkIcon: "text-rose-600 dark:text-rose-400",
+    },
+};
 
 const HackHiveSelect = React.forwardRef(function HackHiveSelect(
     {
@@ -21,6 +46,9 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
         className = "",
         containerClassName = "",
         size = "md", // sm | md | lg
+        variant,
+        portal,
+        theme,
         ...props
     },
     ref
@@ -34,6 +62,28 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
 
     const containerRef = useRef(null);
     const searchInputRef = useRef(null);
+
+    // Safely get router location to auto-detect portal theme
+    const location = (() => {
+        try {
+            return useLocation();
+        } catch {
+            return null;
+        }
+    })();
+
+    const activePortalKey = useMemo(() => {
+        if (variant && PORTAL_THEMES[variant]) return variant;
+        if (portal && PORTAL_THEMES[portal]) return portal;
+        if (theme && PORTAL_THEMES[theme]) return theme;
+
+        const path = location?.pathname || "";
+        if (path.startsWith("/organizer")) return "organizer";
+        if (path.startsWith("/admin")) return "admin";
+        return "student";
+    }, [variant, portal, theme, location]);
+
+    const activeTheme = PORTAL_THEMES[activePortalKey] || PORTAL_THEMES.student;
 
     // Normalize options array from either options prop or children (<option>)
     const parsedOptions = useMemo(() => {
@@ -97,7 +147,6 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
         if (disabledOpt || disabled) return;
         setIsOpen(false);
         if (onChange) {
-            // Provide synthetic event object for full backwards compatibility
             const syntheticEvent = {
                 target: {
                     name,
@@ -190,8 +239,8 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
                                 : error
                                 ? "border-rose-500 ring-2 ring-rose-500/20 text-slate-900 dark:text-slate-100"
                                 : isOpen
-                                ? "border-purple-500 ring-2 ring-purple-500/20 text-slate-900 dark:text-slate-100"
-                                : "border-slate-200 hover:border-purple-300 text-slate-800 dark:border-slate-800 dark:hover:border-purple-700"
+                                ? activeTheme.triggerOpen
+                                : activeTheme.triggerHover
                         }
                         ${className}
                     `}
@@ -202,7 +251,7 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
                     </span>
                     <ChevronDown
                         className={`ml-2 size-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
-                            isOpen ? "rotate-180 text-purple-600 dark:text-purple-400" : ""
+                            isOpen ? activeTheme.chevronOpen : ""
                         }`}
                     />
                 </button>
@@ -251,7 +300,7 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
                                                     opt.disabled
                                                         ? "opacity-50 cursor-not-allowed text-slate-400"
                                                         : isSelected
-                                                        ? "bg-purple-50 text-purple-700 font-semibold dark:bg-purple-950/60 dark:text-purple-300"
+                                                        ? activeTheme.optionSelected
                                                         : isFocused
                                                         ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
                                                         : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/60"
@@ -259,7 +308,7 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
                                             `}
                                         >
                                             <span className="truncate">{opt.label}</span>
-                                            {isSelected && <Check className="size-3.5 text-purple-600 dark:text-purple-400 shrink-0 ml-2" />}
+                                            {isSelected && <Check className={`size-3.5 shrink-0 ml-2 ${activeTheme.checkIcon}`} />}
                                         </div>
                                     );
                                 })}

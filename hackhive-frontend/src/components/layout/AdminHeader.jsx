@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+    ChevronDown,
     ChevronRight,
+    FileText,
     LogOut,
     Menu,
     PanelLeft,
     PanelLeftClose,
     Search,
+    Settings,
+    Shield,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -31,6 +35,7 @@ export default function AdminHeader({
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const currentTitle = routeTitleMap[location.pathname] || "Dashboard";
 
@@ -42,8 +47,14 @@ export default function AdminHeader({
         .toUpperCase();
 
     const handleLogout = () => {
+        setIsMenuOpen(false);
         logout();
         navigate("/");
+    };
+
+    const handleNavigate = (path) => {
+        setIsMenuOpen(false);
+        navigate(path);
     };
 
     useEffect(() => {
@@ -51,6 +62,9 @@ export default function AdminHeader({
             if ((e.metaKey || e.ctrlKey) && e.key === "k") {
                 e.preventDefault();
                 setIsSearchOpen((prev) => !prev);
+            }
+            if (e.key === "Escape") {
+                setIsMenuOpen(false);
             }
         };
         window.addEventListener("keydown", handleKeyDown);
@@ -104,32 +118,93 @@ export default function AdminHeader({
                     </button>
                 </div>
 
-                {/* User Profile */}
-                <div className="flex items-center gap-3">
+                {/* User Profile & Admin Dropdown Area */}
+                <div className="relative flex items-center gap-3">
                     <NotificationCenter />
-                    <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-600 font-bold text-xs text-white shadow-xs">
+                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+
+                    <button
+                        type="button"
+                        onClick={() => setIsMenuOpen((prev) => !prev)}
+                        className="group flex items-center gap-2.5 rounded-xl border border-transparent p-1.5 text-left transition hover:border-slate-200 hover:bg-slate-100/70 focus:outline-hidden dark:hover:border-slate-800 dark:hover:bg-slate-800/70"
+                        aria-expanded={isMenuOpen}
+                        aria-haspopup="true"
+                        aria-label="Admin menu"
+                    >
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-600 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-rose-100 dark:ring-rose-950/60">
                             {initials}
                         </div>
 
                         <div className="hidden text-left md:block">
-                            <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                            <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 group-hover:text-rose-600 dark:text-slate-100 dark:group-hover:text-rose-400">
                                 {user?.fullName || "Administrator"}
                             </p>
                             <p className="max-w-[120px] truncate text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase">
                                 ADMINISTRATOR
                             </p>
                         </div>
-                    </div>
 
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition dark:hover:bg-rose-950/40"
-                        title="Logout"
-                    >
-                        <LogOut className="size-4" />
+                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-rose-600 dark:text-rose-400" : ""}`} />
                     </button>
+
+                    {/* Admin Dropdown Menu */}
+                    {isMenuOpen && (
+                        <>
+                            <div
+                                onClick={() => setIsMenuOpen(false)}
+                                className="fixed inset-0 z-40"
+                            />
+
+                            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                                <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-600 font-bold text-sm text-white shadow-xs">
+                                        {initials}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
+                                            {user?.fullName || "Administrator"}
+                                        </p>
+                                        <p className="truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                                            {user?.email || "admin@hackhive.com"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="my-1.5 h-px bg-slate-100 dark:bg-slate-800" />
+
+                                <div className="space-y-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleNavigate("/admin/settings")}
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                    >
+                                        <Settings className="size-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                                        <span>System Settings</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleNavigate("/admin/reports")}
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                    >
+                                        <FileText className="size-4 text-slate-400 shrink-0" />
+                                        <span>System Reports</span>
+                                    </button>
+                                </div>
+
+                                <div className="my-1.5 h-px bg-slate-100 dark:bg-slate-800" />
+
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 transition dark:text-rose-400 dark:hover:bg-rose-950/40 focus-visible:ring-2 focus-visible:ring-rose-500"
+                                >
+                                    <LogOut className="size-4 shrink-0" />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </header>
 

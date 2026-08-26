@@ -38,8 +38,17 @@ export default function TeamCard({
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-                            <Calendar className="size-3.5" />
-                            <span className="truncate">{team.eventTitle || "Hackathon Event"}</span>
+                            {team.eventType === "EXTERNAL" ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider dark:bg-emerald-950">External</span>
+                                    <span className="truncate">{team.externalEvent?.eventName || team.eventTitle || "External Event"}</span>
+                                </span>
+                            ) : (
+                                <>
+                                    <Calendar className="size-3.5" />
+                                    <span className="truncate">{team.eventTitle || "Hackathon Event"}</span>
+                                </>
+                            )}
                         </span>
 
                         {isMyTeam ? (

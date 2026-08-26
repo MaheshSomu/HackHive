@@ -4,6 +4,7 @@ import {
     CalendarDays,
     ChevronLeft,
     ChevronRight,
+    FolderGit2,
     Hexagon,
     LayoutDashboard,
     LogOut,
@@ -19,6 +20,7 @@ const organizerNavItems = [
     { name: "Dashboard", href: "/organizer/dashboard", icon: LayoutDashboard },
     { name: "Manage Events", href: "/organizer/events", icon: CalendarDays },
     { name: "Registrations", href: "/organizer/registrations", icon: UserCheck },
+    { name: "Submissions", href: "/organizer/submissions", icon: FolderGit2 },
     { name: "Analytics", href: "/organizer/analytics", icon: BarChart3 },
     { name: "Settings", href: "/organizer/settings", icon: Settings },
 ];
