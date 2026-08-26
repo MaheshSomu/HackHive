@@ -163,9 +163,17 @@ export default function TeamDetailsModal({
                         {/* Team Banner / Overview */}
                         <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 space-y-2 dark:border-slate-800 dark:bg-slate-800/40">
                             <div className="flex items-center justify-between gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="size-4" /> {team.eventTitle || "Hackathon Event"}
-                                </span>
+                                {team.eventType === "EXTERNAL" ? (
+                                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider dark:bg-emerald-950">External Event</span>
+                                        <span>{team.externalEvent?.eventName || team.eventTitle || "External Event"}</span>
+                                        {team.externalEvent?.organizerName && <span className="text-slate-500 font-normal">({team.externalEvent.organizerName})</span>}
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1.5">
+                                        <Calendar className="size-4" /> {team.eventTitle || "Hackathon Event"}
+                                    </span>
+                                )}
                                 {isLeader && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                                         <Crown className="size-3" /> Team Leader

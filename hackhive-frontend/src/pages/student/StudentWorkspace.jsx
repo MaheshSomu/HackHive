@@ -40,6 +40,7 @@ import DashboardSection from "../../components/student-dashboard/DashboardSectio
 import { DashboardPageSkeleton, EmptyState } from "../../components/student-dashboard/DashboardStates";
 import { Button } from "../../components/ui/Button";
 import { Card, CardContent } from "../../components/ui/Card";
+import ProjectSubmission from "../../components/workspace/ProjectSubmission";
 
 const KANBAN_COLUMNS = [
     { id: "TODO", label: "To Do", tone: "indigo" },
@@ -174,6 +175,13 @@ export default function StudentWorkspace() {
 
     // Active Selected Team
     const currentTeam = myTeams.find((t) => String(t.id) === String(selectedTeamId));
+    const isExternalTeam = currentTeam?.eventType === "EXTERNAL" || !currentTeam?.eventId;
+
+    useEffect(() => {
+        if (activeTab === "submission" && isExternalTeam) {
+            setActiveTab("overview");
+        }
+    }, [activeTab, isExternalTeam]);
 
     // Detailed Metrics
     const metrics = useMemo(() => {
@@ -413,7 +421,11 @@ export default function StudentWorkspace() {
                                 {currentTeam ? currentTeam.name : "Team Workspace"}
                             </h1>
                             <p className="max-w-2xl text-xs text-slate-500 dark:text-slate-400 leading-5">
-                                {currentTeam?.eventTitle ? `Hackathon: ${currentTeam.eventTitle}` : "Notion & Linear inspired collaborative team hub."}
+                                {currentTeam?.externalEvent
+                                    ? `External Event: ${currentTeam.externalEvent.eventName} (${currentTeam.externalEvent.organizerName})`
+                                    : currentTeam?.eventTitle
+                                    ? `Hackathon: ${currentTeam.eventTitle}`
+                                    : "Notion & Linear inspired collaborative team hub."}
                             </p>
                         </div>
 
@@ -428,7 +440,7 @@ export default function StudentWorkspace() {
                                     onChange={(e) => setSelectedTeamId(e.target.value)}
                                     options={myTeams.map((t) => ({
                                         value: t.id,
-                                        label: `${t.name} (${t.eventTitle || "Hackathon"})`,
+                                        label: `${t.name} (${t.externalEvent?.eventName || t.eventTitle || "Hackathon"})`,
                                     }))}
                                     searchable={myTeams.length > 3}
                                     searchPlaceholder="Search workspace..."
@@ -512,6 +524,20 @@ export default function StudentWorkspace() {
                             >
                                 Notes ({notes.length})
                             </button>
+
+                            {!isExternalTeam && (
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab("submission")}
+                                    className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
+                                        activeTab === "submission"
+                                            ? "bg-slate-900 text-white shadow-2xs dark:bg-indigo-600"
+                                            : "bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-400"
+                                    }`}
+                                >
+                                    Project Submission
+                                </button>
+                            )}
                         </div>
                     )}
                 </CardContent>
@@ -934,6 +960,11 @@ export default function StudentWorkspace() {
                                 </Card>
                             )}
                         </div>
+                    )}
+
+                    {/* TAB 7: PROJECT SUBMISSION */}
+                    {activeTab === "submission" && (
+                        <ProjectSubmission currentTeam={currentTeam} authUser={authUser} />
                     )}
 
                     {/* Modals */}

@@ -3,6 +3,7 @@ package com.hackhive.team.entity;
 import com.hackhive.common.entity.BaseEntity;
 import com.hackhive.event.entity.Event;
 import com.hackhive.student.entity.StudentProfile;
+import com.hackhive.team.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,8 +23,17 @@ public class Team extends BaseEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(name = "event_id", nullable = true)
     private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "external_event_id", nullable = true)
+    private ExternalEvent externalEvent;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false, length = 20)
+    @Builder.Default
+    private EventType eventType = EventType.HACKHIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)

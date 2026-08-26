@@ -105,6 +105,7 @@ function AppRoutes() {
                             <Route path="/organizer/profile" element={<OrganizerProfile />} />
                             <Route path="/organizer/events" element={<OrganizerEvents />} />
                             <Route path="/organizer/registrations" element={<OrganizerRegistrations />} />
+                            <Route path="/organizer/submissions" element={<OrganizerRegistrations defaultTab="submissions" />} />
                             <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />
                             <Route path="/organizer/settings" element={<OrganizerSettings />} />
                         </Route>

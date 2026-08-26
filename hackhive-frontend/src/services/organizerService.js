@@ -41,6 +41,9 @@ export const organizerService = {
     // Registrations
     getEventRegistrations: (eventId) => request(api.get(`/event-registrations/events/${eventId}/students`)),
 
+    // Project Submissions
+    getEventProjectSubmissions: (eventId) => request(api.get(`/project-submissions/events/${eventId}`)),
+
     // Security / Password
     requestPasswordChange: () => request(api.post("/auth/change-password-request")),
 };
