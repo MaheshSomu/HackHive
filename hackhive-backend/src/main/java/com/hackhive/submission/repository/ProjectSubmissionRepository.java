@@ -1,6 +1,7 @@
 package com.hackhive.submission.repository;
 
 import com.hackhive.submission.entity.ProjectSubmission;
+import com.hackhive.submission.enums.ProjectSubmissionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,10 @@ public interface ProjectSubmissionRepository extends JpaRepository<ProjectSubmis
     Optional<ProjectSubmission> findByEventIdAndTeamId(Long eventId, Long teamId);
 
     List<ProjectSubmission> findByEventIdOrderByCreatedAtDesc(Long eventId);
+
+    List<ProjectSubmission> findByEventIdAndSubmissionStatusOrderByCreatedAtDesc(Long eventId, ProjectSubmissionStatus submissionStatus);
+
+    long countByEventIdAndSubmissionStatus(Long eventId, ProjectSubmissionStatus submissionStatus);
 
     boolean existsByTeamId(Long teamId);
 

@@ -125,6 +125,8 @@ public class EventRegistrationMapper {
                 .paymentStatus(paymentStatus)
                 .registrationType(registrationType)
                 .amountPaid(registration.getAmountPaid())
+                .razorpayOrderId(registration.getRazorpayOrderId())
+                .razorpayPaymentId(registration.getRazorpayPaymentId())
                 .paidAt(registration.getPaidAt())
                 .phoneNumber(registration.getPhoneNumber())
                 .participantCount(registration.getParticipantCount() != null ? registration.getParticipantCount() : 1)

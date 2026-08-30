@@ -12,6 +12,7 @@ import com.hackhive.submission.dto.response.ProjectSubmissionEvaluationResponse;
 import com.hackhive.submission.entity.ProjectSubmission;
 import com.hackhive.submission.entity.ProjectSubmissionEvaluation;
 import com.hackhive.submission.enums.ProjectEvaluationStatus;
+import com.hackhive.submission.enums.ProjectSubmissionStatus;
 import com.hackhive.submission.mapper.ProjectSubmissionEvaluationMapper;
 import com.hackhive.submission.repository.ProjectSubmissionEvaluationRepository;
 import com.hackhive.submission.repository.ProjectSubmissionRepository;
@@ -72,6 +73,10 @@ public class ProjectSubmissionEvaluationServiceImpl implements ProjectSubmission
         ProjectSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project submission not found."));
 
+        if (submission.getSubmissionStatus() != ProjectSubmissionStatus.SUBMITTED) {
+            throw new BadRequestException("Cannot evaluate a draft project submission.");
+        }
+
         Event event = submission.getEvent();
         if (!event.getOrganizerProfile().getId().equals(organizerProfile.getId())) {
             throw new BadRequestException("You do not have permission to evaluate project submissions for this event.");
@@ -126,6 +131,10 @@ public class ProjectSubmissionEvaluationServiceImpl implements ProjectSubmission
 
         ProjectSubmission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project submission not found."));
+
+        if (submission.getSubmissionStatus() != ProjectSubmissionStatus.SUBMITTED) {
+            throw new ResourceNotFoundException("No evaluation found for this project submission.");
+        }
 
         Event event = submission.getEvent();
         if (!event.getOrganizerProfile().getId().equals(organizerProfile.getId())) {

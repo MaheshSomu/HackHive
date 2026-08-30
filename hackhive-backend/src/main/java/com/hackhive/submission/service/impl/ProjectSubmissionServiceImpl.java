@@ -225,7 +225,7 @@ public class ProjectSubmissionServiceImpl implements ProjectSubmissionService {
             throw new BadRequestException("You do not have permission to view project submissions for this event.");
         }
 
-        List<ProjectSubmission> submissions = projectSubmissionRepository.findByEventIdOrderByCreatedAtDesc(eventId);
+        List<ProjectSubmission> submissions = projectSubmissionRepository.findByEventIdAndSubmissionStatusOrderByCreatedAtDesc(eventId, ProjectSubmissionStatus.SUBMITTED);
 
         return submissions.stream()
                 .map(projectSubmissionMapper::toResponse)

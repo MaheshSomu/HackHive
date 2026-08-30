@@ -68,7 +68,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                     </h4>
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-2 text-xs">
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-500 font-medium">Registration ID:</span>
+                            <span className="text-slate-500 font-medium">Application Registration ID:</span>
                             <span className="font-bold text-slate-900 dark:text-slate-100">
                                 #{student.registrationId || student.id || "N/A"}
                             </span>
@@ -87,7 +87,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-slate-500 font-medium">Payment Status:</span>
-                            <span className={`font-bold ${student.paymentStatus === "PAID" ? "text-indigo-600" : "text-slate-600"}`}>
+                            <span className={`font-bold ${student.paymentStatus === "PAID" ? "text-indigo-600" : student.paymentStatus === "PENDING" ? "text-amber-600" : "text-slate-600"}`}>
                                 {student.paymentStatus || "NOT_APPLICABLE"}
                             </span>
                         </div>
@@ -105,21 +105,21 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                                 </span>
                             </div>
                         )}
-                        {student.razorpayOrderId && (
-                            <div className="flex justify-between items-center border-t border-slate-100 pt-2 dark:border-slate-800">
-                                <span className="text-slate-500 font-medium">Razorpay Order ID:</span>
-                                <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
-                                    {student.razorpayOrderId}
-                                </span>
-                            </div>
-                        )}
-                        {student.razorpayPaymentId && (
-                            <div className="flex justify-between items-center">
-                                <span className="text-slate-500 font-medium">Razorpay Payment ID:</span>
-                                <span className="font-mono text-[11px] text-indigo-600 font-bold">
-                                    {student.razorpayPaymentId}
-                                </span>
-                            </div>
+                        {student.registrationType === "PAID" && (
+                            <>
+                                <div className="flex justify-between items-center border-t border-slate-100 pt-2 dark:border-slate-800">
+                                    <span className="text-slate-500 font-medium">Razorpay Order ID:</span>
+                                    <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
+                                        {student.razorpayOrderId || "Not available"}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-slate-500 font-medium">Razorpay Payment ID:</span>
+                                    <span className="font-mono text-[11px] text-indigo-600 font-bold">
+                                        {student.razorpayPaymentId || "Not available"}
+                                    </span>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>

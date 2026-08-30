@@ -137,7 +137,7 @@ public class ProjectResultServiceImpl implements ProjectResultService {
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found."));
         checkOrganizerEventOwnership(event, organizerProfile);
 
-        List<ProjectSubmission> submissions = submissionRepository.findByEventIdOrderByCreatedAtDesc(eventId);
+        List<ProjectSubmission> submissions = submissionRepository.findByEventIdAndSubmissionStatusOrderByCreatedAtDesc(eventId, ProjectSubmissionStatus.SUBMITTED);
 
         List<ProjectResultResponse> leaderboard = new ArrayList<>();
 

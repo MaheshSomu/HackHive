@@ -34,6 +34,7 @@ const OrganizerDashboard = lazy(() => import("../pages/organizer/OrganizerDashbo
 const OrganizerProfile = lazy(() => import("../pages/organizer/OrganizerProfile"));
 const OrganizerEvents = lazy(() => import("../pages/organizer/OrganizerEvents"));
 const OrganizerRegistrations = lazy(() => import("../pages/organizer/OrganizerRegistrations"));
+const OrganizerProjectSubmissionsPage = lazy(() => import("../pages/organizer/OrganizerProjectSubmissionsPage"));
 const OrganizerAnalytics = lazy(() => import("../pages/organizer/OrganizerAnalytics"));
 const OrganizerSettings = lazy(() => import("../pages/organizer/OrganizerSettings"));
 
@@ -105,7 +106,8 @@ function AppRoutes() {
                             <Route path="/organizer/profile" element={<OrganizerProfile />} />
                             <Route path="/organizer/events" element={<OrganizerEvents />} />
                             <Route path="/organizer/registrations" element={<OrganizerRegistrations />} />
-                            <Route path="/organizer/submissions" element={<OrganizerRegistrations defaultTab="submissions" />} />
+                            <Route path="/organizer/project-submissions" element={<OrganizerProjectSubmissionsPage />} />
+                            <Route path="/organizer/submissions" element={<Navigate to="/organizer/project-submissions" replace />} />
                             <Route path="/organizer/analytics" element={<OrganizerAnalytics />} />
                             <Route path="/organizer/settings" element={<OrganizerSettings />} />
                         </Route>

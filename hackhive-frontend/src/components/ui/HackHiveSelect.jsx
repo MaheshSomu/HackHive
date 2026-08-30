@@ -39,6 +39,7 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
         searchable = false,
         placeholder = "Select an option",
         searchPlaceholder = "Search...",
+        noOptionsText = "No events found",
         value,
         onChange,
         options = [],
@@ -315,7 +316,7 @@ const HackHiveSelect = React.forwardRef(function HackHiveSelect(
                             </div>
                         ) : (
                             <div className="px-3 py-3 text-center text-xs text-slate-400 dark:text-slate-500 font-normal">
-                                No options found
+                                {noOptionsText}
                             </div>
                         )}
                     </div>

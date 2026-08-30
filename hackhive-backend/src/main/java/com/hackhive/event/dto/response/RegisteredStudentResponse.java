@@ -35,6 +35,10 @@ public class RegisteredStudentResponse {
 
     private BigDecimal amountPaid;
 
+    private String razorpayOrderId;
+
+    private String razorpayPaymentId;
+
     private LocalDateTime paidAt;
 
     private String phoneNumber;
