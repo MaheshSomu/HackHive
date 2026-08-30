@@ -90,7 +90,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/uploads/**",
-                                "/api/webhooks/**"
+                                "/api/webhooks/**",
+                                "/ws/**",
+                                "/ws"
                         )
                         .permitAll()
 

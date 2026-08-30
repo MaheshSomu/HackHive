@@ -99,6 +99,7 @@ export default function TeamChat({ team, members = [] }) {
 
     const activeSocketRef = useRef(null);
     const reconnectTimerRef = useRef(null);
+    const heartbeatTimerRef = useRef(null);
     const connectionStateRef = useRef("CONNECTING");
     const authToastShownRef = useRef(false);
     const reconnectToastShownRef = useRef(false);
@@ -163,14 +164,46 @@ export default function TeamChat({ team, members = [] }) {
         return () => clearInterval(interval);
     }, [loadHistory]);
 
+    const getWebSocketUrl = useCallback(() => {
+        if (import.meta.env.VITE_WS_URL) {
+            return import.meta.env.VITE_WS_URL;
+        }
+        const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+        if (apiBase.startsWith("http")) {
+            try {
+                const url = new URL(apiBase);
+                const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+                return `${wsProtocol}//${url.host}/ws`;
+            } catch {
+                // fallback
+            }
+        }
+        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        return `${wsProtocol}//${window.location.host}/ws`;
+    }, []);
+
     // WebSocket STOMP Connection Lifecycle
     useEffect(() => {
         if (!team?.id) return;
 
+        let isCleanedUp = false;
         authToastShownRef.current = false;
         reconnectToastShownRef.current = false;
 
+        const clearTimers = () => {
+            if (reconnectTimerRef.current) {
+                clearTimeout(reconnectTimerRef.current);
+                reconnectTimerRef.current = null;
+            }
+            if (heartbeatTimerRef.current) {
+                clearInterval(heartbeatTimerRef.current);
+                heartbeatTimerRef.current = null;
+            }
+        };
+
         const connectWebSocket = () => {
+            if (isCleanedUp) return;
+
             const token = storage.getToken();
             if (!token) {
                 updateConnectionState("AUTH_ERROR");
@@ -181,31 +214,65 @@ export default function TeamChat({ team, members = [] }) {
                 return;
             }
 
-            const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-            const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+            // Capture and cleanly disown any existing socket instance
+            if (activeSocketRef.current) {
+                const oldWs = activeSocketRef.current;
+                activeSocketRef.current = null;
+                oldWs.onopen = null;
+                oldWs.onmessage = null;
+                oldWs.onclose = null;
+                oldWs.onerror = null;
+                try {
+                    oldWs.close();
+                } catch {
+                    // ignore
+                }
+            }
+
+            const wsUrl = getWebSocketUrl();
 
             try {
-                updateConnectionState(reconnectToastShownRef.current ? "RECONNECTING" : "CONNECTING");
+                if (connectionStateRef.current !== "CONNECTED") {
+                    updateConnectionState(reconnectToastShownRef.current ? "RECONNECTING" : "CONNECTING");
+                }
+
                 const ws = new WebSocket(wsUrl);
                 activeSocketRef.current = ws;
 
                 ws.onopen = () => {
+                    if (isCleanedUp || activeSocketRef.current !== ws) {
+                        try {
+                            ws.close();
+                        } catch {
+                            // ignore
+                        }
+                        return;
+                    }
                     ws.send(
                         createStompFrame("CONNECT", {
                             "accept-version": "1.1,1.0",
-                            "heart-beat": "10000,10000",
+                            "heart-beat": "0,0",
                             Authorization: `Bearer ${token}`,
                         })
                     );
                 };
 
                 ws.onmessage = (event) => {
+                    if (isCleanedUp || activeSocketRef.current !== ws) return;
                     const frame = parseStompFrame(event.data);
                     if (!frame) return;
 
                     if (frame.command === "CONNECTED") {
-                        updateConnectionState("CONNECTED");
+                        clearTimers();
                         reconnectToastShownRef.current = false;
+                        updateConnectionState("CONNECTED");
+
+                        // Periodic client ping interval to keep intermediate proxies alive
+                        heartbeatTimerRef.current = setInterval(() => {
+                            if (activeSocketRef.current === ws && ws.readyState === WebSocket.OPEN) {
+                                ws.send("\n");
+                            }
+                        }, 15000);
 
                         ws.send(
                             createStompFrame("SUBSCRIBE", {
@@ -230,19 +297,21 @@ export default function TeamChat({ team, members = [] }) {
                             // ignore malformed body
                         }
                     } else if (frame.command === "ERROR") {
-                        const errorMsg = (frame.headers.message || frame.body || "").toLowerCase();
+                        clearTimers();
+                        const errorMsg = (frame.headers?.message || frame.body || "").toLowerCase();
                         if (
                             errorMsg.includes("expired") ||
                             errorMsg.includes("invalid") ||
                             errorMsg.includes("token") ||
                             errorMsg.includes("authorization") ||
                             errorMsg.includes("disabled") ||
-                            errorMsg.includes("user not found")
+                            errorMsg.includes("user not found") ||
+                            errorMsg.includes("not authorized")
                         ) {
                             updateConnectionState("AUTH_ERROR");
                             if (!authToastShownRef.current) {
                                 authToastShownRef.current = true;
-                                toast.error("Your session has expired. Please log in again.");
+                                toast.error("Access to team chat was denied.");
                             }
                             ws.close();
                         } else {
@@ -252,17 +321,31 @@ export default function TeamChat({ team, members = [] }) {
                     }
                 };
 
-                ws.onclose = () => {
-                    if (connectionStateRef.current === "AUTH_ERROR") return;
+                ws.onclose = (event) => {
+                    clearTimers();
+                    if (isCleanedUp || activeSocketRef.current !== ws || connectionStateRef.current === "AUTH_ERROR") {
+                        return;
+                    }
+
+                    // If server explicitly closes with 1002 protocol error (subscription rejection), do not endless retry
+                    if (event.code === 1002) {
+                        updateConnectionState("AUTH_ERROR");
+                        if (!authToastShownRef.current) {
+                            authToastShownRef.current = true;
+                            toast.error("Subscription to team chat was denied.");
+                        }
+                        return;
+                    }
 
                     updateConnectionState("RECONNECTING");
                     if (!reconnectToastShownRef.current) {
                         reconnectToastShownRef.current = true;
-                        toast.error("Chat connection lost. Reconnecting...");
                     }
 
                     reconnectTimerRef.current = setTimeout(() => {
-                        connectWebSocket();
+                        if (!isCleanedUp && activeSocketRef.current === ws) {
+                            connectWebSocket();
+                        }
                     }, 5000);
                 };
 
@@ -270,24 +353,34 @@ export default function TeamChat({ team, members = [] }) {
                     // Handled natively via onclose
                 };
             } catch {
-                updateConnectionState("DISCONNECTED");
+                clearTimers();
+                if (!isCleanedUp && activeSocketRef.current === ws) {
+                    updateConnectionState("DISCONNECTED");
+                }
             }
         };
 
         connectWebSocket();
 
         return () => {
-            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+            isCleanedUp = true;
+            clearTimers();
             if (activeSocketRef.current) {
-                activeSocketRef.current.onopen = null;
-                activeSocketRef.current.onmessage = null;
-                activeSocketRef.current.onclose = null;
-                activeSocketRef.current.onerror = null;
-                activeSocketRef.current.close();
+                const oldWs = activeSocketRef.current;
                 activeSocketRef.current = null;
+                oldWs.onopen = null;
+                oldWs.onmessage = null;
+                oldWs.onclose = null;
+                oldWs.onerror = null;
+                try {
+                    oldWs.close();
+                } catch {
+                    // ignore
+                }
             }
+            updateConnectionState("DISCONNECTED");
         };
-    }, [team?.id]);
+    }, [team?.id, getWebSocketUrl]);
 
     const handleSend = async (e) => {
         if (e) e.preventDefault();
@@ -368,13 +461,17 @@ export default function TeamChat({ team, members = [] }) {
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                                     <Wifi className="size-3" /> Live Channel
                                 </span>
-                            ) : connectionState === "RECONNECTING" || connectionState === "CONNECTING" ? (
+                            ) : connectionState === "RECONNECTING" ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
                                     <RefreshCw className="size-3 animate-spin" /> Reconnecting...
                                 </span>
+                            ) : connectionState === "CONNECTING" ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
+                                    <RefreshCw className="size-3 animate-spin" /> Connecting...
+                                </span>
                             ) : connectionState === "AUTH_ERROR" ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-400">
-                                    <AlertTriangle className="size-3" /> Session Expired
+                                    <AlertTriangle className="size-3" /> Access Denied
                                 </span>
                             ) : (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">

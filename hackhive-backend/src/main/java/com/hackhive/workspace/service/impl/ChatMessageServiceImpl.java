@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 @Service
 @RequiredArgsConstructor
 public class ChatMessageServiceImpl
@@ -34,6 +36,7 @@ public class ChatMessageServiceImpl
     private final StudentProfileRepository studentProfileRepository;
     private final UserRepository userRepository;
     private final ChatMessageMapper chatMessageMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Get the currently logged-in student's profile
@@ -142,8 +145,12 @@ public class ChatMessageServiceImpl
         chatMessage =
                 chatMessageRepository.save(chatMessage);
 
-        return chatMessageMapper
-                .toResponse(chatMessage);
+        ChatMessageResponse response = chatMessageMapper.toResponse(chatMessage);
+        messagingTemplate.convertAndSend(
+                "/topic/teams/" + response.getTeamId() + "/chat",
+                response
+        );
+        return response;
     }
 
     /**
@@ -226,7 +233,11 @@ public class ChatMessageServiceImpl
         chatMessage =
                 chatMessageRepository.save(chatMessage);
 
-        return chatMessageMapper
-                .toResponse(chatMessage);
+        ChatMessageResponse response = chatMessageMapper.toResponse(chatMessage);
+        messagingTemplate.convertAndSend(
+                "/topic/teams/" + response.getTeamId() + "/chat",
+                response
+        );
+        return response;
     }
 }
