@@ -6,6 +6,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { DashboardPageSkeleton } from "../components/student-dashboard/DashboardStates";
 
 // Lazy Loaded Pages
+const LandingPage = lazy(() => import("../pages/common/LandingPage"));
 const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/auth/Register"));
 const ForgotPassword = lazy(() => import("../pages/auth/ForgotPasswordPage"));
@@ -17,9 +18,6 @@ const VerifyEmailHandler = lazy(() => import("../pages/auth/VerifyEmailHandlerPa
 const OAuthCompleteRegistration = lazy(() => import("../pages/auth/OAuthCompleteRegistrationPage"));
 const OAuthSuccess = lazy(() => import("../pages/auth/OAuthSuccessPage"));
 const ReactivateAccount = lazy(() => import("../pages/auth/ReactivateAccountPage"));
-
-
-
 
 const StudentLayout = lazy(() => import("../components/layout/StudentLayout"));
 const StudentDashboard = lazy(() => import("../pages/student/StudentDashboard"));
@@ -67,8 +65,9 @@ function AppRoutes() {
         <BrowserRouter>
             <Suspense fallback={<PageFallback />}>
                 <Routes>
+                    <Route path="/" element={<LandingPage />} />
+
                     <Route element={<AuthRoute />}>
-                        <Route path="/" element={<Login />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
