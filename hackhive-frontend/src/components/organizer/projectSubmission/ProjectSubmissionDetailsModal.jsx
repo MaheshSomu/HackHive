@@ -233,8 +233,8 @@ export default function ProjectSubmissionDetailsModal({
                                 {evaluation && (
                                     <span
                                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                                            isFinalized
-                                                ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                                             isFinalized
+                                                ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
                                                 : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                                         }`}
                                     >
@@ -372,7 +372,7 @@ export default function ProjectSubmissionDetailsModal({
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <Award className="size-5 text-purple-600 dark:text-purple-400" />
+                                        <Award className="size-5 text-blue-600 dark:text-blue-400" />
                                         <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                                             Organizer Evaluation & Scoring
                                         </h4>
@@ -383,7 +383,7 @@ export default function ProjectSubmissionDetailsModal({
                                 </div>
 
                                 {/* Total Score Live Badge */}
-                                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-xl shadow-md shrink-0">
+                                <div className="flex items-center gap-2 bg-gradient-to-r from-slate-900 to-blue-600 dark:from-blue-600 dark:to-indigo-600 text-white px-4 py-2 rounded-xl shadow-md shrink-0">
                                     <Star className="size-4 fill-white/80" />
                                     <span className="text-xs font-bold uppercase tracking-wider">Total Score:</span>
                                     <span className="text-lg font-black">{isFinalized ? evaluation.totalScore : previewTotalScore} / 50</span>
@@ -392,8 +392,8 @@ export default function ProjectSubmissionDetailsModal({
 
                             {/* Finalized Locked Banner */}
                             {isFinalized && (
-                                <div className="flex items-center gap-3 p-4 rounded-xl border border-purple-200 bg-purple-50 text-purple-900 dark:border-purple-900 dark:bg-purple-950/40 dark:text-purple-300 text-xs">
-                                    <CheckCircle2 className="size-5 text-purple-600 shrink-0" />
+                                <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-slate-100 text-slate-900 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200 text-xs">
+                                    <CheckCircle2 className="size-5 text-blue-600 shrink-0" />
                                     <div>
                                         <p className="font-bold">Evaluation Finalized & Locked</p>
                                         <p className="opacity-90">

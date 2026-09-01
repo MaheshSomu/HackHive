@@ -31,7 +31,7 @@ export default function SettingsSidebar({ activeSection, setActiveSection }) {
                                 onClick={() => setActiveSection(item.id)}
                                 className={`group flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-xs font-bold transition-all text-left ${
                                     isActive
-                                        ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
+                                        ? "bg-slate-900 text-white shadow-sm dark:bg-blue-600"
                                         : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"
                                 }`}
                             >

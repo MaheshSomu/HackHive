@@ -30,7 +30,7 @@ export default function SecuritySection({ user }) {
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
             <div className="border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                    <ShieldCheck className="size-5 text-purple-600 dark:text-purple-400" />
+                    <ShieldCheck className="size-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Security & Credentials</h3>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -87,7 +87,7 @@ export default function SecuritySection({ user }) {
                                         />
                                     </svg>
                                 ) : (
-                                    <KeyRound className="size-5 text-purple-600" />
+                                    <KeyRound className="size-5 text-blue-600 dark:text-blue-400" />
                                 )}
                             </div>
                             <div className="space-y-0.5">
@@ -107,7 +107,7 @@ export default function SecuritySection({ user }) {
                                 <CheckCircle2 className="size-3.5 text-emerald-600" /> Connected
                             </Badge>
                         ) : (
-                            <Badge variant="purple" className="px-3 py-1 text-xs font-bold">
+                            <Badge variant="navy" className="px-3 py-1 text-xs font-bold">
                                 Active Provider
                             </Badge>
                         )}
@@ -122,12 +122,12 @@ export default function SecuritySection({ user }) {
 
                     <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 dark:bg-slate-800/40 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                                 <Lock className="size-5" />
                             </div>
                             <div className="space-y-0.5">
-                                <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                                    Password Status
+                                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
+                                    <KeyRound className="size-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                                     {isGoogleAuth

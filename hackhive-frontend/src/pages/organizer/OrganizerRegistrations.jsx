@@ -219,8 +219,8 @@ export default function OrganizerRegistrations() {
             {/* Header Hero */}
             <Card className="border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
                 <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-100 dark:border-purple-900/60">
-                        <UserCheck className="size-3.5 text-purple-600" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                        <UserCheck className="size-3.5 text-blue-600 dark:text-blue-400" />
                         Event Registrations
                     </span>
                     <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
@@ -279,7 +279,7 @@ export default function OrganizerRegistrations() {
                     {/* Main Content Area */}
                     {registrationsLoading ? (
                         <div className="p-12 text-center rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 space-y-3 shadow-2xs">
-                            <div className="size-8 border-3 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                            <div className="size-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
                             <p className="text-xs font-semibold text-slate-500">Loading registrations list...</p>
                         </div>
                     ) : filteredRegistrations.length > 0 ? (
@@ -291,7 +291,7 @@ export default function OrganizerRegistrations() {
                     ) : (
                         /* Empty State */
                         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center space-y-4 dark:border-slate-800 dark:bg-slate-900 shadow-2xs">
-                            <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                            <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <UserCheck className="size-6" />
                             </div>
                             <div className="space-y-1 max-w-sm mx-auto">

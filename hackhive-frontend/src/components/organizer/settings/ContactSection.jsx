@@ -33,7 +33,7 @@ export default function ContactSection({ profileData, onSave, saving }) {
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
             <div className="border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                    <Mail className="size-5 text-purple-600 dark:text-purple-400" />
+                    <Mail className="size-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Contact Information</h3>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -54,7 +54,7 @@ export default function ContactSection({ profileData, onSave, saving }) {
                             value={formData.contactEmail}
                             onChange={(e) => setFormData((f) => ({ ...f, contactEmail: e.target.value }))}
                             placeholder="e.g. contact@gdsc.com"
-                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
+                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
                         />
                     </div>
                 </div>
@@ -71,7 +71,7 @@ export default function ContactSection({ profileData, onSave, saving }) {
                             value={formData.contactPhone}
                             onChange={(e) => setFormData((f) => ({ ...f, contactPhone: e.target.value }))}
                             placeholder="e.g. +91 98765 43210"
-                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
+                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
                         />
                     </div>
                 </div>
@@ -88,7 +88,7 @@ export default function ContactSection({ profileData, onSave, saving }) {
                             value={formData.websiteUrl}
                             onChange={(e) => setFormData((f) => ({ ...f, websiteUrl: e.target.value }))}
                             placeholder="e.g. https://www.gdsc.com"
-                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
+                            className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
                         />
                     </div>
                 </div>
@@ -99,7 +99,7 @@ export default function ContactSection({ profileData, onSave, saving }) {
                         type="submit"
                         disabled={saving || !isDirty}
                         size="sm"
-                        className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         <Save className="size-3.5" />
                         {saving ? "Saving Changes..." : "Save Changes"}

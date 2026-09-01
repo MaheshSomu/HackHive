@@ -125,7 +125,7 @@ export default function OrganizerDashboard() {
                     <Button
                         type="button"
                         onClick={loadDashboardData}
-                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white hover:bg-purple-700 transition-colors shadow-xs"
+                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800 transition-colors shadow-xs dark:bg-slate-800 dark:hover:bg-slate-700"
                     >
                         <RotateCw className="size-3.5" /> Retry
                     </Button>

@@ -12,7 +12,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
         const end = evt.endDate ? new Date(evt.endDate).getTime() : 0;
 
         if (start > 0 && now < start) {
-            return { label: "Upcoming", variant: "purple" };
+            return { label: "Upcoming", variant: "navy" };
         }
         if (start > 0 && now >= start && (end === 0 || now <= end)) {
             return { label: "Active Live", variant: "success" };
@@ -27,7 +27,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                         Portfolio Overview
                     </span>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -65,7 +65,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
                                 className="group relative overflow-hidden border-slate-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between"
                             >
                                 {/* Banner / Header Graphic */}
-                                <div className="relative h-32 w-full bg-gradient-to-br from-purple-600 via-indigo-600 to-slate-900 overflow-hidden">
+                                <div className="relative h-32 w-full bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 overflow-hidden">
                                     {evt.bannerUrl ? (
                                         <img
                                             src={evt.bannerUrl}
@@ -87,7 +87,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
                                 {/* Content Body */}
                                 <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                                     <div className="space-y-1.5">
-                                        <h4 className="text-base font-extrabold text-slate-900 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1">
+                                        <h4 className="text-base font-extrabold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
                                             {evt.title}
                                         </h4>
                                         <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-normal">
@@ -99,7 +99,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
                                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
                                         <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
                                             <span className="flex items-center gap-1.5">
-                                                <Calendar className="size-3.5 text-purple-600 dark:text-purple-400" />
+                                                <Calendar className="size-3.5 text-blue-600 dark:text-blue-400" />
                                                 {startDateStr}
                                             </span>
                                             <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
@@ -114,7 +114,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => onNavigate("/organizer/events")}
-                                                className="w-full text-xs font-bold gap-1 rounded-xl border-slate-200 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 dark:border-slate-800 dark:hover:bg-purple-950/40"
+                                                className="w-full text-xs font-bold gap-1 rounded-xl border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                             >
                                                 Manage Event <ArrowUpRight className="size-3.5" />
                                             </Button>
@@ -128,7 +128,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
             ) : (
                 /* Professional Empty State */
                 <div className="rounded-3xl border border-dashed border-slate-300/80 bg-slate-50/50 p-10 text-center space-y-4 dark:border-slate-800 dark:bg-slate-900/40 shadow-2xs">
-                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-300">
+                    <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                         <Sparkles className="size-7" />
                     </div>
                     <div className="space-y-1 max-w-sm mx-auto">
@@ -142,7 +142,7 @@ export default function RecentEventsSection({ events = [], onNavigate, onCreateE
                     <Button
                         type="button"
                         onClick={onCreateEvent}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs gap-2 px-6 py-2.5 rounded-xl shadow-md"
+                        className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-blue-600 dark:hover:bg-blue-500 font-bold text-xs gap-2 px-6 py-2.5 rounded-xl shadow-md"
                     >
                         <Plus className="size-4" /> Create First Event
                     </Button>

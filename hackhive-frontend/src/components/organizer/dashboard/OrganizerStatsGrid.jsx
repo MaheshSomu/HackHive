@@ -10,7 +10,7 @@ export default function OrganizerStatsGrid({ stats }) {
             value: stats?.totalEvents ?? 0,
             supportingText: `${activeCount} active · ${upcomingCount} upcoming`,
             icon: CalendarDays,
-            iconBg: "bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400 border border-purple-100 dark:border-purple-900/50",
+            iconBg: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700",
         },
         {
             title: "Registrations",

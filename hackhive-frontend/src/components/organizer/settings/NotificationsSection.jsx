@@ -114,7 +114,7 @@ export default function NotificationsSection() {
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
             <div className="border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                    <Bell className="size-5 text-purple-600 dark:text-purple-400" />
+                    <Bell className="size-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Notification Preferences</h3>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -174,8 +174,8 @@ export default function NotificationsSection() {
                                         id={`toggle-${item.key}`}
                                         onClick={() => handleToggle(item.key)}
                                         disabled={saving}
-                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 ${
-                                            isChecked ? "bg-purple-600" : "bg-slate-200 dark:bg-slate-700"
+                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 ${
+                                            isChecked ? "bg-blue-600" : "bg-slate-200 dark:bg-slate-700"
                                         }`}
                                     >
                                         <span
@@ -194,7 +194,7 @@ export default function NotificationsSection() {
                             type="submit"
                             disabled={saving || !isDirty}
                             size="sm"
-                            className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
                         >
                             {saving ? (
                                 <>

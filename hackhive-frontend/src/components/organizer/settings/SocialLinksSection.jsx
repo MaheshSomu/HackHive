@@ -198,7 +198,7 @@ export default function SocialLinksSection() {
             <div className="border-b border-slate-100 pb-4 dark:border-slate-800 flex items-center justify-between">
                 <div>
                     <div className="flex items-center gap-2">
-                        <Share2 className="size-5 text-purple-600 dark:text-purple-400" />
+                        <Share2 className="size-5 text-blue-600 dark:text-blue-400" />
                         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Social Media Links</h3>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -234,7 +234,7 @@ export default function SocialLinksSection() {
                                         onChange={(e) => handleChange(p.key, e.target.value)}
                                         disabled={saving}
                                         placeholder={p.placeholder}
-                                        className="w-full rounded-2xl border border-slate-200 bg-white pl-4 pr-10 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium disabled:opacity-50"
+                                        className="w-full rounded-2xl border border-slate-200 bg-white pl-4 pr-10 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium disabled:opacity-50"
                                     />
                                     {val && !saving && (
                                         <button
@@ -261,7 +261,7 @@ export default function SocialLinksSection() {
                             type="submit"
                             disabled={saving || !isDirty}
                             size="sm"
-                            className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
                         >
                             {saving ? (
                                 <>

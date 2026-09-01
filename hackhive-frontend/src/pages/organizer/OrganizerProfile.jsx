@@ -154,7 +154,7 @@ const calculateEventStatus = (event) => {
             return { label: "Registration Closed", variant: "secondary" };
         }
         if (regStart > 0 && now < regStart) {
-            return { label: "Upcoming", variant: "purple" };
+            return { label: "Upcoming", variant: "navy" };
         }
         return { label: "Registration Open", variant: "success" };
     }
@@ -343,7 +343,7 @@ export default function OrganizerProfile() {
                 <div>
                     <Button
                         onClick={() => navigate("/organizer/settings")}
-                        className="w-full sm:w-auto gap-2 shadow-sm bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-600 dark:hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-500"
+                        className="w-full sm:w-auto gap-2 shadow-sm bg-slate-900 hover:bg-slate-800 text-white dark:bg-blue-600 dark:hover:bg-blue-500"
                         aria-label="Edit Organizer Profile"
                     >
                         <Edit className="size-4" />
@@ -354,12 +354,12 @@ export default function OrganizerProfile() {
 
             {/* Main Hero Profile Card */}
             <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-all">
-                <div className="absolute -right-16 -top-16 size-64 rounded-full bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none" />
+                <div className="absolute -right-16 -top-16 size-64 rounded-full bg-gradient-to-br from-blue-500/10 via-slate-500/5 to-transparent blur-3xl pointer-events-none" />
 
                 <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-5">
                         {/* Logo or Initials */}
-                        <div className="relative flex size-20 sm:size-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-2xl sm:text-3xl font-black text-white shadow-md ring-4 ring-purple-50 dark:ring-purple-950/40 overflow-hidden">
+                        <div className="relative flex size-20 sm:size-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-2xl sm:text-3xl font-black text-white shadow-md ring-4 ring-slate-100 dark:ring-slate-800 overflow-hidden">
                             {profile?.logoUrl && !logoError ? (
                                 <img
                                     src={getImageUrl(profile.logoUrl)}
@@ -391,7 +391,7 @@ export default function OrganizerProfile() {
                             </div>
 
                             {profile?.organizationType && (
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400">
                                     <Building2 className="size-3.5" />
                                     <span>{profile.organizationType}</span>
                                 </div>
@@ -419,7 +419,7 @@ export default function OrganizerProfile() {
                 {/* About & Description */}
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
                     <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                        <Building2 className="size-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                        <Building2 className="size-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                             About Organization
                         </h3>
@@ -454,7 +454,7 @@ export default function OrganizerProfile() {
                 {/* Contact & Location Details */}
                 <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
                     <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                        <Mail className="size-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                        <Mail className="size-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                             Contact Information
                         </h3>
@@ -463,7 +463,7 @@ export default function OrganizerProfile() {
                     <div className="space-y-4 text-sm">
                         {/* Contact Email */}
                         <div className="flex items-start gap-3">
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <Mail className="size-4" />
                             </div>
                             <div className="min-w-0">
@@ -476,7 +476,7 @@ export default function OrganizerProfile() {
 
                         {/* Contact Phone */}
                         <div className="flex items-start gap-3">
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <Phone className="size-4" />
                             </div>
                             <div className="min-w-0">
@@ -489,7 +489,7 @@ export default function OrganizerProfile() {
 
                         {/* Location */}
                         <div className="flex items-start gap-3">
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <MapPin className="size-4" />
                             </div>
                             <div className="min-w-0">
@@ -502,7 +502,7 @@ export default function OrganizerProfile() {
 
                         {/* Website */}
                         <div className="flex items-start gap-3">
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <Globe className="size-4" />
                             </div>
                             <div className="min-w-0">
@@ -512,7 +512,7 @@ export default function OrganizerProfile() {
                                         href={profile.websiteUrl.startsWith("http") ? profile.websiteUrl : `https://${profile.websiteUrl}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-medium text-purple-600 hover:underline dark:text-purple-400 truncate block"
+                                        className="font-medium text-blue-600 hover:underline dark:text-blue-400 truncate block"
                                     >
                                         {profile.websiteUrl}
                                     </a>
@@ -529,7 +529,7 @@ export default function OrganizerProfile() {
             <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                        <Share2 className="size-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                        <Share2 className="size-4 text-blue-600 dark:text-blue-400 shrink-0" />
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                             Social Links
                         </h3>
@@ -540,7 +540,7 @@ export default function OrganizerProfile() {
                             onClick={() => navigate("/organizer/settings")}
                             size="sm"
                             variant="ghost"
-                            className="h-8 gap-1.5 text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                            className="h-8 gap-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
                             aria-label="Manage Social Links"
                         >
                             <Edit className="size-3.5" />
@@ -560,7 +560,7 @@ export default function OrganizerProfile() {
                 ) : activeSocialLinks.length === 0 ? (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/30">
                         <div className="flex items-center gap-3">
-                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                 <Share2 className="size-4.5" />
                             </div>
                             <div>
@@ -577,7 +577,7 @@ export default function OrganizerProfile() {
                             onClick={() => navigate("/organizer/settings")}
                             size="sm"
                             variant="outline"
-                            className="shrink-0 gap-1.5 text-xs border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-900 dark:text-purple-300 dark:hover:bg-purple-950/40"
+                            className="shrink-0 gap-1.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
                             aria-label="Add Social Links"
                         >
                             <Plus className="size-3.5" />
@@ -619,7 +619,7 @@ export default function OrganizerProfile() {
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div className="flex items-center gap-2">
-                            <Calendar className="size-5 text-purple-600 dark:text-purple-400 shrink-0" />
+                            <Calendar className="size-5 text-blue-600 dark:text-blue-400 shrink-0" />
                             <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
                                 Events by this Organizer
                             </h2>
@@ -671,7 +671,7 @@ export default function OrganizerProfile() {
                     </div>
                 ) : events.length === 0 ? (
                     <div className="flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                        <div className="flex size-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400">
+                        <div className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                             <Calendar className="size-6" />
                         </div>
                         <h4 className="mt-3 text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -692,12 +692,12 @@ export default function OrganizerProfile() {
                                 return (
                                     <div
                                         key={evt.id}
-                                        className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-purple-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-purple-900/60"
+                                        className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                                     >
                                         <div className="space-y-3">
                                             {/* Header Tags */}
                                             <div className="flex items-center justify-between gap-2 flex-wrap">
-                                                <span className="inline-flex items-center rounded-md bg-purple-50 px-2.5 py-0.5 text-[11px] font-semibold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-100 dark:border-purple-900/40">
+                                                <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                                                     {evt.eventMode || "Offline"}
                                                 </span>
                                                 {status && (
@@ -741,7 +741,7 @@ export default function OrganizerProfile() {
                                 <Button
                                     onClick={() => navigate("/organizer/events")}
                                     variant="outline"
-                                    className="gap-2 shadow-2xs font-semibold text-xs border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-900 dark:text-purple-300 dark:hover:bg-purple-950/40"
+                                    className="gap-2 shadow-2xs font-semibold text-xs border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
                                     aria-label="View All Events"
                                 >
                                     <span>View All Events</span>

@@ -189,7 +189,7 @@ export default function OrganizerAnalytics() {
         const end = evt.endDate ? new Date(evt.endDate).getTime() : 0;
 
         if (start > 0 && now < start) {
-            return { label: "Upcoming", variant: "purple" };
+            return { label: "Upcoming", variant: "navy" };
         }
         if (start > 0 && now >= start && (end === 0 || now <= end)) {
             return { label: "Active", variant: "success" };
@@ -358,7 +358,7 @@ export default function OrganizerAnalytics() {
                     <Button
                         type="button"
                         onClick={loadAnalyticsData}
-                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition-colors shadow-xs"
+                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition-colors shadow-xs dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         <RotateCw className="size-3.5" /> Retry
                     </Button>
@@ -374,8 +374,8 @@ export default function OrganizerAnalytics() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-100 dark:border-purple-900/60">
-                                <BarChart3 className="size-3.5 text-purple-600" />
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                                <BarChart3 className="size-3.5 text-blue-600 dark:text-blue-400" />
                                 Organizer Analytics
                             </span>
                             {selectedEventObj && (
@@ -434,7 +434,7 @@ export default function OrganizerAnalytics() {
                     <Button
                         type="button"
                         onClick={() => setIsCreateOpen(true)}
-                        className="mt-3 bg-purple-600 text-white font-bold text-xs inline-flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-purple-700 transition"
+                        className="mt-3 bg-slate-900 text-white font-bold text-xs inline-flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-slate-800 transition dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         <Plus className="size-4" /> Create First Event
                     </Button>
@@ -449,7 +449,7 @@ export default function OrganizerAnalytics() {
                                 <Card className="border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Events</span>
-                                        <div className="flex size-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                                        <div className="flex size-9 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                                             <CalendarDays className="size-5" />
                                         </div>
                                     </div>
@@ -558,11 +558,11 @@ export default function OrganizerAnalytics() {
                                     <Card className="border-slate-200/80 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Submission Rate</span>
-                                            <div className="flex size-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                                            <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                                                 <TrendingUp className="size-5" />
                                             </div>
                                         </div>
-                                        <div className="mt-2 text-2xl font-extrabold text-purple-600 dark:text-purple-400">
+                                        <div className="mt-2 text-2xl font-extrabold text-blue-600 dark:text-blue-400">
                                             {selectedEventObj.submissionRate}%
                                         </div>
                                         <p className="mt-1 text-[11px] text-slate-500 font-medium truncate">
@@ -585,7 +585,7 @@ export default function OrganizerAnalytics() {
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
-                                            <TrendingUp className="size-4 text-purple-600 dark:text-purple-400" />
+                                            <TrendingUp className="size-4 text-blue-600 dark:text-blue-400" />
                                             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                                                 Registrations vs Project Submissions (Top 5 Events)
                                             </h2>
@@ -597,7 +597,7 @@ export default function OrganizerAnalytics() {
 
                                     <div className="flex items-center gap-4 text-xs font-semibold shrink-0">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="size-3 rounded-md bg-purple-600" />
+                                            <span className="size-3 rounded-md bg-blue-600" />
                                             <span className="text-slate-700 dark:text-slate-300">Registrations</span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
@@ -610,7 +610,7 @@ export default function OrganizerAnalytics() {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={scrollToTable}
-                                                className="text-xs font-bold text-purple-600 hover:text-purple-700 dark:text-purple-400 p-0 h-auto gap-1 ml-2"
+                                                className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 p-0 h-auto gap-1 ml-2"
                                             >
                                                 View All Events ({events.length}) <ArrowRight className="size-3.5" />
                                             </Button>
@@ -632,14 +632,14 @@ export default function OrganizerAnalytics() {
                                             >
                                                 <div className="flex items-center justify-between text-xs font-bold gap-2">
                                                     <div className="flex items-center gap-2 truncate">
-                                                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-purple-100 text-[10px] font-bold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+                                                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                                                             {index + 1}
                                                         </span>
                                                         <span className="text-slate-900 dark:text-slate-100 truncate">
                                                             {evt.title}
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/80 px-2 py-0.5 rounded-lg border border-purple-100 dark:border-purple-900/50 shrink-0">
+                                                    <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 rounded-lg border border-blue-100 dark:border-blue-900/50 shrink-0">
                                                         {evt.submissionRate}% Submission Rate
                                                     </span>
                                                 </div>
@@ -651,7 +651,7 @@ export default function OrganizerAnalytics() {
                                                         </span>
                                                         <div className="flex-1 bg-slate-200/70 dark:bg-slate-700/60 h-3.5 rounded-full overflow-hidden flex items-center">
                                                             <div
-                                                                className="bg-purple-600 h-full rounded-full transition-all duration-500"
+                                                                className="bg-blue-600 h-full rounded-full transition-all duration-500"
                                                                 style={{ width: `${Math.max(regPct, regCount > 0 ? 4 : 0)}%` }}
                                                             />
                                                         </div>
@@ -716,7 +716,7 @@ export default function OrganizerAnalytics() {
                                                 value={tableSearchQuery}
                                                 onChange={(e) => setTableSearchQuery(e.target.value)}
                                                 placeholder="Search events..."
-                                                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:border-purple-500"
+                                                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200 dark:focus:border-blue-500"
                                             />
                                         </div>
                                     </div>
@@ -768,7 +768,7 @@ export default function OrganizerAnalytics() {
                                                                 {evt.submissionsCount || 0}
                                                             </td>
 
-                                                            <td className="py-3.5 px-4 text-center font-bold text-purple-600 dark:text-purple-400">
+                                                            <td className="py-3.5 px-4 text-center font-bold text-blue-600 dark:text-blue-400">
                                                                 {evt.submissionRate}%
                                                             </td>
 
@@ -782,7 +782,7 @@ export default function OrganizerAnalytics() {
                                                                     variant="outline"
                                                                     size="sm"
                                                                     onClick={() => setSelectedEventId(String(evt.id))}
-                                                                    className="text-xs font-bold gap-1 px-3 py-1 rounded-xl border-slate-200 text-slate-700 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-purple-950/40 transition-colors"
+                                                                    className="text-xs font-bold gap-1 px-3 py-1 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
                                                                 >
                                                                     Inspect
                                                                 </Button>
@@ -853,7 +853,7 @@ export default function OrganizerAnalytics() {
                                 <Card className="border-slate-200/80 bg-white p-6 shadow-2xs dark:border-slate-800 dark:bg-slate-900 space-y-4">
                                     <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                            <Layers className="size-4 text-purple-600" /> Event Statistics
+                                            <Layers className="size-4 text-blue-600" /> Event Statistics
                                         </h3>
                                         <Badge variant={getStatusBadge(selectedEventObj).variant} className="text-[10px]">
                                             {getStatusBadge(selectedEventObj).label}
@@ -884,7 +884,7 @@ export default function OrganizerAnalytics() {
 
                                         <div className="flex justify-between items-center">
                                             <span className="text-slate-500 font-medium">Registration Type:</span>
-                                            <span className="font-bold text-purple-600 dark:text-purple-400">
+                                            <span className="font-bold text-blue-600 dark:text-blue-400">
                                                 {selectedEventObj.registrationType || "FREE"}
                                                 {selectedEventObj.registrationFee && selectedEventObj.registrationFee > 0
                                                     ? ` (₹${selectedEventObj.registrationFee})`
@@ -1014,14 +1014,14 @@ export default function OrganizerAnalytics() {
                                         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
                                             <div className="flex justify-between items-center font-bold">
                                                 <span className="text-slate-700 dark:text-slate-300">Submission Rate</span>
-                                                <span className="text-purple-600 dark:text-purple-400">
+                                                <span className="text-blue-600 dark:text-blue-400">
                                                     {selectedEventObj.submissionRate}%
                                                 </span>
                                             </div>
 
                                             <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                                 <div
-                                                    className="h-full bg-purple-600 rounded-full transition-all duration-500"
+                                                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
                                                     style={{ width: `${Math.min(100, selectedEventObj.submissionRate)}%` }}
                                                 />
                                             </div>

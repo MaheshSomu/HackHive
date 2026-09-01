@@ -14,6 +14,7 @@ const badgeVariants = cva(
                 warning: "bg-amber-50 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300",
                 destructive: "bg-rose-50 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
                 purple: "bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300",
+                navy: "bg-slate-100 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700",
                 cyan: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300",
                 outline: "border border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-300",
             },

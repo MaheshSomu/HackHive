@@ -20,7 +20,7 @@ export default function AnalyticsPreviewCard({ events = [], onNavigate }) {
                 <button
                     type="button"
                     onClick={() => onNavigate("/organizer/analytics")}
-                    className="text-xs font-bold text-purple-600 hover:underline dark:text-purple-400 flex items-center gap-1"
+                    className="text-xs font-bold text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1"
                 >
                     Full Analytics <ArrowRight className="size-3" />
                 </button>
@@ -28,28 +28,28 @@ export default function AnalyticsPreviewCard({ events = [], onNavigate }) {
 
             {hasRegistrations ? (
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 dark:bg-purple-950/30 dark:border-purple-900/60 space-y-1">
-                        <div className="flex items-center justify-between text-xs text-purple-700 dark:text-purple-300 font-bold">
+                    <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/60 space-y-1">
+                        <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-bold">
                             <span>Registration Growth</span>
                             <TrendingUp className="size-4" />
                         </div>
                         <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                             {events.reduce((sum, e) => sum + (e.registrationsCount || 0), 0)}
                         </p>
-                        <p className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
+                        <p className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
                             Total registered students across all events
                         </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 dark:bg-indigo-950/30 dark:border-indigo-900/60 space-y-1">
-                        <div className="flex items-center justify-between text-xs text-indigo-700 dark:text-indigo-300 font-bold">
+                    <div className="p-4 rounded-2xl bg-slate-100/80 border border-slate-200 dark:bg-slate-800/40 dark:border-slate-700/60 space-y-1">
+                        <div className="flex items-center justify-between text-xs text-slate-800 dark:text-slate-200 font-bold">
                             <span>Active Hackathons</span>
                             <Sparkles className="size-4" />
                         </div>
                         <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                             {events.length}
                         </p>
-                        <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                             Published event instances
                         </p>
                     </div>

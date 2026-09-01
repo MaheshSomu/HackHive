@@ -27,7 +27,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                        <Badge variant="purple" className="px-2.5 py-0.5 text-[10px] font-bold">
+                        <Badge variant="navy" className="px-2.5 py-0.5 text-[10px] font-bold">
                             Applicant & Registration Details
                         </Badge>
                     </div>
@@ -42,7 +42,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
 
                 {/* Profile Hero Header */}
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/60 dark:bg-slate-800/40 dark:border-slate-800">
-                    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-xl font-black text-white shadow-md">
+                    <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xl font-black text-white shadow-md">
                         {initials}
                     </div>
                     <div className="space-y-0.5 min-w-0">
@@ -131,19 +131,19 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                     </h4>
                     <div className="p-4 rounded-2xl bg-slate-50/50 border border-slate-100 dark:bg-slate-800/20 dark:border-slate-800 space-y-3 text-xs">
                         <div className="flex items-center gap-3">
-                            <Mail className="size-4 text-purple-600 shrink-0" />
+                            <Mail className="size-4 text-blue-600 shrink-0" />
                             <span className="font-semibold text-slate-900 dark:text-slate-100 truncate">{email}</span>
                         </div>
 
                         {student.phoneNumber && (
                             <div className="flex items-center gap-3">
-                                <Phone className="size-4 text-purple-600 shrink-0" />
+                                <Phone className="size-4 text-blue-600 shrink-0" />
                                 <span className="font-medium text-slate-800 dark:text-slate-200">{student.phoneNumber}</span>
                             </div>
                         )}
 
                         <div className="flex items-start gap-3">
-                            <Building2 className="size-4 text-purple-600 shrink-0 mt-0.5" />
+                            <Building2 className="size-4 text-blue-600 shrink-0 mt-0.5" />
                             <div>
                                 <span className="text-[11px] font-bold text-slate-400 block">Institution / College</span>
                                 <span className="font-semibold text-slate-900 dark:text-slate-100">{student.college || "Not specified"}</span>
@@ -152,7 +152,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
 
                         {student.branch && (
                             <div className="flex items-start gap-3">
-                                <GraduationCap className="size-4 text-purple-600 shrink-0 mt-0.5" />
+                                <GraduationCap className="size-4 text-blue-600 shrink-0 mt-0.5" />
                                 <div>
                                     <span className="text-[11px] font-bold text-slate-400 block">Branch & Department</span>
                                     <span className="font-semibold text-slate-900 dark:text-slate-100">{student.branch}</span>
@@ -162,7 +162,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
 
                         {student.graduationYear && (
                             <div className="flex items-start gap-3">
-                                <Sparkles className="size-4 text-purple-600 shrink-0 mt-0.5" />
+                                <Sparkles className="size-4 text-blue-600 shrink-0 mt-0.5" />
                                 <div>
                                     <span className="text-[11px] font-bold text-slate-400 block">Graduation Year</span>
                                     <span className="font-semibold text-slate-900 dark:text-slate-100">{student.graduationYear}</span>
@@ -195,7 +195,7 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                                             </span>
                                             <div className="flex items-center gap-1">
                                                 {m.isPrimary && (
-                                                    <span className="rounded bg-purple-100 px-2 py-0.5 text-[9px] font-bold text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                                                    <span className="rounded bg-blue-100 px-2 py-0.5 text-[9px] font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                                                         Primary
                                                     </span>
                                                 )}
@@ -229,10 +229,10 @@ export default function RegistrationDrawer({ isOpen, onClose, student }) {
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                             Team Workspace Info
                         </h4>
-                        <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 dark:bg-purple-950/30 dark:border-purple-900/60 flex items-center gap-3">
-                            <Layers className="size-5 text-purple-600 shrink-0" />
+                        <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/60 flex items-center gap-3">
+                            <Layers className="size-5 text-blue-600 shrink-0" />
                             <div>
-                                <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block">Formed Workspace</span>
+                                <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 block">Formed Workspace</span>
                                 <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100">{student.teamName}</span>
                             </div>
                         </div>

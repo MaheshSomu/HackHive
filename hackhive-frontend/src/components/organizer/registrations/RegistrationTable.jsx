@@ -114,7 +114,7 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
 
                                     <td className="py-3.5 px-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-purple-600 font-bold text-xs text-white shadow-2xs">
+                                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-xs text-white shadow-2xs">
                                                 {initials}
                                             </div>
                                             <div className="min-w-0">
@@ -144,11 +144,11 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
 
                                     <td className="py-3.5 px-4 text-center">
                                         {reg.teamName ? (
-                                            <Badge variant="purple" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
+                                            <Badge variant="navy" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
                                                 <Layers className="size-3" /> {reg.teamName}
                                             </Badge>
                                         ) : reg.participantCount && reg.participantCount > 1 ? (
-                                            <Badge variant="purple" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
+                                            <Badge variant="navy" className="gap-1 px-2.5 py-0.5 text-[10px] font-bold">
                                                 <Layers className="size-3" /> {reg.participantCount} Members
                                             </Badge>
                                         ) : (
@@ -198,7 +198,7 @@ export default function RegistrationTable({ registrations = [], onViewDetails })
                                             variant="outline"
                                             size="sm"
                                             onClick={() => onViewDetails(reg)}
-                                            className="text-xs font-bold gap-1 px-3 py-1 rounded-xl border-slate-200 text-slate-700 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-purple-950/40"
+                                            className="text-xs font-bold gap-1 px-3 py-1 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                                         >
                                             <Eye className="size-3.5" /> View
                                         </Button>

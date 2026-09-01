@@ -203,10 +203,10 @@ export default function OrganizerProjectResults({ selectedEventId = "" }) {
                     <p className="text-[11px] text-slate-500">Submitted projects</p>
                 </Card>
 
-                <Card className="border-purple-200/60 bg-purple-50/40 p-5 shadow-xs dark:border-purple-950/60 dark:bg-purple-950/20">
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">Finalized Evaluations</span>
-                    <p className="mt-1 text-2xl font-extrabold text-purple-900 dark:text-purple-100">{metrics.finalizedEvalCount}</p>
-                    <p className="text-[11px] text-purple-600/80 dark:text-purple-400/80">Ready for results</p>
+                <Card className="border-slate-200/80 bg-slate-50/60 p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Finalized Evaluations</span>
+                    <p className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{metrics.finalizedEvalCount}</p>
+                    <p className="text-[11px] text-slate-500">Ready for results</p>
                 </Card>
 
                 <Card className="border-emerald-200/60 bg-emerald-50/40 p-5 shadow-xs dark:border-emerald-950/60 dark:bg-emerald-950/20">
@@ -235,7 +235,7 @@ export default function OrganizerProjectResults({ selectedEventId = "" }) {
                         type="button"
                         size="sm"
                         onClick={() => setIsPublishAllModalOpen(true)}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold shrink-0"
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold shrink-0 dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         <Send className="mr-1.5 size-4" /> Publish All Results
                     </Button>
@@ -282,7 +282,7 @@ export default function OrganizerProjectResults({ selectedEventId = "" }) {
                                     isPublished
                                         ? "border-emerald-200 bg-emerald-50/20 dark:border-emerald-950/60 dark:bg-emerald-950/10"
                                         : isFinalized
-                                        ? "border-purple-200 bg-purple-50/20 dark:border-purple-950/60 dark:bg-purple-950/10"
+                                        ? "border-slate-300 bg-slate-100/50 dark:border-slate-700 dark:bg-slate-800/40"
                                         : "border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 opacity-80"
                                 }`}
                             >
@@ -307,7 +307,7 @@ export default function OrganizerProjectResults({ selectedEventId = "" }) {
                                                 <span
                                                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                                                         isFinalized
-                                                            ? "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300"
+                                                            ? "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
                                                             : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                                                     }`}
                                                 >

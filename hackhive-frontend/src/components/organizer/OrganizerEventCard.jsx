@@ -52,7 +52,7 @@ export default function OrganizerEventCard({
                             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-800 p-6 text-white">
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-6 text-white">
                             <div className="text-center">
                                 <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
                                     {event.eventMode || "Hybrid"}
@@ -65,13 +65,12 @@ export default function OrganizerEventCard({
                     {/* Status badge */}
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">
                         <span
-                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs ${
-                                status.tone === "emerald"
+                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold text-white shadow-xs backdrop-blur-xs ${status.tone === "emerald"
                                     ? "bg-emerald-600/90"
                                     : status.tone === "indigo"
-                                    ? "bg-indigo-600/90"
-                                    : "bg-slate-700/90"
-                            }`}
+                                        ? "bg-blue-600/90"
+                                        : "bg-slate-700/90"
+                                }`}
                         >
                             {status.label}
                         </span>

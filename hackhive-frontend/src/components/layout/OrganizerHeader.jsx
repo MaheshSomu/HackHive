@@ -130,7 +130,7 @@ export default function OrganizerHeader({
                         onClick={() => setIsSearchOpen(true)}
                         className="group relative flex h-9 w-full items-center rounded-lg border border-slate-200 bg-slate-50/50 pl-9 pr-12 text-left text-xs text-slate-400 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-slate-700"
                     >
-                        <Search className="pointer-events-none absolute left-3 size-4 text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400" />
+                        <Search className="pointer-events-none absolute left-3 size-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         <span>Search organizer portal (⌘K)...</span>
                         <kbd className="pointer-events-none absolute right-2.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800">
                             ⌘K
@@ -151,7 +151,7 @@ export default function OrganizerHeader({
                         aria-haspopup="true"
                     >
                         {/* Logo or Initials */}
-                        <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-purple-100 dark:ring-purple-950/60">
+                        <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-blue-100 dark:ring-blue-950/60">
                             {profile?.logoUrl ? (
                                 <img
                                     src={getImageUrl(profile.logoUrl)}
@@ -167,15 +167,15 @@ export default function OrganizerHeader({
 
                         {/* Name and Role */}
                         <div className="hidden text-left md:block">
-                            <p className="max-w-[130px] truncate text-xs font-semibold text-slate-900 group-hover:text-purple-600 dark:text-slate-100 dark:group-hover:text-purple-400">
+                            <p className="max-w-[130px] truncate text-xs font-semibold text-slate-900 group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
                                 {orgName}
                             </p>
-                            <p className="max-w-[130px] truncate text-[10px] font-semibold text-purple-600 dark:text-purple-400">
+                            <p className="max-w-[130px] truncate text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                                 ORGANIZER
                             </p>
                         </div>
 
-                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-purple-600 dark:text-purple-400" : ""}`} />
+                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""}`} />
                     </button>
 
                     {/* Professional Dropdown Menu */}
@@ -190,7 +190,7 @@ export default function OrganizerHeader({
                             <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900">
                                 {/* Header / Identity Card */}
                                 <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 font-bold text-sm text-white shadow-xs overflow-hidden">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 font-bold text-sm text-white shadow-xs overflow-hidden">
                                         {profile?.logoUrl ? (
                                             <img
                                                 src={getImageUrl(profile.logoUrl)}
@@ -220,16 +220,16 @@ export default function OrganizerHeader({
                                     <button
                                         type="button"
                                         onClick={() => handleNavigate("/organizer/profile")}
-                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition dark:text-slate-200 dark:hover:bg-purple-950/40 dark:hover:text-purple-300"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                     >
-                                        <User className="size-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                                        <User className="size-4 text-blue-600 dark:text-blue-400 shrink-0" />
                                         <span>View Profile</span>
                                     </button>
 
                                     <button
                                         type="button"
                                         onClick={() => handleNavigate("/organizer/settings")}
-                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition dark:text-slate-200 dark:hover:bg-purple-950/40 dark:hover:text-purple-300"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                                     >
                                         <Settings className="size-4 text-slate-400 shrink-0" />
                                         <span>Settings</span>

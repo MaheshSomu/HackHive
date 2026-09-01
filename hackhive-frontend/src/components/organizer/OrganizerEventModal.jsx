@@ -136,7 +136,7 @@ export default function OrganizerEventModal({
                     {/* Header */}
                     <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                                 Step {step} of 5
                             </span>
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -165,7 +165,7 @@ export default function OrganizerEventModal({
                                         type="text"
                                         {...register("title", { required: "Event title is required" })}
                                         placeholder="e.g. HackHive Global 2026"
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                     {errors.title && <p className="mt-1 text-[11px] text-rose-500">{errors.title.message}</p>}
                                 </div>
@@ -179,7 +179,7 @@ export default function OrganizerEventModal({
                                             type="text"
                                             {...register("collegeName")}
                                             placeholder="e.g. Stanford University"
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                     </div>
 
@@ -210,7 +210,7 @@ export default function OrganizerEventModal({
                                         type="text"
                                         {...register("location", { required: "Location is required" })}
                                         placeholder="e.g. Virtual via Discord / Main Auditorium, Building 4"
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                     {errors.location && <p className="mt-1 text-[11px] text-rose-500">{errors.location.message}</p>}
                                 </div>
@@ -228,7 +228,7 @@ export default function OrganizerEventModal({
                                         rows={4}
                                         {...register("description")}
                                         placeholder="Detailed event description, themes, and goals..."
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                 </div>
 
@@ -240,7 +240,7 @@ export default function OrganizerEventModal({
                                         type="url"
                                         {...register("bannerUrl")}
                                         placeholder="https://images.unsplash.com/..."
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                 </div>
                             </div>
@@ -261,7 +261,7 @@ export default function OrganizerEventModal({
                                                 type="radio"
                                                 value="FREE"
                                                 {...register("registrationType")}
-                                                className="size-4 text-purple-600 focus:ring-purple-500"
+                                                className="size-4 text-blue-600 focus:ring-blue-500"
                                             />
                                             <span>Free Event</span>
                                         </label>
@@ -270,7 +270,7 @@ export default function OrganizerEventModal({
                                                 type="radio"
                                                 value="PAID"
                                                 {...register("registrationType")}
-                                                className="size-4 text-purple-600 focus:ring-purple-500"
+                                                className="size-4 text-blue-600 focus:ring-blue-500"
                                             />
                                             <span>Paid Event</span>
                                         </label>
@@ -294,7 +294,7 @@ export default function OrganizerEventModal({
                                                         min: { value: 0.01, message: "Fee must be greater than 0" },
                                                     })}
                                                     placeholder="e.g. 500"
-                                                    className="w-full rounded-xl border border-slate-200 bg-white pl-7 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                                                    className="w-full rounded-xl border border-slate-200 bg-white pl-7 pr-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                                                 />
                                             </div>
                                             {errors.registrationFee && (
@@ -312,7 +312,7 @@ export default function OrganizerEventModal({
                                         type="text"
                                         {...register("eligibility")}
                                         placeholder="e.g. Open to undergraduate and graduate students"
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                 </div>
 
@@ -325,7 +325,7 @@ export default function OrganizerEventModal({
                                         min="1"
                                         {...register("maxParticipants", { min: { value: 1, message: "Must be at least 1" } })}
                                         placeholder="e.g. 100 (Leave blank for unlimited)"
-                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                     />
                                     {errors.maxParticipants && (
                                         <p className="mt-1 text-[11px] text-rose-500">{errors.maxParticipants.message}</p>
@@ -340,7 +340,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="number"
                                             {...register("minTeamSize", { min: 1 })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                     </div>
 
@@ -351,7 +351,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="number"
                                             {...register("maxTeamSize", { min: 1 })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                     </div>
                                 </div>
@@ -369,7 +369,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="datetime-local"
                                             {...register("registrationStartDate")}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                     </div>
 
@@ -380,7 +380,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="datetime-local"
                                             {...register("registrationEndDate", { required: "Registration deadline is required" })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                         {errors.registrationEndDate && <p className="mt-1 text-[11px] text-rose-500">{errors.registrationEndDate.message}</p>}
                                     </div>
@@ -394,7 +394,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="datetime-local"
                                             {...register("startDate", { required: "Start date is required" })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                         {errors.startDate && <p className="mt-1 text-[11px] text-rose-500">{errors.startDate.message}</p>}
                                     </div>
@@ -406,7 +406,7 @@ export default function OrganizerEventModal({
                                         <input
                                             type="datetime-local"
                                             {...register("endDate", { required: "End date is required" })}
-                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                            className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                         />
                                         {errors.endDate && <p className="mt-1 text-[11px] text-rose-500">{errors.endDate.message}</p>}
                                     </div>
@@ -449,7 +449,7 @@ export default function OrganizerEventModal({
                                 type="button"
                                 size="sm"
                                 onClick={() => setStep((s) => s + 1)}
-                                className="bg-purple-600 hover:bg-purple-500 text-white font-semibold"
+                                className="bg-slate-900 hover:bg-slate-800 text-white font-semibold dark:bg-blue-600 dark:hover:bg-blue-500"
                             >
                                 Next <ArrowRight className="ml-1 size-3.5" />
                             </Button>
@@ -459,7 +459,7 @@ export default function OrganizerEventModal({
                                 size="sm"
                                 disabled={isLoading}
                                 onClick={handleSubmit(handleFinalSubmit)}
-                                className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6"
+                                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 dark:bg-blue-600 dark:hover:bg-blue-500"
                             >
                                 {isLoading ? "Submitting..." : isEdit ? "Update Event" : "Publish Event"}
                             </Button>

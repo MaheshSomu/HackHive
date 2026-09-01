@@ -31,7 +31,7 @@ export default function RegistrationSummaryCards({ registrations = [], currentEv
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Total Applicants
                     </span>
-                    <div className="flex size-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                    <div className="flex size-8 items-center justify-center rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
                         <Users className="size-4" />
                     </div>
                 </div>

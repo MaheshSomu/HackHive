@@ -38,12 +38,12 @@ export default function OrganizerQuickActions({ onCreateEvent, onNavigate }) {
                             key={idx}
                             type="button"
                             onClick={act.onClick}
-                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-xs hover:border-purple-300 hover:bg-purple-50/30 hover:text-purple-700 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-purple-700 dark:hover:bg-slate-800/60 dark:hover:text-purple-300 group"
+                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-xs hover:border-blue-300 hover:bg-slate-50 hover:text-slate-900 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-800/60 dark:hover:text-slate-100 group"
                         >
-                            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-purple-100 group-hover:text-purple-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-purple-950/80 dark:group-hover:text-purple-300 transition-colors">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-blue-950/80 dark:group-hover:text-blue-400 transition-colors">
                                 <Icon className="size-4" />
                             </div>
-                            <span className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
+                            <span className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                 {act.title}
                             </span>
                         </button>

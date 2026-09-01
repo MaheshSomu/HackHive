@@ -80,8 +80,8 @@ export default function OrganizerSettings() {
             {/* Top Page Banner */}
             <Card className="border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-100 dark:border-purple-900/60">
-                        <Building2 className="size-3.5 text-purple-600" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                        <Building2 className="size-3.5 text-blue-600 dark:text-blue-400" />
                         Host Controls & SaaS Settings
                     </span>
                     <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">

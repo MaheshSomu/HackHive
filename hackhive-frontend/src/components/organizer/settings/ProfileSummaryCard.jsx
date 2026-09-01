@@ -31,13 +31,13 @@ export default function ProfileSummaryCard({ profileData, user }) {
     return (
         <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 transition-all">
             {/* Background Decorative Accent Gradient */}
-            <div className="absolute -right-16 -top-16 size-64 rounded-full bg-gradient-to-br from-purple-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none" />
+            <div className="absolute -right-16 -top-16 size-64 rounded-full bg-gradient-to-br from-blue-500/10 via-slate-500/5 to-transparent blur-3xl pointer-events-none" />
 
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* Left Column: Logo & Main Info */}
                 <div className="flex items-start sm:items-center gap-5">
                     {/* Organization Logo */}
-                    <div className="relative flex size-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-2xl font-black text-white shadow-md ring-4 ring-purple-50 dark:ring-purple-950/40 overflow-hidden">
+                    <div className="relative flex size-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-2xl font-black text-white shadow-md ring-4 ring-slate-100 dark:ring-slate-800 overflow-hidden">
                         {profileData?.logoUrl ? (
                             <img
                                 src={getImageUrl(profileData.logoUrl)}
@@ -90,7 +90,7 @@ export default function ProfileSummaryCard({ profileData, user }) {
                                         href={profileData.websiteUrl.startsWith("http") ? profileData.websiteUrl : `https://${profileData.websiteUrl}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="truncate text-purple-600 hover:underline dark:text-purple-400"
+                                        className="truncate text-blue-600 hover:underline dark:text-blue-400"
                                     >
                                         {profileData.websiteUrl.replace(/^https?:\/\//, "")}
                                     </a>
@@ -104,16 +104,16 @@ export default function ProfileSummaryCard({ profileData, user }) {
                 <div className="w-full lg:w-72 shrink-0 rounded-2xl bg-slate-50/80 p-4 border border-slate-100 dark:bg-slate-800/40 dark:border-slate-800/80 space-y-2">
                     <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                            <CheckCircle2 className="size-3.5 text-purple-600 dark:text-purple-400" />
+                            <CheckCircle2 className="size-3.5 text-blue-600 dark:text-blue-400" />
                             Profile Completion
                         </span>
-                        <span className="font-black text-purple-700 dark:text-purple-300">{completionPercentage}%</span>
+                        <span className="font-black text-blue-700 dark:text-blue-300">{completionPercentage}%</span>
                     </div>
 
                     {/* Progress Bar Container */}
                     <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500 ease-out"
+                            className="h-full rounded-full bg-gradient-to-r from-slate-900 to-blue-600 dark:from-blue-600 dark:to-indigo-600 transition-all duration-500 ease-out"
                             style={{ width: `${completionPercentage}%` }}
                         />
                     </div>

@@ -54,7 +54,7 @@ export default function GeneralSection({ profileData, onSave, saving }) {
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
             <div className="border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                    <Building2 className="size-5 text-purple-600 dark:text-purple-400" />
+                    <Building2 className="size-5 text-blue-600 dark:text-blue-400" />
                     <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">General Information</h3>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -79,10 +79,10 @@ export default function GeneralSection({ profileData, onSave, saving }) {
                                 if (errors.organizationName) setErrors((err) => ({ ...err, organizationName: null }));
                             }}
                             placeholder="e.g. Google Developer Student Clubs / Tech Corp"
-                            className={`w-full rounded-2xl border bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:ring-2 focus:ring-purple-500/20 dark:bg-slate-900 dark:text-slate-100 font-semibold ${
+                            className={`w-full rounded-2xl border bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:bg-slate-900 dark:text-slate-100 font-semibold ${
                                 errors.organizationName
-                                    ? "border-rose-400 focus:border-rose-500"
-                                    : "border-slate-200 focus:border-purple-500 dark:border-slate-800"
+                                    ? "border-rose-500 focus:border-rose-500"
+                                    : "border-slate-200 focus:border-blue-500 dark:border-slate-800"
                             }`}
                         />
                     </div>
@@ -105,7 +105,7 @@ export default function GeneralSection({ profileData, onSave, saving }) {
                             value={formData.organizationType}
                             onChange={(e) => setFormData((f) => ({ ...f, organizationType: e.target.value }))}
                             placeholder="e.g. Student Chapter / Enterprise / Non-Profit"
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
                         />
                     </div>
 
@@ -120,7 +120,7 @@ export default function GeneralSection({ profileData, onSave, saving }) {
                                 value={formData.location}
                                 onChange={(e) => setFormData((f) => ({ ...f, location: e.target.value }))}
                                 placeholder="e.g. Hyderabad, India"
-                                className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
+                                className="w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 font-medium"
                             />
                         </div>
                     </div>
@@ -150,10 +150,10 @@ export default function GeneralSection({ profileData, onSave, saving }) {
                             }
                         }}
                         placeholder="Provide a compelling overview of your organization's mission, background, and hackathon initiatives..."
-                        className={`w-full rounded-2xl border bg-white p-3.5 text-xs text-slate-900 outline-none transition focus:ring-2 focus:ring-purple-500/20 dark:bg-slate-900 dark:text-slate-100 resize-none font-normal leading-relaxed ${
+                        className={`w-full rounded-2xl border bg-white p-3.5 text-xs text-slate-900 outline-none transition focus:ring-2 focus:ring-blue-500/20 dark:bg-slate-900 dark:text-slate-100 resize-none font-normal leading-relaxed ${
                             errors.description
-                                ? "border-rose-400 focus:border-rose-500"
-                                : "border-slate-200 focus:border-purple-500 dark:border-slate-800"
+                                ? "border-rose-500 focus:border-rose-500"
+                                : "border-slate-200 focus:border-blue-500 dark:border-slate-800"
                         }`}
                     />
                     {errors.description && (
@@ -170,7 +170,7 @@ export default function GeneralSection({ profileData, onSave, saving }) {
                         type="submit"
                         disabled={saving || !isDirty}
                         size="sm"
-                        className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs gap-1.5 px-6 py-2.5 rounded-xl shadow-xs disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
                     >
                         <Save className="size-3.5" />
                         {saving ? "Saving Changes..." : "Save Changes"}

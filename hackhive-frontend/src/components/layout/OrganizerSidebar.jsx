@@ -44,24 +44,24 @@ export default function OrganizerSidebar({
     return (
         <aside
             className={cn(
-                "flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900",
+                "flex h-full flex-col border-r border-slate-800 bg-slate-900 transition-all duration-300 dark:border-slate-800 dark:bg-slate-950",
                 isMobile ? "w-72" : isCollapsed ? "w-20" : "w-64"
             )}
         >
             {/* Header / Brand */}
-            <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-800">
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-800 px-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 shadow-md shadow-purple-500/20">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-blue-500/20">
                         <Hexagon className="size-5 text-white" strokeWidth={2.5} />
                     </div>
 
                     {(!isCollapsed || isMobile) && (
                         <div className="flex min-w-0 flex-1 items-center justify-between">
                             <div className="truncate">
-                                <h2 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                                <h2 className="truncate text-base font-bold tracking-tight text-white">
                                     HackHive
                                 </h2>
-                                <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                                <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-blue-400">
                                     Organizer Portal
                                 </p>
                             </div>
@@ -73,7 +73,7 @@ export default function OrganizerSidebar({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="inline-flex size-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-400"
+                        className="inline-flex size-8 items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white"
                         aria-label="Close sidebar"
                     >
                         <X className="size-4" />
@@ -106,24 +106,20 @@ export default function OrganizerSidebar({
                                             ? "justify-center px-0 py-3"
                                             : "justify-start",
                                         isActive
-                                            ? "bg-purple-50/90 text-purple-700 font-bold shadow-xs dark:bg-purple-950/50 dark:text-purple-300"
-                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"
+                                            ? "bg-slate-800 text-white font-bold shadow-xs border-l-2 border-blue-500"
+                                            : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
                                     )
                                 }
                                 title={isCollapsed && !isMobile ? item.name : undefined}
                             >
                                 {({ isActive }) => (
                                     <>
-                                        {isActive && (
-                                            <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-purple-600 dark:bg-purple-500" />
-                                        )}
-
                                         <Icon
                                             className={cn(
                                                 "size-4.5 shrink-0 transition-transform duration-150 group-hover:scale-105",
                                                 isActive
-                                                    ? "text-purple-600 dark:text-purple-400"
-                                                    : "text-slate-400 group-hover:text-slate-600 dark:text-slate-500"
+                                                    ? "text-blue-400"
+                                                    : "text-slate-400 group-hover:text-slate-200"
                                             )}
                                         />
 
@@ -137,7 +133,7 @@ export default function OrganizerSidebar({
                     })}
                 </nav>
 
-                <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
+                <div className="my-4 border-t border-slate-800" />
 
                 {/* Logout */}
                 <div className="space-y-1">
@@ -145,30 +141,30 @@ export default function OrganizerSidebar({
                         type="button"
                         onClick={handleLogout}
                         className={cn(
-                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-600 transition-all duration-150 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40",
+                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-400 transition-all duration-150 hover:bg-rose-950/40 hover:text-rose-400",
                             isCollapsed && !isMobile ? "justify-center px-0 py-3" : "justify-start"
                         )}
                         title={isCollapsed && !isMobile ? "Logout" : undefined}
                     >
-                        <LogOut className="size-4.5 shrink-0 text-slate-400 group-hover:text-rose-600" />
+                        <LogOut className="size-4.5 shrink-0 text-slate-400 group-hover:text-rose-400" />
                         {(!isCollapsed || isMobile) && <span>Logout</span>}
                     </button>
                 </div>
             </div>
 
             {/* Sidebar Footer */}
-            <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+            <div className="border-t border-slate-800 p-3">
                 {(!isCollapsed || isMobile) ? (
-                    <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                    <div className="flex items-center justify-between rounded-xl bg-slate-800/60 border border-slate-700/50 p-2.5">
                         <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-purple-900 font-bold text-[10px] text-white">
+                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-[10px] text-white">
                                 {(user?.fullName || user?.email || "O")[0].toUpperCase()}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+                                <p className="truncate text-xs font-semibold text-slate-100">
                                     {user?.fullName || "Organizer"}
                                 </p>
-                                <p className="truncate text-[10px] text-slate-500">Host Control</p>
+                                <p className="truncate text-[10px] text-slate-400">Host Control</p>
                             </div>
                         </div>
 
@@ -176,7 +172,7 @@ export default function OrganizerSidebar({
                             <button
                                 type="button"
                                 onClick={onToggleCollapse}
-                                className="inline-flex size-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                                className="inline-flex size-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-700 hover:text-white"
                                 title="Collapse Sidebar"
                             >
                                 <ChevronLeft className="size-4" />
@@ -187,7 +183,7 @@ export default function OrganizerSidebar({
                     <button
                         type="button"
                         onClick={onToggleCollapse}
-                        className="flex w-full items-center justify-center rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="flex w-full items-center justify-center rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
                         title="Expand Sidebar"
                     >
                         <ChevronRight className="size-4" />
