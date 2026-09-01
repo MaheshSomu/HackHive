@@ -115,7 +115,13 @@ function Register() {
 
 
     const handleGithubSocialSignUp = () => {
-        toast.info("GitHub Sign Up will be available soon.");
+        const backendBaseUrl = (
+            import.meta.env.VITE_API_BASE_URL ||
+            "http://localhost:8080/api"
+        ).replace(/\/api\/?$/, "");
+
+        window.location.href =
+            `${backendBaseUrl}/oauth2/authorization/github`;
     };
 
     return (

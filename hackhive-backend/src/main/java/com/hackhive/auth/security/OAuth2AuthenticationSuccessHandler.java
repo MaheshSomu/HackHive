@@ -36,6 +36,29 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 
         String email = oauthUser.getAttribute("email");
+        if (email == null || email.trim().isEmpty()) {
+            String login = oauthUser.getAttribute("login");
+            if (login != null && !login.trim().isEmpty()) {
+                email = login + "@users.noreply.github.com";
+            }
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            response.sendRedirect(
+                    frontendUrl + "/login?error=oauth_email_missing"
+            );
+            return;
+        }
+
+        String name = oauthUser.getAttribute("name");
+        if (name == null || name.trim().isEmpty()) {
+            name = oauthUser.getAttribute("login");
+        }
+
+        String picture = oauthUser.getAttribute("picture");
+        if (picture == null || picture.trim().isEmpty()) {
+            picture = oauthUser.getAttribute("avatar_url");
+        }
 
         User user = userRepository.findByEmail(email).orElse(null);
 
@@ -60,8 +83,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String registrationId =
         oauthRegistrationService.createRegistration(
                 email,
-                oauthUser.getAttribute("name"),
-                oauthUser.getAttribute("picture")
+                name,
+                picture
         );
 
         response.sendRedirect(

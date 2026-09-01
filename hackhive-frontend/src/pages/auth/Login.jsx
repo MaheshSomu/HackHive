@@ -82,12 +82,19 @@ function Login() {
         if (location.state?.email) {
             setValue("email", location.state.email, { shouldValidate: true });
         }
-        if (searchParams.get("error") === "account_deactivated") {
+        const errorParam = searchParams.get("error");
+        if (errorParam === "account_deactivated") {
             setIsDeactivated(true);
             const emailParam = searchParams.get("email");
             if (emailParam) {
                 setDeactivatedEmail(emailParam);
                 setValue("email", emailParam, { shouldValidate: true });
+            }
+        } else if (errorParam) {
+            if (errorParam === "oauth_email_missing") {
+                toast.error("Unable to retrieve email from your GitHub account. Please ensure your email is set or try signing up directly.");
+            } else {
+                toast.error(`Authentication failed: ${decodeURIComponent(errorParam)}`);
             }
         }
     }, [location.state, searchParams, setValue]);
@@ -137,11 +144,21 @@ function Login() {
     };
 
     const handleGoogleSocialLogin = () => {
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+        const backendBaseUrl = (
+            import.meta.env.VITE_API_BASE_URL ||
+            "http://localhost:8080/api"
+        ).replace(/\/api\/?$/, "");
+
+        window.location.href = `${backendBaseUrl}/oauth2/authorization/google`;
     };
 
     const handleGithubSocialLogin = () => {
-        toast.info("GitHub Sign-In will be available soon.");
+        const backendBaseUrl = (
+            import.meta.env.VITE_API_BASE_URL ||
+            "http://localhost:8080/api"
+        ).replace(/\/api\/?$/, "");
+
+        window.location.href = `${backendBaseUrl}/oauth2/authorization/github`;
     };
 
     return (
