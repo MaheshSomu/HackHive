@@ -160,24 +160,120 @@ public class B2ObjectStorageServiceImpl implements FileStorageService {
         }
 
         try {
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(objectKey)
-                    .build();
+            int deletedCount = 0;
+            String keyMarker = null;
+            String versionIdMarker = null;
+            boolean isTruncated = true;
 
-            getS3Client().deleteObject(deleteObjectRequest);
+            while (isTruncated) {
+                ListObjectVersionsRequest.Builder listBuilder = ListObjectVersionsRequest.builder()
+                        .bucket(bucketName)
+                        .prefix(objectKey);
+
+                if (StringUtils.hasText(keyMarker)) {
+                    listBuilder.keyMarker(keyMarker);
+                }
+                if (StringUtils.hasText(versionIdMarker)) {
+                    listBuilder.versionIdMarker(versionIdMarker);
+                }
+
+                ListObjectVersionsResponse response = getS3Client().listObjectVersions(listBuilder.build());
+
+                if (response.versions() != null) {
+                    for (ObjectVersion version : response.versions()) {
+                        if (objectKey.equals(version.key()) && StringUtils.hasText(version.versionId())) {
+                            getS3Client().deleteObject(DeleteObjectRequest.builder()
+                                    .bucket(bucketName)
+                                    .key(objectKey)
+                                    .versionId(version.versionId())
+                                    .build());
+                            deletedCount++;
+                        }
+                    }
+                }
+
+                if (response.deleteMarkers() != null) {
+                    for (DeleteMarkerEntry marker : response.deleteMarkers()) {
+                        if (objectKey.equals(marker.key()) && StringUtils.hasText(marker.versionId())) {
+                            getS3Client().deleteObject(DeleteObjectRequest.builder()
+                                    .bucket(bucketName)
+                                    .key(objectKey)
+                                    .versionId(marker.versionId())
+                                    .build());
+                            deletedCount++;
+                        }
+                    }
+                }
+
+                isTruncated = Boolean.TRUE.equals(response.isTruncated());
+                if (isTruncated) {
+                    keyMarker = response.nextKeyMarker();
+                    versionIdMarker = response.nextVersionIdMarker();
+                }
+            }
+
+            if (deletedCount == 0) {
+                DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(objectKey)
+                        .build();
+
+                getS3Client().deleteObject(deleteObjectRequest);
+            }
+
+            log.info("Successfully deleted object and all versions from Backblaze B2 for key: {}", objectKey);
         } catch (Exception e) {
-            log.error("Failed to delete object from Backblaze B2 for key: {}", objectKey);
+            log.error("Failed to delete object versions from Backblaze B2 for key: {}", objectKey);
+            throw new RuntimeException("Failed to delete file from Backblaze B2.", e);
         }
     }
 
     private String extractObjectKey(String fileUrl) {
+        if (!StringUtils.hasText(fileUrl)) {
+            return "";
+        }
         String key = fileUrl.trim();
-        if (key.startsWith("/api/uploads/")) {
-            key = key.substring("/api/uploads/".length());
+
+        if (key.contains("?")) {
+            key = key.substring(0, key.indexOf('?'));
+        }
+
+        if (key.startsWith("http://") || key.startsWith("https://")) {
+            try {
+                URI uri = URI.create(key);
+                key = uri.getPath();
+            } catch (Exception e) {
+                log.warn("Failed to parse URI from fileUrl: {}", fileUrl);
+            }
+        }
+
+        while (key.startsWith("/")) {
+            key = key.substring(1);
+        }
+
+        if (StringUtils.hasText(bucketName)) {
+            if (key.equalsIgnoreCase(bucketName)) {
+                return "";
+            }
+            if (key.toLowerCase().startsWith(bucketName.toLowerCase() + "/")) {
+                key = key.substring(bucketName.length() + 1);
+            }
+        }
+
+        if (key.startsWith("api/uploads/")) {
+            key = key.substring("api/uploads/".length());
         } else if (key.startsWith("uploads/")) {
             key = key.substring("uploads/".length());
         }
+
+        while (key.startsWith("/")) {
+            key = key.substring(1);
+        }
+
+        if (key.startsWith("resumes/resumes/")) {
+            key = key.substring("resumes/".length());
+        }
+
         return key;
     }
 

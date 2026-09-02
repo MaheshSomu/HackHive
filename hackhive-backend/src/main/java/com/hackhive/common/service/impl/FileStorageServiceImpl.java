@@ -137,8 +137,11 @@ public class FileStorageServiceImpl implements FileStorageService {
             if (fileUrl.contains(prefix)) {
                 String relativePath = fileUrl.substring(fileUrl.indexOf(prefix) + prefix.length());
                 filePath = this.rootLocation.resolve(relativePath).normalize();
+            } else if (fileUrl.startsWith("uploads/")) {
+                String relativePath = fileUrl.substring("uploads/".length());
+                filePath = this.rootLocation.resolve(relativePath).normalize();
             } else {
-                filePath = Paths.get(fileUrl).toAbsolutePath().normalize();
+                filePath = this.rootLocation.resolve(fileUrl).normalize();
             }
 
             if (filePath != null && Files.exists(filePath)) {
@@ -146,6 +149,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
         } catch (Exception e) {
             System.err.println("Failed to delete file: " + fileUrl + " - " + e.getMessage());
+            throw new RuntimeException("Failed to delete local file.", e);
         }
     }
 
