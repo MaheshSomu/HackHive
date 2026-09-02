@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,112 +24,125 @@ public class EmailServiceImpl implements EmailService {
     @Value("${frontend.url}")
     private String frontendUrl;
 
+    @Async
     @Override
     public void sendVerificationEmail(User user) {
+        try {
+            String verificationLink = backendUrl + "/api/auth/verify-email?token="
+                    + user.getEmailVerificationToken();
 
-        String verificationLink = backendUrl + "/api/auth/verify-email?token="
-                + user.getEmailVerificationToken();
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Verify Your HackHive Account");
 
-        message.setFrom(fromEmail);
-        message.setTo(user.getEmail());
-        message.setSubject("Verify Your HackHive Account");
+            message.setText("""
+                    Hello %s,
 
-        message.setText("""
-                Hello %s,
+                    Welcome to HackHive! 🎉
 
-                Welcome to HackHive! 🎉
+                    Thank you for registering.
 
-                Thank you for registering.
+                    Please verify your email by clicking the link below:
 
-                Please verify your email by clicking the link below:
+                    %s
 
-                %s
+                    This verification link will expire in 24 hours.
 
-                This verification link will expire in 24 hours.
+                    If you did not create this account, please ignore this email.
 
-                If you did not create this account, please ignore this email.
+                    Regards,
+                    HackHive Team
+                    """.formatted(
+                    user.getFullName(),
+                    verificationLink));
 
-                Regards,
-                HackHive Team
-                """.formatted(
-                user.getFullName(),
-                verificationLink));
-
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send verification email to " + user.getEmail() + ": " + e.getMessage());
+        }
     }
 
+    @Async
     @Override
     public void sendPasswordResetEmail(User user) {
+        try {
+            String resetLink = frontendUrl + "/reset-password?token="
+                    + user.getPasswordResetToken();
 
-        String resetLink = frontendUrl + "/reset-password?token="
-                + user.getPasswordResetToken();
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Reset Your HackHive Password");
 
-        message.setFrom(fromEmail);
-        message.setTo(user.getEmail());
-        message.setSubject("Reset Your HackHive Password");
+            message.setText("""
+                    Hello %s,
 
-        message.setText("""
-                Hello %s,
+                    We received a request to reset your HackHive password.
 
-                We received a request to reset your HackHive password.
+                    Click the link below to reset your password:
 
-                Click the link below to reset your password:
+                    %s
 
-                %s
+                    This link will expire in 30 minutes.
 
-                This link will expire in 30 minutes.
+                    If you didn't request this password reset,
+                    you can safely ignore this email.
 
-                If you didn't request this password reset,
-                you can safely ignore this email.
+                    Regards,
+                    HackHive Team
+                    """.formatted(
+                    user.getFullName(),
+                    resetLink));
 
-                Regards,
-                HackHive Team
-                """.formatted(
-                user.getFullName(),
-                resetLink));
-
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset email to " + user.getEmail() + ": " + e.getMessage());
+        }
     }
 
+    @Async
     @Override
     public void sendAccountReactivationEmail(User user) {
+        try {
+            String reactivationLink = frontendUrl + "/reactivate-account?token="
+                    + user.getAccountReactivationToken();
 
-        String reactivationLink = frontendUrl + "/reactivate-account?token="
-                + user.getAccountReactivationToken();
+            SimpleMailMessage message = new SimpleMailMessage();
 
-        SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Reactivate Your HackHive Account");
 
-        message.setFrom(fromEmail);
-        message.setTo(user.getEmail());
-        message.setSubject("Reactivate Your HackHive Account");
+            message.setText("""
+                    Hello %s,
 
-        message.setText("""
-                Hello %s,
+                    We received a request to reactivate your HackHive account.
 
-                We received a request to reactivate your HackHive account.
+                    Click the link below to reactivate your account:
 
-                Click the link below to reactivate your account:
+                    %s
 
-                %s
+                    This link will expire in 30 minutes.
 
-                This link will expire in 30 minutes.
+                    If you didn't request account reactivation,
+                    you can safely ignore this email.
 
-                If you didn't request account reactivation,
-                you can safely ignore this email.
+                    Regards,
+                    HackHive Team
+                    """.formatted(
+                    user.getFullName(),
+                    reactivationLink));
 
-                Regards,
-                HackHive Team
-                """.formatted(
-                user.getFullName(),
-                reactivationLink));
-
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send account reactivation email to " + user.getEmail() + ": " + e.getMessage());
+        }
     }
 
+    @Async
     @Override
     public void sendNewRegistrationEmail(
             String recipientEmail,
@@ -169,6 +183,7 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    @Async
     @Override
     public void sendPaymentReceiptEmail(
             String recipientEmail,
