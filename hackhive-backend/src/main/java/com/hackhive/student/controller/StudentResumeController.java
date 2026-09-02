@@ -4,6 +4,8 @@ import com.hackhive.common.response.ApiResponse;
 import com.hackhive.student.dto.response.ResumeResponse;
 import com.hackhive.student.service.StudentResumeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,6 +49,18 @@ public class StudentResumeController {
                         .data(response)
                         .build()
         );
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadMyResume() {
+
+        Resource resource =
+                studentResumeService.downloadMyResumeResource();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"resume.pdf\"")
+                .body(resource);
     }
 
     @DeleteMapping

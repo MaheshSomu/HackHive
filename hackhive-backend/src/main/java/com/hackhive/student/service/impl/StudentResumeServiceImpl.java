@@ -9,6 +9,7 @@ import com.hackhive.student.entity.StudentProfile;
 import com.hackhive.student.repository.StudentProfileRepository;
 import com.hackhive.student.service.StudentResumeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -71,6 +72,34 @@ public class StudentResumeServiceImpl implements StudentResumeService {
         return ResumeResponse.builder()
                 .resumeUrl(profile.getResumeUrl())
                 .build();
+    }
+
+    @Override
+    public Resource downloadMyResumeResource() {
+        StudentProfile profile = getCurrentStudentProfile();
+
+        if (profile.getResumeUrl() == null) {
+            throw new ResourceNotFoundException("Resume not found.");
+        }
+
+        String resumeUrl = profile.getResumeUrl();
+        String subDirectory = "resumes";
+        String filename = resumeUrl;
+
+        if (resumeUrl.startsWith("uploads/resumes/")) {
+            filename = resumeUrl.substring("uploads/resumes/".length());
+        } else if (resumeUrl.startsWith("resumes/")) {
+            filename = resumeUrl.substring("resumes/".length());
+        } else if (resumeUrl.contains("/")) {
+            filename = resumeUrl.substring(resumeUrl.lastIndexOf('/') + 1);
+        }
+
+        Resource resource = fileStorageService.loadFileAsResource(filename, subDirectory);
+        if (resource == null) {
+            throw new ResourceNotFoundException("Resume file not found.");
+        }
+
+        return resource;
     }
 
     @Override

@@ -51,6 +51,8 @@ export const studentProfileService = {
 
     // 8. Resume
     getResume: () => request(api.get("/student/resume")),
+    downloadResumeBlob: () =>
+        api.get("/student/resume/download", { responseType: "blob" }).then((res) => res.data),
     uploadResume: (file) => {
         const formData = new FormData();
         formData.append("file", file);

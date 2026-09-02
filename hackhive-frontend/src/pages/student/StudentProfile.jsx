@@ -313,6 +313,19 @@ export default function StudentProfile() {
         }
     };
 
+    const handleViewResume = async () => {
+        try {
+            setActionLoading(true);
+            const blob = await studentProfileService.downloadResumeBlob();
+            const fileURL = URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+            window.open(fileURL, "_blank");
+        } catch {
+            toast.error("Failed to view resume.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const handleDeleteResume = async () => {
         try {
             await studentProfileService.deleteResume();
@@ -922,14 +935,13 @@ export default function StudentProfile() {
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <a
-                                        href={resume.resumeUrl || resume.fileUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
+                                    <button
+                                        type="button"
+                                        onClick={handleViewResume}
                                         className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                     >
                                         <ExternalLink className="size-3.5" /> View Resume
-                                    </a>
+                                    </button>
 
                                     <Button
                                         type="button"
