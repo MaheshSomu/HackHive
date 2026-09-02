@@ -140,7 +140,7 @@ export default function TeamChat({ team, members = [] }) {
         try {
             const history = await workspaceService.getTeamChatHistory(team.id);
             const list = Array.isArray(history) ? history : [];
-            
+
             setMessages((prev) => {
                 if (prev.length > 0 && list.length > prev.length && !isNearBottomRef.current) {
                     setUnreadNotice(true);
@@ -534,17 +534,15 @@ export default function TeamChat({ team, members = [] }) {
                                 initial={{ opacity: 0, y: 6 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.15 }}
-                                className={`flex items-start gap-2.5 ${isMe ? "flex-row-reverse" : "flex-row"} ${
-                                    item.isGrouped ? "mt-1" : "mt-3"
-                                }`}
+                                className={`flex items-start gap-2.5 ${isMe ? "flex-row-reverse" : "flex-row"} ${item.isGrouped ? "mt-1" : "mt-3"
+                                    }`}
                             >
                                 {!item.isGrouped ? (
                                     <div
-                                        className={`flex size-7 shrink-0 items-center justify-center rounded-full font-extrabold text-[10px] ${
-                                            isMe
+                                        className={`flex size-7 shrink-0 items-center justify-center rounded-full font-extrabold text-[10px] ${isMe
                                                 ? "bg-indigo-600 text-white"
                                                 : "bg-slate-900 text-white dark:bg-indigo-600"
-                                        }`}
+                                            }`}
                                     >
                                         {initials}
                                     </div>
@@ -564,11 +562,10 @@ export default function TeamChat({ team, members = [] }) {
                                     )}
 
                                     <div
-                                        className={`inline-block rounded-2xl px-3.5 py-2 text-xs leading-5 shadow-2xs ${
-                                            isMe
+                                        className={`inline-block rounded-2xl px-3.5 py-2 text-xs leading-5 shadow-2xs ${isMe
                                                 ? "bg-indigo-600 text-white font-medium"
                                                 : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                                        }`}
+                                            }`}
                                     >
                                         {msg.content}
                                     </div>

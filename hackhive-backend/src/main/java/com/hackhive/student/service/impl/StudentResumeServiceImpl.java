@@ -32,17 +32,14 @@ public class StudentResumeServiceImpl
 
     private StudentProfile getCurrentStudentProfile() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         return studentProfileRepository.findByUser(user)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Student profile not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Student profile not found."));
     }
 
     @Override
@@ -75,26 +72,21 @@ public class StudentResumeServiceImpl
             // Delete existing resume before storing the new one
             if (profile.getResumeUrl() != null) {
 
-                Path oldResumePath =
-                        Paths.get(profile.getResumeUrl());
+                Path oldResumePath = Paths.get(profile.getResumeUrl());
 
                 Files.deleteIfExists(oldResumePath);
             }
 
-            String fileName =
-                    UUID.randomUUID() + ".pdf";
+            String fileName = UUID.randomUUID() + ".pdf";
 
-            Path filePath =
-                    uploadPath.resolve(fileName);
+            Path filePath = uploadPath.resolve(fileName);
 
             Files.copy(
                     file.getInputStream(),
                     filePath,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+                    StandardCopyOption.REPLACE_EXISTING);
 
-            String resumeUrl =
-                    filePath.toString().replace("\\", "/");
+            String resumeUrl = filePath.toString().replace("\\", "/");
 
             profile.setResumeUrl(resumeUrl);
 
@@ -138,8 +130,7 @@ public class StudentResumeServiceImpl
 
         try {
 
-            Path resumePath =
-                    Paths.get(profile.getResumeUrl());
+            Path resumePath = Paths.get(profile.getResumeUrl());
 
             Files.deleteIfExists(resumePath);
 

@@ -26,9 +26,8 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendVerificationEmail(User user) {
 
-        String verificationLink =
-                backendUrl + "/api/auth/verify-email?token="
-                        + user.getEmailVerificationToken();
+        String verificationLink = backendUrl + "/api/auth/verify-email?token="
+                + user.getEmailVerificationToken();
 
         SimpleMailMessage message = new SimpleMailMessage();
 
@@ -55,55 +54,51 @@ public class EmailServiceImpl implements EmailService {
                 HackHive Team
                 """.formatted(
                 user.getFullName(),
-                verificationLink
-        ));
+                verificationLink));
 
         mailSender.send(message);
     }
 
     @Override
-public void sendPasswordResetEmail(User user) {
+    public void sendPasswordResetEmail(User user) {
 
-    String resetLink =
-            frontendUrl + "/reset-password?token="
-                    + user.getPasswordResetToken();
+        String resetLink = frontendUrl + "/reset-password?token="
+                + user.getPasswordResetToken();
 
-    SimpleMailMessage message = new SimpleMailMessage();
+        SimpleMailMessage message = new SimpleMailMessage();
 
-    message.setFrom(fromEmail);
-    message.setTo(user.getEmail());
-    message.setSubject("Reset Your HackHive Password");
+        message.setFrom(fromEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Reset Your HackHive Password");
 
-    message.setText("""
-            Hello %s,
+        message.setText("""
+                Hello %s,
 
-            We received a request to reset your HackHive password.
+                We received a request to reset your HackHive password.
 
-            Click the link below to reset your password:
+                Click the link below to reset your password:
 
-            %s
+                %s
 
-            This link will expire in 30 minutes.
+                This link will expire in 30 minutes.
 
-            If you didn't request this password reset,
-            you can safely ignore this email.
+                If you didn't request this password reset,
+                you can safely ignore this email.
 
-            Regards,
-            HackHive Team
-            """.formatted(
-            user.getFullName(),
-            resetLink
-    ));
+                Regards,
+                HackHive Team
+                """.formatted(
+                user.getFullName(),
+                resetLink));
 
-    mailSender.send(message);
-}
+        mailSender.send(message);
+    }
 
     @Override
     public void sendAccountReactivationEmail(User user) {
 
-        String reactivationLink =
-                frontendUrl + "/reactivate-account?token="
-                        + user.getAccountReactivationToken();
+        String reactivationLink = frontendUrl + "/reactivate-account?token="
+                + user.getAccountReactivationToken();
 
         SimpleMailMessage message = new SimpleMailMessage();
 
@@ -129,8 +124,7 @@ public void sendPasswordResetEmail(User user) {
                 HackHive Team
                 """.formatted(
                 user.getFullName(),
-                reactivationLink
-        ));
+                reactivationLink));
 
         mailSender.send(message);
     }
@@ -167,11 +161,11 @@ public void sendPasswordResetEmail(User user) {
                     organizerName != null && !organizerName.isBlank() ? organizerName : "Organizer",
                     eventTitle,
                     studentName != null ? studentName : "Student",
-                    studentEmail != null ? studentEmail : "N/A"
-            ));
+                    studentEmail != null ? studentEmail : "N/A"));
             mailSender.send(message);
         } catch (Exception e) {
-            System.err.println("Failed to send registration notification email to " + recipientEmail + ": " + e.getMessage());
+            System.err.println(
+                    "Failed to send registration notification email to " + recipientEmail + ": " + e.getMessage());
         }
     }
 
@@ -221,11 +215,11 @@ public void sendPasswordResetEmail(User user) {
                     paymentStatus != null ? paymentStatus : "PAID",
                     razorpayOrderId != null ? razorpayOrderId : "N/A",
                     razorpayPaymentId != null ? razorpayPaymentId : "N/A",
-                    paidAt != null ? paidAt : "N/A"
-            ));
+                    paidAt != null ? paidAt : "N/A"));
             mailSender.send(message);
         } catch (Exception e) {
-            System.err.println("Failed to send student payment receipt email to " + recipientEmail + ": " + e.getMessage());
+            System.err.println(
+                    "Failed to send student payment receipt email to " + recipientEmail + ": " + e.getMessage());
         }
     }
 }

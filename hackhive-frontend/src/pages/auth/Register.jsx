@@ -111,7 +111,7 @@ function Register() {
 
         window.location.href =
             `${backendBaseUrl}/oauth2/authorization/google`;
-    };  
+    };
 
 
     const handleGithubSocialSignUp = () => {
