@@ -1,15 +1,20 @@
 package com.hackhive.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
+    @Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -18,7 +23,12 @@ public class CorsConfig {
 
         config.setAllowCredentials(true);
 
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        List<String> origins = Arrays.stream(frontendUrl.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        config.setAllowedOriginPatterns(origins);
 
         config.setAllowedHeaders(List.of("*"));
 
