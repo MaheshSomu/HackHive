@@ -23,7 +23,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     private final Path rootLocation;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-    private static final List<String> ALLOWED_CONTENT_TYPES = Arrays.asList(
+    private static final List<String> ALLOWED_IMAGE_TYPES = Arrays.asList(
             "image/png",
             "image/jpeg",
             "image/webp"
@@ -45,19 +45,29 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public String storeFile(MultipartFile file, String subDirectory) {
         if (file == null || file.isEmpty()) {
-            throw new BadRequestException("Please select an image.");
+            throw new BadRequestException("Please select a file.");
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BadRequestException("Image must be smaller than 5 MB.");
+            throw new BadRequestException("File size must be smaller than 5 MB.");
         }
 
         String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
-            throw new BadRequestException("Only PNG, JPG, JPEG, and WebP images are supported.");
+        String originalFilename = file.getOriginalFilename();
+
+        if ("resumes".equalsIgnoreCase(subDirectory)) {
+            boolean isPdf = (contentType != null && contentType.equalsIgnoreCase("application/pdf"))
+                    || (originalFilename != null && originalFilename.toLowerCase().endsWith(".pdf"));
+            if (!isPdf) {
+                throw new BadRequestException("Only PDF files are allowed.");
+            }
+        } else {
+            if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+                throw new BadRequestException("Only PNG, JPG, JPEG, and WebP images are supported.");
+            }
         }
 
-        String extension = getExtensionFromContentType(contentType, file.getOriginalFilename());
+        String extension = getExtension(contentType, originalFilename, subDirectory);
         String generatedFilename = UUID.randomUUID().toString() + extension;
 
         try {
@@ -76,6 +86,10 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
 
             Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
+
+            if ("resumes".equalsIgnoreCase(subDirectory)) {
+                return "uploads/resumes/" + generatedFilename;
+            }
 
             return "/api/uploads/" + subDirectory + "/" + generatedFilename;
         } catch (IOException e) {
@@ -114,26 +128,29 @@ public class FileStorageServiceImpl implements FileStorageService {
             return;
         }
 
-        String prefix = "/api/uploads/";
-        if (!fileUrl.contains(prefix)) {
-            // Not a local stored upload URL
-            return;
-        }
-
         try {
-            String relativePath = fileUrl.substring(fileUrl.indexOf(prefix) + prefix.length());
-            Path filePath = this.rootLocation.resolve(relativePath).normalize();
+            Path filePath = null;
+            String prefix = "/api/uploads/";
 
-            if (filePath.startsWith(this.rootLocation) && Files.exists(filePath)) {
+            if (fileUrl.contains(prefix)) {
+                String relativePath = fileUrl.substring(fileUrl.indexOf(prefix) + prefix.length());
+                filePath = this.rootLocation.resolve(relativePath).normalize();
+            } else {
+                filePath = Paths.get(fileUrl).toAbsolutePath().normalize();
+            }
+
+            if (filePath != null && Files.exists(filePath)) {
                 Files.delete(filePath);
             }
         } catch (Exception e) {
-            // Log error or ignore silent deletion failure
             System.err.println("Failed to delete file: " + fileUrl + " - " + e.getMessage());
         }
     }
 
-    private String getExtensionFromContentType(String contentType, String originalFilename) {
+    private String getExtension(String contentType, String originalFilename, String subDirectory) {
+        if ("resumes".equalsIgnoreCase(subDirectory)) {
+            return ".pdf";
+        }
         if (contentType != null) {
             switch (contentType.toLowerCase()) {
                 case "image/png":
