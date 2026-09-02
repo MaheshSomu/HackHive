@@ -144,6 +144,17 @@
 			<artifactId>razorpay-java</artifactId>
 			<version>1.4.8</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.oracle.oci.sdk</groupId>
+			<artifactId>oci-java-sdk-objectstorage</artifactId>
+			<version>3.54.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.oci.sdk</groupId>
+			<artifactId>oci-java-sdk-common-httpclient-jersey3</artifactId>
+			<version>3.54.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

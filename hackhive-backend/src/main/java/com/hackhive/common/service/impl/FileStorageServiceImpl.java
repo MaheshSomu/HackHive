@@ -3,6 +3,7 @@ package com.hackhive.common.service.impl;
 import com.hackhive.common.exception.BadRequestException;
 import com.hackhive.common.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@ConditionalOnProperty(name = "storage.type", havingValue = "local", matchIfMissing = true)
 public class FileStorageServiceImpl implements FileStorageService {
 
     private final Path rootLocation;
