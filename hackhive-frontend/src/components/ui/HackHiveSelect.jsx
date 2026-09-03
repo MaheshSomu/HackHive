@@ -5,25 +5,25 @@ import { Label } from "./label";
 
 const PORTAL_THEMES = {
     student: {
-        triggerOpen: "border-indigo-500 ring-2 ring-indigo-500/20 text-slate-900 dark:text-slate-100",
-        triggerHover: "border-slate-200 hover:border-indigo-300 text-slate-800 dark:border-slate-800 dark:hover:border-indigo-700",
-        chevronOpen: "rotate-180 text-indigo-600 dark:text-indigo-400",
-        optionSelected: "bg-indigo-50 text-indigo-700 font-semibold dark:bg-indigo-950/60 dark:text-indigo-300",
-        checkIcon: "text-indigo-600 dark:text-indigo-400",
+        triggerOpen: "border-blue-500 ring-2 ring-blue-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-blue-300 text-slate-800 dark:border-slate-800 dark:hover:border-blue-700",
+        chevronOpen: "rotate-180 text-blue-600 dark:text-blue-400",
+        optionSelected: "bg-blue-50 text-blue-700 font-semibold dark:bg-blue-950/60 dark:text-blue-300",
+        checkIcon: "text-blue-600 dark:text-blue-400",
     },
     organizer: {
-        triggerOpen: "border-purple-500 ring-2 ring-purple-500/20 text-slate-900 dark:text-slate-100",
-        triggerHover: "border-slate-200 hover:border-purple-300 text-slate-800 dark:border-slate-800 dark:hover:border-purple-700",
-        chevronOpen: "rotate-180 text-purple-600 dark:text-purple-400",
-        optionSelected: "bg-purple-50 text-purple-700 font-semibold dark:bg-purple-950/60 dark:text-purple-300",
-        checkIcon: "text-purple-600 dark:text-purple-400",
+        triggerOpen: "border-blue-500 ring-2 ring-blue-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-slate-300 text-slate-800 dark:border-slate-800 dark:hover:border-slate-700",
+        chevronOpen: "rotate-180 text-slate-600 dark:text-slate-400",
+        optionSelected: "bg-slate-100 text-slate-900 font-semibold dark:bg-slate-800 dark:text-slate-100",
+        checkIcon: "text-blue-600 dark:text-blue-400",
     },
     admin: {
-        triggerOpen: "border-rose-500 ring-2 ring-rose-500/20 text-slate-900 dark:text-slate-100",
-        triggerHover: "border-slate-200 hover:border-rose-300 text-slate-800 dark:border-slate-800 dark:hover:border-rose-700",
-        chevronOpen: "rotate-180 text-rose-600 dark:text-rose-400",
-        optionSelected: "bg-rose-50 text-rose-700 font-semibold dark:bg-rose-950/60 dark:text-rose-300",
-        checkIcon: "text-rose-600 dark:text-rose-400",
+        triggerOpen: "border-blue-500 ring-2 ring-blue-500/20 text-slate-900 dark:text-slate-100",
+        triggerHover: "border-slate-200 hover:border-blue-300 text-slate-800 dark:border-slate-800 dark:hover:border-blue-700",
+        chevronOpen: "rotate-180 text-blue-600 dark:text-blue-400",
+        optionSelected: "bg-blue-50 text-blue-700 font-semibold dark:bg-blue-950/60 dark:text-blue-300",
+        checkIcon: "text-blue-600 dark:text-blue-400",
     },
 };
 

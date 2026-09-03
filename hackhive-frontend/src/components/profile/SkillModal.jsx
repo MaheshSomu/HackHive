@@ -24,7 +24,7 @@ export default function SkillModal({ isOpen, onClose, initialData, onSubmit, isL
                         type="text"
                         {...register("skillName", { required: "Skill name is required" })}
                         placeholder="e.g. React.js, Python, Figma"
-                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                     />
                     {errors.skillName && (
                         <p className="mt-1 text-[11px] text-rose-500">{errors.skillName.message}</p>

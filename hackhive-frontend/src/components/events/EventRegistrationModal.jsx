@@ -431,7 +431,7 @@ export default function EventRegistrationModal({
                                             <select
                                                 value={participantCount}
                                                 onChange={(e) => handleParticipantCountChange(e.target.value)}
-                                                className="h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-900 outline-none dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                                className="h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                                             >
                                                 {Array.from({ length: maxTeamSize }, (_, i) => i + 1).map((num) => (
                                                     <option key={num} value={num}>

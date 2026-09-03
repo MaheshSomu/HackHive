@@ -46,7 +46,7 @@ export default function SocialLinkModal({ isOpen, onClose, initialData, onSubmit
                         type="url"
                         {...register("url", { required: "URL is required" })}
                         placeholder="https://..."
-                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-purple-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                        className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-900 outline-none focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                     />
                     {errors.url && (
                         <p className="mt-1 text-[11px] text-rose-500">{errors.url.message}</p>
