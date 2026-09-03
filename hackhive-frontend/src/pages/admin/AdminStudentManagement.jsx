@@ -79,7 +79,7 @@ export default function AdminStudentManagement() {
             <Card className="overflow-hidden border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <CardContent className="p-6 sm:p-8">
                     <div className="space-y-1">
-                        <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                             Student Directory
                         </span>
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
@@ -95,13 +95,13 @@ export default function AdminStudentManagement() {
             <Card className="border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <CardContent className="p-4 sm:p-5">
                     <div className="group relative max-w-md">
-                        <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-indigo-600" />
+                        <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-blue-600" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search students by name or email..."
-                            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                         />
                     </div>
                 </CardContent>
@@ -126,7 +126,7 @@ export default function AdminStudentManagement() {
                                 >
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                                            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                                                 STUDENT
                                             </span>
                                             {isEnabled ? (
@@ -139,7 +139,7 @@ export default function AdminStudentManagement() {
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-bold text-xs text-white">
+                                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-xs text-white">
                                                 {initials}
                                             </div>
                                             <div className="min-w-0 flex-1">

@@ -33,7 +33,7 @@ export default function AdminSettings() {
                 <Card className="border-slate-200/80 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="flex size-12 items-center justify-center rounded-full bg-rose-600 font-bold text-white text-sm">
+                            <div className="flex size-12 items-center justify-center rounded-full bg-blue-600 font-bold text-white text-sm">
                                 {(user?.fullName || "A")[0].toUpperCase()}
                             </div>
                             <div>
@@ -41,7 +41,7 @@ export default function AdminSettings() {
                                     {user?.fullName || "Administrator"}
                                 </h3>
                                 <p className="text-xs text-slate-500">{user?.email}</p>
-                                <span className="mt-1 inline-block rounded bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 uppercase">
+                                <span className="mt-1 inline-block rounded bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300 uppercase">
                                     Role: {user?.role || "ADMIN"}
                                 </span>
                             </div>
@@ -59,7 +59,7 @@ export default function AdminSettings() {
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-                            <Server className="size-4 text-rose-500" />
+                            <Server className="size-4 text-blue-600 dark:text-blue-400" />
                             <span>Backend Server API</span>
                         </div>
                         <p className="text-xs text-slate-500 font-mono">http://localhost:8080/api</p>
@@ -68,7 +68,7 @@ export default function AdminSettings() {
 
                     <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100">
-                            <Shield className="size-4 text-rose-500" />
+                            <Shield className="size-4 text-blue-600 dark:text-blue-400" />
                             <span>Security & Authentication</span>
                         </div>
                         <p className="text-xs text-slate-500">JWT Authentication Bearer Tokens</p>

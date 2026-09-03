@@ -9,6 +9,7 @@ import {
     HelpCircle,
     MapPin,
     Shield,
+    ShieldCheck,
     Users,
     X,
 } from "lucide-react";
@@ -104,6 +105,11 @@ export default function EventDetailsModal({
                             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                                 <Building2 className="size-4" />
                                 <span>Hosted by {event.organizerName || event.collegeName || "HackHive Host"}</span>
+                                {event.verified && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40">
+                                        <ShieldCheck className="size-3 text-blue-600 dark:text-blue-400" /> Verified Host
+                                    </span>
+                                )}
                                 {event.collegeName && <span className="text-slate-400">• {event.collegeName}</span>}
                             </div>
 

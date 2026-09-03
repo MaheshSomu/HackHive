@@ -19,6 +19,8 @@ export const adminService = {
     // Organizer Management
     getAllOrganizers: () => request(api.get("/admin/organizers")),
     getOrganizerById: (organizerProfileId) => request(api.get(`/admin/organizers/${organizerProfileId}`)),
+    verifyOrganizer: (organizerProfileId) => request(api.patch(`/admin/organizers/${organizerProfileId}/verify`)),
+    unverifyOrganizer: (organizerProfileId) => request(api.patch(`/admin/organizers/${organizerProfileId}/unverify`)),
 
     // Hackathon Management
     getAllHackathons: () => request(api.get("/admin/hackathons")),

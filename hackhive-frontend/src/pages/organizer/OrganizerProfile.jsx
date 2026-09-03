@@ -381,7 +381,7 @@ export default function OrganizerProfile() {
                                 {isVerified ? (
                                     <Badge variant="success" className="gap-1 px-2.5 py-0.5 text-xs font-bold shadow-2xs">
                                         <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                                        <span>Verified</span>
+                                        <span>Verified Host</span>
                                     </Badge>
                                 ) : (
                                     <Badge variant="secondary" className="text-xs font-semibold">

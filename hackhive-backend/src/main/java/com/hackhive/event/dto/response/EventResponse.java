@@ -17,6 +17,8 @@ public class EventResponse {
 
     private String organizerName;
 
+    private Boolean verified;
+
     private String title;
 
     private String description;

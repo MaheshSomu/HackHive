@@ -110,7 +110,7 @@ export default function AdminHeader({
                         onClick={() => setIsSearchOpen(true)}
                         className="group relative flex h-9 w-full items-center rounded-lg border border-slate-200 bg-slate-50/50 pl-9 pr-12 text-left text-xs text-slate-400 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-800/50 dark:hover:border-slate-700"
                     >
-                        <Search className="pointer-events-none absolute left-3 size-4 text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-400" />
+                        <Search className="pointer-events-none absolute left-3 size-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         <span>Search system registry (⌘K)...</span>
                         <kbd className="pointer-events-none absolute right-2.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800">
                             ⌘K
@@ -131,20 +131,20 @@ export default function AdminHeader({
                         aria-haspopup="true"
                         aria-label="Admin menu"
                     >
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-600 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-rose-100 dark:ring-rose-950/60">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-blue-700 font-bold text-xs text-white shadow-xs overflow-hidden ring-2 ring-blue-100 dark:ring-blue-950/60">
                             {initials}
                         </div>
 
                         <div className="hidden text-left md:block">
-                            <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 group-hover:text-rose-600 dark:text-slate-100 dark:group-hover:text-rose-400">
+                            <p className="max-w-[120px] truncate text-xs font-semibold text-slate-900 group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
                                 {user?.fullName || "Administrator"}
                             </p>
-                            <p className="max-w-[120px] truncate text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase">
+                            <p className="max-w-[120px] truncate text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
                                 ADMINISTRATOR
                             </p>
                         </div>
 
-                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-rose-600 dark:text-rose-400" : ""}`} />
+                        <ChevronDown className={`size-4 text-slate-400 transition-transform duration-200 ${isMenuOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""}`} />
                     </button>
 
                     {/* Admin Dropdown Menu */}
@@ -157,7 +157,7 @@ export default function AdminHeader({
 
                             <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl dark:border-slate-800 dark:bg-slate-900">
                                 <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-600 font-bold text-sm text-white shadow-xs">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-blue-700 font-bold text-sm text-white shadow-xs">
                                         {initials}
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -176,16 +176,16 @@ export default function AdminHeader({
                                     <button
                                         type="button"
                                         onClick={() => handleNavigate("/admin/settings")}
-                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition dark:text-slate-200 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
                                     >
-                                        <Settings className="size-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                                        <Settings className="size-4 text-blue-600 dark:text-blue-400 shrink-0" />
                                         <span>System Settings</span>
                                     </button>
 
                                     <button
                                         type="button"
                                         onClick={() => handleNavigate("/admin/reports")}
-                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition dark:text-slate-200 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
                                     >
                                         <FileText className="size-4 text-slate-400 shrink-0" />
                                         <span>System Reports</span>

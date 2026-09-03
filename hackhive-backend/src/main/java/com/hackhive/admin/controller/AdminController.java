@@ -10,6 +10,7 @@ import com.hackhive.admin.service.AdminService;
 import com.hackhive.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -171,6 +172,42 @@ public class AdminController {
                         .message(
                                 "Organizer fetched successfully."
                         )
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @PatchMapping("/organizers/{organizerProfileId}/verify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminOrganizerResponse>>
+    verifyOrganizer(
+            @PathVariable Long organizerProfileId) {
+
+        AdminOrganizerResponse response =
+                adminService.verifyOrganizer(organizerProfileId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminOrganizerResponse>builder()
+                        .success(true)
+                        .message("Organizer verified successfully.")
+                        .data(response)
+                        .build()
+        );
+    }
+
+    @PatchMapping("/organizers/{organizerProfileId}/unverify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AdminOrganizerResponse>>
+    unverifyOrganizer(
+            @PathVariable Long organizerProfileId) {
+
+        AdminOrganizerResponse response =
+                adminService.unverifyOrganizer(organizerProfileId);
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminOrganizerResponse>builder()
+                        .success(true)
+                        .message("Organizer verification revoked.")
                         .data(response)
                         .build()
         );

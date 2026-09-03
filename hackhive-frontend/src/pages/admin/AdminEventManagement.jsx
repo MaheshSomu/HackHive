@@ -100,13 +100,13 @@ export default function AdminEventManagement() {
                 <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="group relative flex-1 max-w-md">
-                            <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-emerald-600" />
+                            <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-blue-600" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search hackathon by title, organizer, location..."
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-emerald-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                             />
                         </div>
 
@@ -152,7 +152,7 @@ export default function AdminEventManagement() {
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-emerald-800 p-4 text-white">
+                                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-blue-800 p-4 text-white">
                                                     <h3 className="line-clamp-1 text-base font-bold">{h.title}</h3>
                                                 </div>
                                             )}
@@ -169,7 +169,7 @@ export default function AdminEventManagement() {
                                                 <h3 className="line-clamp-1 text-base font-bold text-slate-900 dark:text-slate-100">
                                                     {h.title}
                                                 </h3>
-                                                <p className="text-xs text-indigo-600 font-semibold dark:text-indigo-400">
+                                                <p className="text-xs text-blue-600 font-semibold dark:text-blue-400">
                                                     Host: {h.organizationName || h.organizerName || "Organizer"}
                                                 </p>
                                             </div>

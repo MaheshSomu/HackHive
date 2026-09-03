@@ -54,7 +54,7 @@ export default function AdminDashboard() {
                 <CardContent className="p-6 sm:p-8">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
-                            <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+                            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                                 System Control Center
                             </span>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total System Users</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+                        <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                             <Users className="size-4.5" />
                         </div>
                     </div>
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Students</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                        <div className="flex size-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
                             <GraduationCap className="size-4.5" />
                         </div>
                     </div>
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
                 <Card className="border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Organizers</span>
-                        <div className="flex size-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                        <div className="flex size-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                             <Building2 className="size-4.5" />
                         </div>
                     </div>
@@ -147,9 +147,9 @@ export default function AdminDashboard() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Card
                         onClick={() => navigate("/admin/users")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-rose-300 dark:border-slate-800 dark:bg-slate-900"
+                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700"
                     >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950">
                             <Users className="size-4" />
                         </div>
                         <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">User Management</h4>
@@ -158,9 +158,9 @@ export default function AdminDashboard() {
 
                     <Card
                         onClick={() => navigate("/admin/organizers")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-rose-300 dark:border-slate-800 dark:bg-slate-900"
+                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700"
                     >
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800">
                             <Building2 className="size-4" />
                         </div>
                         <h4 className="mt-3 text-xs font-bold text-slate-900 dark:text-slate-100">Organizer Registry</h4>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
 
                     <Card
                         onClick={() => navigate("/admin/events")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-rose-300 dark:border-slate-800 dark:bg-slate-900"
+                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700"
                     >
                         <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950">
                             <CalendarDays className="size-4" />
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
 
                     <Card
                         onClick={() => navigate("/admin/reports")}
-                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-rose-300 dark:border-slate-800 dark:bg-slate-900"
+                        className="cursor-pointer border-slate-200/80 bg-white p-5 shadow-xs transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-700"
                     >
                         <div className="flex size-8 items-center justify-center rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-950">
                             <FileBarChart className="size-4" />

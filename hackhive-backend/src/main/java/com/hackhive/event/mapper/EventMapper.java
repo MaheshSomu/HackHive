@@ -27,6 +27,9 @@ public class EventMapper {
                 .organizerName(
                         event.getOrganizerProfile()
                                 .getOrganizationName())
+                .verified(
+                        event.getOrganizerProfile() != null &&
+                        Boolean.TRUE.equals(event.getOrganizerProfile().getVerified()))
                 .title(event.getTitle())
                 .description(event.getDescription())
                 .location(event.getLocation())

@@ -98,7 +98,7 @@ export default function AdminUserManagement() {
             <Card className="overflow-hidden border-slate-200/80 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <CardContent className="p-6 sm:p-8">
                     <div className="space-y-1">
-                        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                             User Governance
                         </span>
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
@@ -116,13 +116,13 @@ export default function AdminUserManagement() {
                 <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="group relative flex-1 max-w-md">
-                            <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-rose-600" />
+                            <Search className="pointer-events-none absolute left-3.5 top-3 size-4 text-slate-400 group-focus-within:text-blue-600" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search user by name, email, or role..."
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-rose-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-xs text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-100"
                             />
                         </div>
 
@@ -194,7 +194,7 @@ export default function AdminUserManagement() {
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-900 font-bold text-xs text-white dark:bg-rose-600">
+                                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-xs text-white">
                                                 {initials}
                                             </div>
                                             <div className="min-w-0 flex-1">

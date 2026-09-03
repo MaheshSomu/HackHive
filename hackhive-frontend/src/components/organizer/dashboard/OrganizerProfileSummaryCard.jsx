@@ -73,7 +73,7 @@ export default function OrganizerProfileSummaryCard({ profileData, user, onNavig
                         </h4>
                         {isVerified ? (
                             <Badge variant="success" className="gap-1 text-[10px] px-2 py-0.5 font-bold">
-                                <ShieldCheck className="size-3 text-emerald-600" /> Verified
+                                <ShieldCheck className="size-3 text-emerald-600" /> Verified Host
                             </Badge>
                         ) : (
                             <Badge variant="secondary" className="text-[10px] px-2 py-0.5">

@@ -163,6 +163,44 @@ public class AdminServiceImpl implements AdminService {
         return mapOrganizer(organizer);
     }
 
+    @Override
+    @Transactional
+    public AdminOrganizerResponse verifyOrganizer(
+            Long organizerProfileId) {
+
+        OrganizerProfile organizer =
+                organizerProfileRepository
+                        .findById(organizerProfileId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Organizer profile not found."
+                                ));
+
+        organizer.setVerified(true);
+        organizer = organizerProfileRepository.save(organizer);
+
+        return mapOrganizer(organizer);
+    }
+
+    @Override
+    @Transactional
+    public AdminOrganizerResponse unverifyOrganizer(
+            Long organizerProfileId) {
+
+        OrganizerProfile organizer =
+                organizerProfileRepository
+                        .findById(organizerProfileId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Organizer profile not found."
+                                ));
+
+        organizer.setVerified(false);
+        organizer = organizerProfileRepository.save(organizer);
+
+        return mapOrganizer(organizer);
+    }
+
     // =========================================================
     // Hackathon / Event Management
     // =========================================================

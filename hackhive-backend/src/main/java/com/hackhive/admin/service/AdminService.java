@@ -40,6 +40,14 @@ public interface AdminService {
             Long organizerProfileId
     );
 
+    AdminOrganizerResponse verifyOrganizer(
+            Long organizerProfileId
+    );
+
+    AdminOrganizerResponse unverifyOrganizer(
+            Long organizerProfileId
+    );
+
     // Hackathon Management
     List<AdminHackathonResponse> getAllHackathons();
 

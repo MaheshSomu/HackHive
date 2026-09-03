@@ -54,7 +54,7 @@ export default function AdminSidebar({
             {/* Header / Brand */}
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-800">
                 <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-red-600 shadow-md shadow-rose-500/20">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 shadow-md shadow-blue-500/20">
                         <Hexagon className="size-5 text-white" strokeWidth={2.5} />
                     </div>
 
@@ -64,7 +64,7 @@ export default function AdminSidebar({
                                 <h2 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
                                     HackHive
                                 </h2>
-                                <p className="truncate text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                                <p className="truncate text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                                     Admin Control
                                 </p>
                             </div>
@@ -109,7 +109,7 @@ export default function AdminSidebar({
                                             ? "justify-center px-0 py-3"
                                             : "justify-start",
                                         isActive
-                                            ? "bg-rose-50/90 text-rose-700 font-bold shadow-xs dark:bg-rose-950/50 dark:text-rose-300"
+                                            ? "bg-blue-50/90 text-blue-700 font-bold shadow-xs dark:bg-blue-950/50 dark:text-blue-300"
                                             : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"
                                     )
                                 }
@@ -118,14 +118,14 @@ export default function AdminSidebar({
                                 {({ isActive }) => (
                                     <>
                                         {isActive && (
-                                            <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-rose-600 dark:bg-rose-500" />
+                                            <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-blue-600 dark:bg-blue-500" />
                                         )}
 
                                         <Icon
                                             className={cn(
                                                 "size-4.5 shrink-0 transition-transform duration-150 group-hover:scale-105",
                                                 isActive
-                                                    ? "text-rose-600 dark:text-rose-400"
+                                                    ? "text-blue-600 dark:text-blue-400"
                                                     : "text-slate-400 group-hover:text-slate-600 dark:text-slate-500"
                                             )}
                                         />
@@ -164,7 +164,7 @@ export default function AdminSidebar({
                 {(!isCollapsed || isMobile) ? (
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
                         <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-rose-900 font-bold text-[10px] text-white">
+                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-blue-600 font-bold text-[10px] text-white">
                                 {(user?.fullName || user?.email || "A")[0].toUpperCase()}
                             </div>
                             <div className="min-w-0 flex-1">

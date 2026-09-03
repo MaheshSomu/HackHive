@@ -5,6 +5,7 @@ import {
     Clock,
     MapPin,
     Shield,
+    ShieldCheck,
     Users,
 } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -130,9 +131,15 @@ export default function EventCard({
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400 border-t border-slate-100 pt-3 dark:border-slate-800">
-                        <div className="flex items-center gap-1.5 truncate">
+                        <div className="flex items-center gap-1.5 truncate col-span-2 sm:col-span-1">
                             <Building2 className="size-3.5 text-indigo-500 shrink-0" />
-                            <span className="truncate">{event.collegeName || "HackHive Community"}</span>
+                            <span className="truncate">{event.organizerName || event.collegeName || "HackHive Community"}</span>
+                            {event.verified && (
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40 shrink-0" title="HackHive Verified Host">
+                                    <ShieldCheck className="size-2.5 text-blue-600 dark:text-blue-400" />
+                                    <span>Verified Host</span>
+                                </span>
+                            )}
                         </div>
                         <div className="flex items-center gap-1.5 truncate">
                             <MapPin className="size-3.5 text-indigo-500 shrink-0" />
