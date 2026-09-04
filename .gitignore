@@ -33,7 +33,8 @@ hackhive-frontend/dist/
 
 # Environment Files
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
 
 # Package Manager Logs
