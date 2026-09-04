@@ -144,19 +144,21 @@ function Login() {
     };
 
     const handleGoogleSocialLogin = () => {
-        const backendBaseUrl = (
-            import.meta.env.VITE_API_BASE_URL ||
-            "http://localhost:8080/api"
-        ).replace(/\/api\/?$/, "");
+        const backendBaseUrl =
+            import.meta.env.VITE_BACKEND_URL ||
+            (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.startsWith("http")
+                ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "")
+                : "http://localhost:8080");
 
         window.location.href = `${backendBaseUrl}/oauth2/authorization/google`;
     };
 
     const handleGithubSocialLogin = () => {
-        const backendBaseUrl = (
-            import.meta.env.VITE_API_BASE_URL ||
-            "http://localhost:8080/api"
-        ).replace(/\/api\/?$/, "");
+        const backendBaseUrl =
+            import.meta.env.VITE_BACKEND_URL ||
+            (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.startsWith("http")
+                ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/?$/, "")
+                : "http://localhost:8080");
 
         window.location.href = `${backendBaseUrl}/oauth2/authorization/github`;
     };
