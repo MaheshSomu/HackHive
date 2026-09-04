@@ -13,7 +13,7 @@ import { resetPassword } from "../../services/authService";
 import { resetPasswordSchema } from "../../validations/resetPasswordSchema";
 import { getApiErrorMessage } from "../../utils/apiError";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 function ResetPasswordPage() {
     const navigate = useNavigate();

@@ -12,7 +12,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { getDashboardPath } from "../../utils/authRoutes";
 import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 const ROLES = [
     {

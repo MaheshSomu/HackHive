@@ -4,7 +4,7 @@ import { CheckCircle2, AlertCircle, Loader2, ArrowRight } from "lucide-react";
 import AuthLayout from "../../components/layout/AuthLayout";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthHeader from "../../components/auth/AuthHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { reactivateAccount } from "../../services/authService";
 import { getApiErrorMessage } from "../../utils/apiError";
 

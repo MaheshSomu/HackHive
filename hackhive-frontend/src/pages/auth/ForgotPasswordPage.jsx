@@ -13,7 +13,7 @@ import { forgotPassword } from "../../services/authService";
 import { forgotPasswordSchema } from "../../validations/forgotPasswordSchema";
 import { getApiErrorMessage } from "../../utils/apiError";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);

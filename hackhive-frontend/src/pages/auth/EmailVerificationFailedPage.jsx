@@ -10,7 +10,7 @@ import AuthField from "../../components/auth/AuthField";
 import { resendVerificationEmail } from "../../services/authService";
 import { getApiErrorMessage } from "../../utils/apiError";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 function EmailVerificationFailedPage() {
     const [email, setEmail] = useState("");

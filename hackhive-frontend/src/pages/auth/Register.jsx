@@ -16,7 +16,7 @@ import useAuth from "../../hooks/useAuth";
 import { registerSchema } from "../../validations/registerSchema";
 import { getApiErrorMessage } from "../../utils/apiError";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 function GoogleIcon() {
     return (

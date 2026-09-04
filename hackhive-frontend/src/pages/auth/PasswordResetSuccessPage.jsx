@@ -5,7 +5,7 @@ import AuthLayout from "../../components/layout/AuthLayout";
 import AuthCard from "../../components/auth/AuthCard";
 import AuthHeader from "../../components/auth/AuthHeader";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 function PasswordResetSuccessPage() {
     return (

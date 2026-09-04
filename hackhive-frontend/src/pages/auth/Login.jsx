@@ -17,7 +17,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { getDashboardPath } from "../../utils/authRoutes";
 import { requestAccountReactivation } from "../../services/authService";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/checkbox";
 
 function GoogleIcon() {
