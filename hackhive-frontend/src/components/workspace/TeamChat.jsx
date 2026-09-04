@@ -91,15 +91,20 @@ export default function TeamChat({ team, members = [] }) {
     const [sending, setSending] = useState(false);
     const [unreadNotice, setUnreadNotice] = useState(false);
 
-    // Connection State: 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'AUTH_ERROR'
+    // Connection State: 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'POLLING' | 'DISCONNECTED' | 'AUTH_ERROR'
     const [connectionState, setConnectionState] = useState("CONNECTING");
+    const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
     const scrollContainerRef = useRef(null);
     const isNearBottomRef = useRef(true);
 
     const activeSocketRef = useRef(null);
     const reconnectTimerRef = useRef(null);
+    const backgroundProbeTimerRef = useRef(null);
     const heartbeatTimerRef = useRef(null);
+    const retryCountRef = useRef(0);
+    const isCleanedUpRef = useRef(false);
+    const isLoadingHistoryRef = useRef(false);
     const connectionStateRef = useRef("CONNECTING");
     const authToastShownRef = useRef(false);
     const reconnectToastShownRef = useRef(false);
@@ -134,35 +139,63 @@ export default function TeamChat({ team, members = [] }) {
         setUnreadNotice(false);
     };
 
-    // Load Chat History
-    const loadHistory = useCallback(async () => {
+    // Load Chat History with deduplication
+    const loadHistory = useCallback(async (isManual = false) => {
         if (!team?.id) return;
+        if (isLoadingHistoryRef.current && !isManual) return;
+        isLoadingHistoryRef.current = true;
+        if (isManual) setIsManualRefreshing(true);
+
         try {
             const history = await workspaceService.getTeamChatHistory(team.id);
             const list = Array.isArray(history) ? history : [];
 
             setMessages((prev) => {
-                if (prev.length > 0 && list.length > prev.length && !isNearBottomRef.current) {
+                const messageMap = new Map();
+                // Add server history
+                list.forEach((m) => {
+                    if (m && m.id) messageMap.set(m.id, m);
+                });
+                // Preserve any local/optimistic messages that might not have landed in list yet
+                prev.forEach((m) => {
+                    if (m && m.id && !messageMap.has(m.id)) {
+                        messageMap.set(m.id, m);
+                    }
+                });
+
+                const merged = Array.from(messageMap.values()).sort(
+                    (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0)
+                );
+
+                if (prev.length > 0 && merged.length > prev.length && !isNearBottomRef.current) {
                     setUnreadNotice(true);
                 }
-                return list;
+                return merged;
             });
 
             if (isNearBottomRef.current) {
                 setTimeout(() => scrollToBottom(false), 50);
             }
         } catch {
-            setMessages([]);
+            // Keep existing messages on transient network error; do not blank out chat
         } finally {
+            isLoadingHistoryRef.current = false;
             setLoading(false);
+            if (isManual) {
+                setTimeout(() => setIsManualRefreshing(false), 500);
+            }
         }
     }, [team?.id]);
 
+    // Polling lifecycle: active 4s polling in POLLING/fallback mode, 15s quiet sync when live on WebSocket
     useEffect(() => {
         loadHistory();
-        const interval = setInterval(loadHistory, 4000);
+        const pollIntervalMs = connectionState === "CONNECTED" ? 15000 : 4000;
+        const interval = setInterval(() => {
+            loadHistory();
+        }, pollIntervalMs);
         return () => clearInterval(interval);
-    }, [loadHistory]);
+    }, [loadHistory, connectionState]);
 
     const getWebSocketUrl = useCallback(() => {
         if (import.meta.env.VITE_WS_URL) {
@@ -182,11 +215,12 @@ export default function TeamChat({ team, members = [] }) {
         return `${wsProtocol}//${window.location.host}/ws`;
     }, []);
 
-    // WebSocket STOMP Connection Lifecycle
+    // WebSocket STOMP Connection Lifecycle with sensible retry & graceful REST fallback
     useEffect(() => {
         if (!team?.id) return;
 
-        let isCleanedUp = false;
+        isCleanedUpRef.current = false;
+        retryCountRef.current = 0;
         authToastShownRef.current = false;
         reconnectToastShownRef.current = false;
 
@@ -195,14 +229,47 @@ export default function TeamChat({ team, members = [] }) {
                 clearTimeout(reconnectTimerRef.current);
                 reconnectTimerRef.current = null;
             }
+            if (backgroundProbeTimerRef.current) {
+                clearTimeout(backgroundProbeTimerRef.current);
+                backgroundProbeTimerRef.current = null;
+            }
             if (heartbeatTimerRef.current) {
                 clearInterval(heartbeatTimerRef.current);
                 heartbeatTimerRef.current = null;
             }
         };
 
+        const handleSocketFailure = (failedWs) => {
+            clearTimers();
+            if (isCleanedUpRef.current) return;
+            if (failedWs && activeSocketRef.current && activeSocketRef.current !== failedWs) return;
+
+            retryCountRef.current += 1;
+            const MAX_IMMEDIATE_RETRIES = 2;
+
+            if (retryCountRef.current <= MAX_IMMEDIATE_RETRIES) {
+                // Transient glitch: attempt limited immediate retries with backoff
+                updateConnectionState("RECONNECTING");
+                reconnectTimerRef.current = setTimeout(() => {
+                    if (!isCleanedUpRef.current) {
+                        connectWebSocket();
+                    }
+                }, 3000);
+            } else {
+                // Production HTTPS / unavailable WebSocket: gracefully transition to REST polling mode
+                updateConnectionState("POLLING");
+
+                // Periodically probe in background (every 60s) in case WebSocket becomes available
+                backgroundProbeTimerRef.current = setTimeout(() => {
+                    if (!isCleanedUpRef.current) {
+                        connectWebSocket();
+                    }
+                }, 60000);
+            }
+        };
+
         const connectWebSocket = () => {
-            if (isCleanedUp) return;
+            if (isCleanedUpRef.current) return;
 
             const token = storage.getToken();
             if (!token) {
@@ -214,7 +281,7 @@ export default function TeamChat({ team, members = [] }) {
                 return;
             }
 
-            // Capture and cleanly disown any existing socket instance
+            // Cleanly close any existing socket instance
             if (activeSocketRef.current) {
                 const oldWs = activeSocketRef.current;
                 activeSocketRef.current = null;
@@ -232,15 +299,18 @@ export default function TeamChat({ team, members = [] }) {
             const wsUrl = getWebSocketUrl();
 
             try {
-                if (connectionStateRef.current !== "CONNECTED") {
-                    updateConnectionState(reconnectToastShownRef.current ? "RECONNECTING" : "CONNECTING");
+                if (
+                    connectionStateRef.current !== "CONNECTED" &&
+                    connectionStateRef.current !== "POLLING"
+                ) {
+                    updateConnectionState(retryCountRef.current > 0 ? "RECONNECTING" : "CONNECTING");
                 }
 
                 const ws = new WebSocket(wsUrl);
                 activeSocketRef.current = ws;
 
                 ws.onopen = () => {
-                    if (isCleanedUp || activeSocketRef.current !== ws) {
+                    if (isCleanedUpRef.current || activeSocketRef.current !== ws) {
                         try {
                             ws.close();
                         } catch {
@@ -258,12 +328,13 @@ export default function TeamChat({ team, members = [] }) {
                 };
 
                 ws.onmessage = (event) => {
-                    if (isCleanedUp || activeSocketRef.current !== ws) return;
+                    if (isCleanedUpRef.current || activeSocketRef.current !== ws) return;
                     const frame = parseStompFrame(event.data);
                     if (!frame) return;
 
                     if (frame.command === "CONNECTED") {
                         clearTimers();
+                        retryCountRef.current = 0;
                         reconnectToastShownRef.current = false;
                         updateConnectionState("CONNECTED");
 
@@ -313,22 +384,30 @@ export default function TeamChat({ team, members = [] }) {
                                 authToastShownRef.current = true;
                                 toast.error("Access to team chat was denied.");
                             }
-                            ws.close();
+                            try {
+                                ws.close();
+                            } catch {
+                                // ignore
+                            }
                         } else {
-                            updateConnectionState("DISCONNECTED");
-                            ws.close();
+                            try {
+                                ws.close();
+                            } catch {
+                                // ignore
+                            }
+                            handleSocketFailure(ws);
                         }
                     }
                 };
 
                 ws.onclose = (event) => {
-                    clearTimers();
-                    if (isCleanedUp || activeSocketRef.current !== ws || connectionStateRef.current === "AUTH_ERROR") {
+                    if (isCleanedUpRef.current || activeSocketRef.current !== ws || connectionStateRef.current === "AUTH_ERROR") {
                         return;
                     }
 
-                    // If server explicitly closes with 1002 protocol error (subscription rejection), do not endless retry
+                    // If server explicitly closes with 1002 protocol error (subscription rejection), do not retry
                     if (event.code === 1002) {
+                        clearTimers();
                         updateConnectionState("AUTH_ERROR");
                         if (!authToastShownRef.current) {
                             authToastShownRef.current = true;
@@ -337,33 +416,31 @@ export default function TeamChat({ team, members = [] }) {
                         return;
                     }
 
-                    updateConnectionState("RECONNECTING");
-                    if (!reconnectToastShownRef.current) {
-                        reconnectToastShownRef.current = true;
-                    }
-
-                    reconnectTimerRef.current = setTimeout(() => {
-                        if (!isCleanedUp && activeSocketRef.current === ws) {
-                            connectWebSocket();
-                        }
-                    }, 5000);
+                    handleSocketFailure(ws);
                 };
 
                 ws.onerror = () => {
-                    // Handled natively via onclose
+                    // Native error triggers onclose
                 };
             } catch {
-                clearTimers();
-                if (!isCleanedUp && activeSocketRef.current === ws) {
-                    updateConnectionState("DISCONNECTED");
-                }
+                handleSocketFailure(null);
             }
         };
 
         connectWebSocket();
 
+        // When device comes back online, trigger immediate check and reconnect probe
+        const handleOnline = () => {
+            loadHistory();
+            if (connectionStateRef.current === "POLLING" || connectionStateRef.current === "DISCONNECTED") {
+                connectWebSocket();
+            }
+        };
+        window.addEventListener("online", handleOnline);
+
         return () => {
-            isCleanedUp = true;
+            isCleanedUpRef.current = true;
+            window.removeEventListener("online", handleOnline);
             clearTimers();
             if (activeSocketRef.current) {
                 const oldWs = activeSocketRef.current;
@@ -380,7 +457,7 @@ export default function TeamChat({ team, members = [] }) {
             }
             updateConnectionState("DISCONNECTED");
         };
-    }, [team?.id, getWebSocketUrl]);
+    }, [team?.id, getWebSocketUrl, loadHistory]);
 
     const handleSend = async (e) => {
         if (e) e.preventDefault();
@@ -397,7 +474,12 @@ export default function TeamChat({ team, members = [] }) {
             };
 
             const sentMsg = await workspaceService.sendChatMessage(payload);
-            setMessages((prev) => [...prev, sentMsg]);
+            if (sentMsg && sentMsg.id) {
+                setMessages((prev) => {
+                    if (prev.some((m) => m.id === sentMsg.id)) return prev;
+                    return [...prev, sentMsg];
+                });
+            }
             isNearBottomRef.current = true;
             setTimeout(() => scrollToBottom(true), 50);
         } catch {
@@ -461,6 +543,14 @@ export default function TeamChat({ team, members = [] }) {
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                                     <Wifi className="size-3" /> Live Channel
                                 </span>
+                            ) : connectionState === "POLLING" ? (
+                                <span
+                                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-400"
+                                    title="Live WebSocket updates unavailable · Syncing automatically via secure REST polling"
+                                >
+                                    <CheckCheck className="size-3" />
+                                    <span className="hidden sm:inline">Live updates unavailable · </span>Syncing automatically
+                                </span>
                             ) : connectionState === "RECONNECTING" ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
                                     <RefreshCw className="size-3 animate-spin" /> Reconnecting...
@@ -488,11 +578,11 @@ export default function TeamChat({ team, members = [] }) {
                 <div className="flex items-center gap-2">
                     <button
                         type="button"
-                        onClick={loadHistory}
-                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800"
+                        onClick={() => loadHistory(true)}
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 transition"
                         title="Refresh chat history"
                     >
-                        <RefreshCw className="size-3.5" />
+                        <RefreshCw className={`size-3.5 ${isManualRefreshing ? "animate-spin text-indigo-600" : ""}`} />
                     </button>
                 </div>
             </div>
